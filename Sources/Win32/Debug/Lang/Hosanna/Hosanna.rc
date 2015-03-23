@@ -1,0 +1,9 @@
+#include "defines.inc"
+
+STRINGTABLE
+BEGIN
+  rcNomeEmpresa, "Hosanna Tecnologia"
+  rcCaptionPrincipal, "Hosanna Agente 2.0"
+  rcCopyright, "Copyright (c) 2014 Hosanna Tecnologia (http://www.hosannatecnologia.com.br)"
+  rcDevelopedBy, "Hosanna Tecnologia (http://www.hosannatecnologia.com.br)"
+END

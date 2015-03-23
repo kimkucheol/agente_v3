@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2012/01/19 20:24:28.000.811,=C:\Users\Rafael\Documents\RAD Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2012/01/19 20:33:20.000.897,D:\Projetos\teste\untPrincipal.dfm=C:\Users\Rafael\Documents\RAD Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>2012/01/19 20:33:20.000.897,D:\Projetos\teste\untPrincipal.pas=C:\Users\Rafael\Documents\RAD Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2012/01/19 20:33:25.000.198,D:\Projetos\teste\prjteste.dproj=C:\Users\Rafael\Documents\RAD Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2012/01/19 20:34:11.000.645,=D:\Projetos\teste\Unit2.pas</Transaction>
+    <Transaction>2012/01/19 20:34:36.000.349,D:\Projetos\teste\untfilho.dfm=D:\Projetos\teste\Unit2.dfm</Transaction>
+    <Transaction>2012/01/19 20:34:36.000.349,D:\Projetos\teste\untfilho.pas=D:\Projetos\teste\Unit2.pas</Transaction>
+    <Transaction>2012/02/14 21:32:42.000.093,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/14 21:33:06.000.150,D:\Projetos\teste\Unit1.pas=D:\Projetos\teste\untdm.pas</Transaction>
+    <Transaction>2012/02/14 21:33:06.000.150,D:\Projetos\teste\Unit1.dfm=D:\Projetos\teste\untdm.dfm</Transaction>
+    <Transaction>2012/02/14 21:37:03.000.667,=D:\Projetos\teste\Unit2.pas</Transaction>
+    <Transaction>2012/02/14 21:37:22.000.711,D:\Projetos\teste\Unit2.dfm=D:\Projetos\teste\untlogin.dfm</Transaction>
+    <Transaction>2012/02/14 21:37:22.000.711,D:\Projetos\teste\Unit2.pas=D:\Projetos\teste\untlogin.pas</Transaction>
+    <Transaction>2012/02/14 22:59:16.000.233,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/14 22:59:35.000.593,D:\Projetos\teste\untfrmdialpad.dfm=D:\Projetos\teste\Unit1.dfm</Transaction>
+    <Transaction>2012/02/14 22:59:35.000.593,D:\Projetos\teste\untfrmdialpad.pas=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/14 23:37:32.000.875,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/14 23:38:00.000.144,D:\Projetos\teste\untfrmcontroles.pas=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/14 23:38:00.000.144,D:\Projetos\teste\untfrmcontroles.dfm=D:\Projetos\teste\Unit1.dfm</Transaction>
+    <Transaction>2012/02/16 22:41:50.000.716,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/02/16 22:42:02.000.593,D:\Projetos\teste\Unit1.dfm=D:\Projetos\teste\untfrmpausa.dfm</Transaction>
+    <Transaction>2012/02/16 22:42:02.000.593,D:\Projetos\teste\Unit1.pas=D:\Projetos\teste\untfrmpausa.pas</Transaction>
+    <Transaction>2012/03/01 20:56:57.000.787,D:\Projetos\teste\untfilho.pas=</Transaction>
+    <Transaction>2012/03/01 21:06:11.000.755,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/03/01 21:06:30.000.443,D:\Projetos\teste\untfrmconfiguracoes.dfm=D:\Projetos\teste\Unit1.dfm</Transaction>
+    <Transaction>2012/03/01 21:06:30.000.443,D:\Projetos\teste\untfrmconfiguracoes.pas=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/03/07 19:32:35.000.299,D:\Projetos\teste\untfrmcontroles.pas=</Transaction>
+    <Transaction>2012/03/08 20:15:51.000.989,=D:\Projetos\teste\Unit1.pas</Transaction>
+    <Transaction>2012/03/08 20:16:19.000.067,D:\Projetos\teste\Unit1.dfm=D:\Projetos\teste\untfrmclassifica.dfm</Transaction>
+    <Transaction>2012/03/08 20:16:19.000.067,D:\Projetos\teste\Unit1.pas=D:\Projetos\teste\untfrmclassifica.pas</Transaction>
+  </Transactions>
+</BorlandProject>

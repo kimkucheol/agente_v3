@@ -1,0 +1,9 @@
+#include "defines.inc"
+
+STRINGTABLE
+BEGIN
+  rcNomeEmpresa, "EquipeX Tecnologia Automotiva Ltda"
+  rcCaptionPrincipal, "EquipeX Agente 4.1"
+  rcCopyright, "Copyright (c) 2014 EquipeX (http://www.equipex.com.br)"
+  rcDevelopedBy, "Hosanna Tecnologia (http://www.hosannatecnologia.com.br)"
+END
