@@ -5,8 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, sPanel, sSkinManager,
-  Vcl.StdCtrls, sEdit, sLabel, sButton, inifiles, Vcl.CustomizeDlg,
-  Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip;
+  Vcl.StdCtrls, sEdit, sLabel, sButton, inifiles, Vcl.CustomizeDlg, MMSystem,
+  Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip, StrUtils;
 
 type
   TMachineInfo = record
@@ -69,7 +69,7 @@ var
 
 implementation
 
-uses untdm, untprincipal, unttranslate, untChangePass;
+uses untdm, untprincipal, unttranslate, untChangePass, untFuncoes, untLibrary;
 
 {$R *.dfm}
 
@@ -135,22 +135,6 @@ begin
   IntToHex(Byte(Adapter.adapter_address[5]), 2);
 end;
 
-function GetMACAddress: string;
-var
-  AdapterList: TLanaEnum;
-  NCB: TNCB;
-begin
-  FillChar(NCB, SizeOf(NCB), 0);
-  NCB.ncb_command := Char(NCBENUM);
-  NCB.ncb_buffer := @AdapterList;
-  NCB.ncb_length := SizeOf(AdapterList);
-  Netbios(@NCB);
-  if Byte(AdapterList.length) > 0 then
-    Result := GetAdapterInfo(AdapterList.lana[0])
-  else
-    Result := 'mac not found';
-end;
-
 procedure TfrmLogin.txtSenhaKeyPress(Sender: TObject; var Key: Char);
 begin
   if key = #13 then
@@ -166,6 +150,9 @@ end;
 
 procedure TfrmLogin.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  // Destruindo as Classes "Library´s"
+  PrcDestructorLibClass;
+
   datam.con_connect.connected := false;
   datam.conChatQueue.Connected := False;
 end;
@@ -183,12 +170,15 @@ procedure TfrmLogin.FormCreate(Sender: TObject);
 var
   size: dword;
 begin
+  // Construindo as Classes "Library´s"
+  PrcGenerateLibClass;
+
   try
     size := 256;
     GetComputerName(TMyMachineInfo.sComputer_Name, size);
     if TMyMachineInfo.sComputer_Name = 'DSD-W7-MAC' then
     begin
-      txtLogin.Text := 'usuario';//'luciano';//'call05';//'mobly'
+      txtLogin.Text := 'rogerio';//'luciano';//'call05';//'mobly'
       txtSenha.Text := '123456';//'123';//'admin'
     end;
   except
@@ -200,7 +190,9 @@ begin
   end;
 
   try
-    TMyMachineInfo.sMac_Address := GetMACAddress;
+    TMyMachineInfo.sMac_Address := IfThen(Length(Trim(Agente.WinMAC_ADDRES01)) > 0,
+                                          Agente.WinMAC_ADDRES01,
+                                          Agente.WinMAC_ADDRES02);
   except
   end;
 
@@ -251,7 +243,62 @@ end;
 procedure TfrmLogin.btnLoginClick(Sender: TObject);
 var
   sCaptureMode: String;
+//  Lst : TStringList;
+//  IntI : Integer;
 begin
+
+  // Verificar se o dispositivo de audio existe
+  if not Agente.ExisteAudio then
+  begin
+    MessageDlg('Atenção..'+#13+'Nenhum dispositivo de áudio foi encontrado.', mtError, [mbOk],0);
+    Exit;
+  end;
+
+  if not Agente.ExisteMicrofone then
+  begin
+    MessageDlg('Atenção..'+#13+'Nenhum dispositivo do microfone foi encontrado.', mtError, [mbOk],0);
+    Exit;
+  end;
+
+{
+  Lst := TStringList.Create;
+
+  Try ShowMessage('Sys Oper: '+Agente.WinSYS_OPER);
+  Except On E: Exception Do
+    MessageDlg('Sys Oper: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try ShowMessage('User: '+Agente.WinUSER);
+  Except On E: Exception Do
+    MessageDlg('Sys Oper: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try ShowMessage('MotherBoard: '+Agente.WinMOTHERBOARD);
+  Except On E: Exception Do
+    MessageDlg('MotherBoard: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try ShowMessage('PC Name: '+Agente.WinPC_NAME);
+  Except On E: Exception Do
+    MessageDlg('PC Name: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try ShowMessage('MacAdress 01: '+Agente.WinMAC_ADDRES01);
+  Except On E: Exception Do
+    MessageDlg('MacAdress 01: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try ShowMessage('MacAdress 02: '+Agente.WinMAC_ADDRES02);
+  Except On E: Exception Do
+    MessageDlg('MacAdress 02: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+  Try
+    Lst := TStringList.Create;
+    Lst := Agente.ListaAudios;
+    for IntI := 0 to Lst.Count-1 do
+    begin
+      ShowMessage('Name Audio: '+Lst[IntI])
+    end;
+  Except On E: Exception Do
+    MessageDlg('Name Audio: '+QuotedStr(E.Message),mtError,[mbOk],0);
+  End;
+}
+
   if (txtLogin.text = '') or (txtSenha.text = '') then
   begin
     application.MessageBox(PChar(APP_MB_ERR_FILL_FIELDS[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);

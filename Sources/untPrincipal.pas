@@ -6,7 +6,7 @@ uses
   {Winapi.}Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList, Vcl.ImgList, sSkinManager,
-  sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider,
+  sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo, Rtti,
   Vcl.OleCtrls, VAXSIPUSERAGENTOCXLib_TLB, inifiles, sBevel, sCheckBox, sLabel,
   sPageControl, sEdit, sFrameBar, untfrmcontroles, sStatusBar,
   Vcl.Grids, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
@@ -19,7 +19,7 @@ uses
   Vcl.MPlayer, MMSystem, sTabControl, StrUtils, Registry, RichEdit,
   ZConnection, SCREEN2VIDEOLib_TLB, PdfDoc, PReport, PRAnnotation,
   PRJpegImage, RotinasGerais, untStartup, sScrollBar, OverbyteIcsWndControl,
-  OverbyteIcsWSocket;
+  OverbyteIcsWSocket, Vcl.OleServer;
 
 type
   TAppStatus = record
@@ -506,6 +506,7 @@ type
     MemoOld: TMemo;
     cmdIntegrador: TsButton;
     tmrSendAGE0X: TTimer;
+    AudioDevices1: TAudioDevices;
     procedure actloginExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure actsairExecute(Sender: TObject);
@@ -1036,7 +1037,7 @@ implementation
 uses untfilho, untlogin, untdm, untfrmconfiguracoes, untfrmclassifica, untfrmxfer,
      unttranslate, untfrmdialpad, untfrmpausa, untfrmRingPopup, untfrmcoaching,
      untfrmDesbloquear, uAutoSendFilesThread, untProgressBar, uExecIntegradorThread,
-     untfrmSobre;
+     untfrmSobre, untLibrary, untFuncoes;
 
 {$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
 
@@ -1598,7 +1599,14 @@ end;
 
 procedure TfrmPrincipal.ativaramal;
 var
-  nSIPExpire: Integer;
+  nSIPExpire   : Integer;
+
+  StrCMD       : String;
+
+  TypObj       : TRttiType;
+  Prop         : TRttiProperty;
+  ctxRtti      : TRttiContext;
+
 begin
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
   nSIPExpire := vArqIni.ReadInteger('SIP', 'SIPExpire', 3600);
@@ -1657,6 +1665,26 @@ begin
 
   if framebar.Items[2].State = stOpened then
     Tfrmpausa(framebar.items[2].frame).btnPausa.Caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
+
+  // Manipulando as property´s das classe Configuracao
+  ctxRtti := TRttiContext.Create;
+  TypObj  := ctxRtti.GetType(TObject(Configuracao).ClassInfo);
+  for Prop in TypObj.GetProperties do
+  begin
+    // Somente executa os comandos CMD0*
+    if pos('CMD0',UpperCase(Prop.Name)) > 0 then
+    begin
+      // Verificar se tem algum comando no ini
+      if Length(Trim(Prop.GetValue(Configuracao).AsString)) > 0 Then
+      begin
+        // enviando e Retornando as mensagens do comando MSDOS
+        StrCMD := FncComandoMSDOS(Prop.GetValue(Configuracao).AsString, 'c:\');
+        // se houve retorno mostra
+        if Length(Trim(StrCMD)) > 0 then
+          MessageDlg('Comando: '+UpperCase(Prop.Name)+#13+StrCMD, mtInformation, [mbOk],0);
+      end;
+    end;
+  end;
 
   if frmLogin.vping = True then
   begin
@@ -1822,16 +1850,16 @@ begin
   datam.qryCarregaFilas.SQL.Add('c1.id as codigo, ');
   datam.qryCarregaFilas.SQL.Add('concat(c1.descricao," - ", c2.descricao) as fila ');
   datam.qryCarregaFilas.SQL.Add('from ');
-  datam.qryCarregaFilas.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
+  datam.qryCarregaFilas.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
   datam.qryCarregaFilas.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
   datam.qryCarregaFilas.SQL.Add('left join easy_pabx_serv_fila_universal_call_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-//  datam.qryCarregaFilas.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
+  datam.qryCarregaFilas.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
   datam.qryCarregaFilas.SQL.Add('where ');
   datam.qryCarregaFilas.SQL.Add('c1.active = ' + QuotedStr('Y'));
   datam.qryCarregaFilas.SQL.Add('and c2.active = ' + QuotedStr('Y'));
   datam.qryCarregaFilas.SQL.Add('and a.active = ' + QuotedStr('Y'));
   datam.qryCarregaFilas.SQL.Add('and a.fone_atendimento_act = ' + QuotedStr('Y'));
-  datam.qryCarregaFilas.SQL.Add('and a.easy_sist_usuario_perfil_conf_id = ' + TMyInfoLogin.sPerfil);
+  datam.qryCarregaFilas.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
   datam.qryCarregaFilas.SQL.Add('group by c1.id ');
   datam.qryCarregaFilas.SQL.Add('order by 2 asc');
   datam.qryCarregaFilas.Active := True;
@@ -1961,16 +1989,16 @@ begin
   datam.qryCarregaXFerFila.SQL.Add('c1.id as codigo, ');
   datam.qryCarregaXFerFila.SQL.Add('concat(c1.descricao," - ", c2.descricao) as fila ');
   datam.qryCarregaXFerFila.SQL.Add('from ');
-  datam.qryCarregaXFerFila.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
+  datam.qryCarregaXFerFila.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
   datam.qryCarregaXFerFila.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
   datam.qryCarregaXFerFila.SQL.Add('left join easy_pabx_serv_fila_universal_call_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-//  datam.qryCarregaXFerFila.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
+  datam.qryCarregaXFerFila.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
   datam.qryCarregaXFerFila.SQL.Add('where ');
   datam.qryCarregaXFerFila.SQL.Add('c1.active = ' + QuotedStr('Y'));
   datam.qryCarregaXFerFila.SQL.Add('and c2.active = ' + QuotedStr('Y'));
   datam.qryCarregaXFerFila.SQL.Add('and a.active = ' + QuotedStr('Y'));
   datam.qryCarregaXFerFila.SQL.Add('and a.fone_transferencia_act = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerFila.SQL.Add('and a.easy_sist_usuario_perfil_conf_id = ' + TMyInfoLogin.sPerfil);
+  datam.qryCarregaXFerFila.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
   datam.qryCarregaXFerFila.SQL.Add('group by c1.id ');
   datam.qryCarregaXFerFila.SQL.Add('order by 2 asc');
   datam.qryCarregaXFerFila.Active := True;
@@ -2246,17 +2274,17 @@ begin
     datam.qryChatCarregaConf.SQL.Add('c2.desconexao_auto_tmp, ');
     datam.qryChatCarregaConf.SQL.Add('c2.desconexao_auto_msg as desconexao_msg_txt ');
     datam.qryChatCarregaConf.SQL.Add('from ');
-    datam.qryChatCarregaConf.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
+    datam.qryChatCarregaConf.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
     datam.qryChatCarregaConf.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
     datam.qryChatCarregaConf.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-//    datam.qryChatCarregaConf.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
+    datam.qryChatCarregaConf.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
     datam.qryChatCarregaConf.SQL.Add('where ');
     datam.qryChatCarregaConf.SQL.Add('true ');
     datam.qryChatCarregaConf.SQL.Add('and c1.active = ' + QuotedStr('Y'));
     datam.qryChatCarregaConf.SQL.Add('and c2.active = ' + QuotedStr('Y'));
     datam.qryChatCarregaConf.SQL.Add('and a.active = ' + QuotedStr('Y'));
     datam.qryChatCarregaConf.SQL.Add('and a.chat_atendimento_act = ' + QuotedStr('Y'));
-    datam.qryChatCarregaConf.SQL.Add('and a.easy_sist_usuario_perfil_conf_id = ' + TMyInfoLogin.sPerfil);
+    datam.qryChatCarregaConf.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
     datam.qryChatCarregaConf.SQL.Add('group by c1.id ');
     datam.qryChatCarregaConf.SQL.Add('order by c1.id asc ');
     datam.qryChatCarregaConf.Active := True;
@@ -2301,7 +2329,7 @@ begin
       datam.qryChatCarrega.SQL.Add('c1.id, ');
       datam.qryChatCarrega.SQL.Add('concat(c1.descricao," - ", c2.descricao) as descricao ');
       datam.qryChatCarrega.SQL.Add('from ');
-      datam.qryChatCarrega.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
+      datam.qryChatCarrega.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
       datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
       datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
       datam.qryChatCarrega.SQL.Add('where ');
@@ -2310,7 +2338,7 @@ begin
       datam.qryChatCarrega.SQL.Add('and c2.active = ' + QuotedStr('Y') + ' ');
       datam.qryChatCarrega.SQL.Add('and a.active = ' + QuotedStr('Y') + ' ');
       datam.qryChatCarrega.SQL.Add('and a.chat_atendimento_act = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.easy_sist_usuario_perfil_conf_id = ' + TMyInfoLogin.sPerfil);
+      datam.qryChatCarrega.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
       datam.qryChatCarrega.SQL.Add('group by c1.id');
       datam.qryChatCarrega.SQL.Add('order by 2 asc');
       datam.qryChatCarrega.Active := True;
@@ -3282,6 +3310,10 @@ begin
   datam.conChatQueue.Connected := False;
   Vax.UnInitialize();
   application.Terminate;
+
+  // Destruindo as Classes "Library´s"
+  PrcDestructorLibClass;
+
 end;
 
 procedure TfrmPrincipal.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -3293,6 +3325,9 @@ procedure TfrmPrincipal.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
+  // Criando as Classes "Library´s"
+  PrcGenerateLibClass;
+
   frmPrincipal.Caption := PChar(GetStringResource(rcCaptionPrincipal));
 
   sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
@@ -5134,7 +5169,8 @@ begin
           TMyCaptureScreen.nSplitStep := 0;
 
           DesconectaGravacaoTela;
-
+
+
           TMyCaptureScreen.bCapturing := False;
           TMyCaptureScreen.sCaptureCurrentDirRec := '';
           TMyCaptureScreen.sCaptureCurrentFileRec := '';
@@ -5151,18 +5187,29 @@ procedure TfrmPrincipal.sctRecClientOldSessionConnected(Sender: TObject; ErrCode
 begin
 {  if sctRecClient.State in [wsConnected] then
     sctRecClient.SendStr('start_record' + ',' +
-                         TMyCaptureScreen.sCaptureCurrentDirRec + ', '+
-                         TMyCaptureScreen.sCaptureCurrentFileRec + ',' +
-                         BoolToStr(TMyCaptureScreen.bCaptureAudio, True) + ',' +
-                         BoolToStr(TMyCaptureScreen.bCaptureCursor, True) + #13#10)
-  else
-  begin
-    Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
-    Exit;
-  end;
 
-  TMyCaptureScreen.bCapturing := True;
-
+                         TMyCaptureScreen.sCaptureCurrentDirRec + ', '+
+
+                         TMyCaptureScreen.sCaptureCurrentFileRec + ',' +
+
+                         BoolToStr(TMyCaptureScreen.bCaptureAudio, True) + ',' +
+
+                         BoolToStr(TMyCaptureScreen.bCaptureCursor, True) + #13#10)
+
+  else
+
+  begin
+
+    Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+
+    Exit;
+
+  end;
+
+
+  TMyCaptureScreen.bCapturing := True;
+
+
   tmrGravacaoTelaSplit.Enabled := False;
   tmrGravacaoTelaSplit.Interval := TMyCaptureScreen.nSplitInterval;
   tmrGravacaoTelaSplit.Enabled := True;}
@@ -5372,13 +5419,20 @@ begin
       Memo1.Lines.Add('enviando stop_record no tmrGravacaoTelaSplit');
 
       sctRecClient.SendStr('stop_record' + #13#10);
-    end
-    else
-    begin
-      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
-      Exit;
-    end;}
-
+
+    end
+
+    else
+
+    begin
+
+      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+
+      Exit;
+
+    end;}
+
+
     Screen2video.Stop;
 
     IniciaGravacaoTela(True);
@@ -9125,27 +9179,45 @@ begin
   begin
     if sctRecClient.State in [wsConnected] then
       sctRecClient.SendStr('start_record' + ',' +
-                           sDirRec + ',' +
-                           sFileRec + ',' +
-                           BoolToStr(TMyCaptureScreen.bCaptureAudio, True) + ',' +
-                           BoolToStr(TMyCaptureScreen.bCaptureCursor, True) + #13#10)
-    else
-    begin
-      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
-      Exit;
-    end;
-  end
-  else
-  begin
-    TMyCaptureScreen.sCaptureCurrentDirRec := sDirRec;
-    TMyCaptureScreen.sCaptureCurrentFileRec := sFileRec;
 
-    if not ConectaGravacaoTela then
-      Exit
+                           sDirRec + ',' +
+
+                           sFileRec + ',' +
+
+                           BoolToStr(TMyCaptureScreen.bCaptureAudio, True) + ',' +
+
+                           BoolToStr(TMyCaptureScreen.bCaptureCursor, True) + #13#10)
+
+    else
+
+    begin
+
+      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+
+      Exit;
+
+    end;
+
+  end
+
+  else
+
+  begin
+
+    TMyCaptureScreen.sCaptureCurrentDirRec := sDirRec;
+
+    TMyCaptureScreen.sCaptureCurrentFileRec := sFileRec;
+
+
+    if not ConectaGravacaoTela then
+
+      Exit
   end;}
 
-  Screen2Video.FileName := sDirRec + sFileRec;
-
+
+  Screen2Video.FileName := sDirRec + sFileRec;
+
+
   Screen2Video.LicenseKey := '9976';
   Screen2Video.OutputType := 0; //avi format
   Screen2Video.UseVideoCompressor := True;
@@ -9200,12 +9272,18 @@ begin
     Memo1.Lines.Add('enviando stop_record no TerminaGravacaoTela');
 
       sctRecClient.SendStr('stop_record' + #13#10);
-    end
-    else
-    begin
-      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
-    end;}
-
+
+    end
+
+    else
+
+    begin
+
+      Application.MessageBox(PChar(APP_MB_APP_ERR_REC_SCREEN_SEND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+
+    end;}
+
+
     Screen2video.Stop;
 
     TMyCaptureScreen.bCapturing := False;

@@ -1,0 +1,133 @@
+unit untLibrary;
+{
+############################################################################
+# Inclusão ...... :
+#  Autor   : Rogério Teixeira
+#  Data    : 24.03.2015
+#  Motivo  : Geração de Library (Class, Records)
+############################################################################
+# Manutenção ...... :
+#  Usuario :
+#  Data    :
+#  Motivo  :
+#  Ref.    :
+############################################################################
+}
+interface
+  uses SysUtils, Forms, MMSystem, Windows;
+
+Type
+
+  TAgente = Class
+  private
+    function GetPathArqConf: string;
+    function GetExisteAudio: boolean;
+    function GetExisteMicrofone: boolean;
+    function GetWinMAC_ADDRES: string;
+    function GetWinSYS_OPER: string;
+    function GetWinUSER: string;
+    function GetWinMOTHERBOARD: string;
+  public
+    property PathArqConf     : string read GetPathArqConf;
+    property ExisteMicrofone : boolean read GetExisteMicrofone;
+    property ExisteAudio     : boolean read GetExisteAudio;
+    property WinUSER         : string read GetWinUSER;
+    property WinMAC_ADDRES   : string read GetWinMAC_ADDRES;
+    property WinSYS_OPER     : string read GetWinSYS_OPER;
+    property WinMOTHERBOARD  : string read GetWinMOTHERBOARD;
+
+  End;
+
+
+  // Classe de Conf.ini
+  TConfiguracoes = Class
+  private
+    function Getcmd01: string;
+    function Getcmd02: string;
+    function Getcmd03: string;
+    function Getcmd04: string;
+    function Getcmd05: string;
+  public
+    property cmd01: string read Getcmd01;
+    property cmd02: string read Getcmd01;
+    property cmd03: string read Getcmd02;
+    property cmd04: string read Getcmd03;
+    property cmd05: string read Getcmd04;
+    property cmd06: string read Getcmd05;
+  End;
+
+  Var Configuracao : TConfiguracoes;  // Conf.ini
+      Agente       : TAgente;         // HosannaAgente.exe
+
+Const
+  CnstNameArqConf = 'Config.INI';
+
+implementation
+  uses untFuncoes;
+
+
+{ TConfiguracoes }
+function TConfiguracoes.Getcmd01: string;
+begin
+  Result := FncLeINI(Agente.PathArqConf,'COMANDOS','CMD01');
+end;
+
+function TConfiguracoes.Getcmd02: string;
+begin
+  Result := FncLeINI(Agente.PathArqConf,'COMANDOS','CMD02');
+end;
+
+function TConfiguracoes.Getcmd03: string;
+begin
+  Result := FncLeINI(Agente.PathArqConf,'COMANDOS','CMD03');
+end;
+
+function TConfiguracoes.Getcmd04: string;
+begin
+  Result := FncLeINI(Agente.PathArqConf,'COMANDOS','CMD04');
+end;
+
+function TConfiguracoes.Getcmd05: string;
+begin
+  Result := FncLeINI(Agente.PathArqConf,'COMANDOS','CMD05');
+end;
+
+{ TAgente }
+function TAgente.GetExisteAudio: boolean;
+begin
+  result := WaveOutGetNumDevs > 0;
+end;
+
+function TAgente.GetExisteMicrofone: boolean;
+begin
+  result := waveInGetNumDevs > 0;
+end;
+
+function TAgente.GetPathArqConf: string;
+begin
+  Result := IncludeTrailingBackslash(ExtractFilePath(Application.ExeName))+CnstNameArqConf;
+end;
+
+function TAgente.GetWinMAC_ADDRES: string;
+  var username : array[0..255] of char;
+begin
+  Result := GetUserName(username, 255);
+end;
+
+function TAgente.GetWinMOTHERBOARD: string;
+begin
+
+end;
+
+function TAgente.GetWinSYS_OPER: string;
+begin
+
+end;
+
+function TAgente.GetWinUSER: string;
+begin
+
+end;
+
+end.
+

@@ -1,0 +1,13 @@
+unit untFuncoes;
+{
+############################################################################
+#  Autor   : Rogério Teixeira
+#  Data    : 24.03.2015
+#  Motivo  : Livraria de Metodos Publicos (Globais)
+############################################################################
+}
+interface
+
+implementation
+
+end.
