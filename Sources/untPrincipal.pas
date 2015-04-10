@@ -6,9 +6,9 @@ uses
   {Winapi.}Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList, Vcl.ImgList, sSkinManager,
-  sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo, Rtti,
-  Vcl.OleCtrls, VAXSIPUSERAGENTOCXLib_TLB, inifiles, sBevel, sCheckBox, sLabel,
-  sPageControl, sEdit, sFrameBar, untfrmcontroles, sStatusBar,
+  sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo,
+  Vcl.OleCtrls, inifiles, sBevel, sCheckBox, sLabel, Math,
+  sPageControl, sEdit, sFrameBar, sStatusBar,
   Vcl.Grids, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdExplicitTLSClientServerBase, IdFTP, acProgressBar, Vcl.Buttons,
   sSpeedButton, SHDocVw, acPNG, ZDataset, sMemo, ShellApi, sComboBox,
@@ -19,7 +19,7 @@ uses
   Vcl.MPlayer, MMSystem, sTabControl, StrUtils, Registry, RichEdit,
   ZConnection, SCREEN2VIDEOLib_TLB, PdfDoc, PReport, PRAnnotation,
   PRJpegImage, RotinasGerais, untStartup, sScrollBar, OverbyteIcsWndControl,
-  OverbyteIcsWSocket, Vcl.OleServer;
+  OverbyteIcsWSocket, Vcl.OleServer, VAXSIPUSERAGENTOCXLib_TLB;
 
 type
   TAppStatus = record
@@ -507,6 +507,7 @@ type
     cmdIntegrador: TsButton;
     tmrSendAGE0X: TTimer;
     AudioDevices1: TAudioDevices;
+    TMmRegProxy: TTimer;
     procedure actloginExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure actsairExecute(Sender: TObject);
@@ -522,7 +523,7 @@ type
     procedure discar(numero: string; bUpdateStatus: Boolean);
     procedure carregaoperacao(id: string);
     procedure CarregaTelasLinguagem;
-    procedure ativaramal;
+    procedure ativaramal(Sender: TObject);
     procedure Mensagem(str_mensagem: String);
     procedure habilitaagc;
     procedure habilitamicboost;
@@ -784,6 +785,9 @@ type
     procedure sctRecClientOldSessionConnected(Sender: TObject; ErrCode: Word);
     procedure cmdIntegradorClick(Sender: TObject);
     procedure tmrSendAGE0XTimer(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure TMmRegProxyTimer(Sender: TObject);
+    function RunTMmRegProxy(Sender: TObject) : Boolean;
   private
     { Private declarations }
     procedure PlayAudioRing(nDevice: Integer);
@@ -821,6 +825,7 @@ type
     procedure panEMailDinamicoClick(Sender: TObject);
     procedure CriaTelaEMail;
     procedure NotificaTrayIcon(Msg: String; Timeout: Integer; Flag: Integer);
+//    procedure PrcVaxSucess;
   public
     { Public declarations }
     TMyAppStatus: TAppStatus;
@@ -920,6 +925,12 @@ var
   frmPrincipal: TfrmPrincipal;
   vFlashWindowActive: Integer;
   mitCopyInfoCallItens: array[0..99] of TMenuItem;
+
+  Bolfone_registro_act     : Boolean;
+  Strsec_fone_registro_tmp : String;
+  BolVaxSucess             : Boolean;
+  StrClassName             : String;
+
 
   //CHAT
   matrizchatsala: array of array of string;
@@ -1249,6 +1260,7 @@ Begin
   while (LineNo < 1) do
   Begin
     LogCallStep('log_login_act', 'Abrelinha :: Step 1');
+    // Abre uma linha específica para discar / receber chamadas.
     If Vax.OpenLine(numlinha, False, MyIP, PortRTP) = False Then
     begin
       if Vax.GetVaxObjectError() = 11 then
@@ -1327,6 +1339,7 @@ begin
       end;
     end;
 
+  // Verifica o status do já abriu linha ie linha está ocupada ou livre
   if vax.IsLineBusy(0) then
   begin
     application.MessageBox(PChar(APP_MB_WAR_CANNOT_CLOSE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
@@ -1423,7 +1436,9 @@ begin
   end;
   }
 
+  frmSobre := TfrmSobre.Create(Self);
   frmSobre.ShowModal;
+  FreeAndNil(frmSobre);
 end;
 
 procedure TfrmPrincipal.actchatExecute(Sender: TObject);
@@ -1597,28 +1612,31 @@ begin
   end;
 end;
 
-procedure TfrmPrincipal.ativaramal;
+procedure TfrmPrincipal.ativaramal(Sender: TObject);
 var
   nSIPExpire   : Integer;
 
-  StrCMD       : String;
-
-  TypObj       : TRttiType;
-  Prop         : TRttiProperty;
-  ctxRtti      : TRttiContext;
-
 begin
+  StrClassName := Sender.ClassName;
+
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
   nSIPExpire := vArqIni.ReadInteger('SIP', 'SIPExpire', 3600);
   vArqIni.Free;
 
+  // Chave de Licença
   vax.SetLicenceKey(licencavax);
+
   if InitVaxObject() = False then application.MessageBox(PChar(APP_MB_ERR_ENABLE_EXTEN[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
   if abrelinha(0) = False then application.MessageBox(PChar(APP_MB_ERR_OPEN_LINE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
-  if vax.RegisterToProxy(nSIPExpire) = false then errormessages();
 
+  // Registra o cliente para o servidor proxy SIP.
+  BolVaxSucess := vax.RegisterToProxy(nSIPExpire);
+  if BolVaxSucess = false then errormessages();
+
+  // Desmarca todas as opções de codec de voz
   vax.DeselectAllVoiceCodec;
 
+  // Seleciona um codec de voz para o número fornecido
   //Vax.SelectVoiceCodec(0); //GSM 6.10
   //Vax.SelectVoiceCodec(1); //iLBC
   Vax.SelectVoiceCodec(2); //G711 A-Law
@@ -1626,7 +1644,7 @@ begin
   if Vax.SelectVoiceCodec(4) = False then //G729
     ErrorMessages();
 
-  vax.EnableKeepAlive(60);
+  vax.EnableKeepAlive(60); // Mantem as portas abertas
 
   habilitaagc;
   habilitamicboost;
@@ -1666,25 +1684,6 @@ begin
   if framebar.Items[2].State = stOpened then
     Tfrmpausa(framebar.items[2].frame).btnPausa.Caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
 
-  // Manipulando as property´s das classe Configuracao
-  ctxRtti := TRttiContext.Create;
-  TypObj  := ctxRtti.GetType(TObject(Configuracao).ClassInfo);
-  for Prop in TypObj.GetProperties do
-  begin
-    // Somente executa os comandos CMD0*
-    if pos('CMD0',UpperCase(Prop.Name)) > 0 then
-    begin
-      // Verificar se tem algum comando no ini
-      if Length(Trim(Prop.GetValue(Configuracao).AsString)) > 0 Then
-      begin
-        // enviando e Retornando as mensagens do comando MSDOS
-        StrCMD := FncComandoMSDOS(Prop.GetValue(Configuracao).AsString, 'c:\');
-        // se houve retorno mostra
-        if Length(Trim(StrCMD)) > 0 then
-          MessageDlg('Comando: '+UpperCase(Prop.Name)+#13+StrCMD, mtInformation, [mbOk],0);
-      end;
-    end;
-  end;
 
   if frmLogin.vping = True then
   begin
@@ -1698,6 +1697,9 @@ begin
     tmrIcmpPing.Interval := frmLogin.vpingtempo;
     tmrIcmpPing.Enabled := True;
   end;
+
+  // Tirar depois
+//  btnAjuda.Click;
 end;
 
 procedure TfrmPrincipal.carregaoperacao(id: string);
@@ -3325,35 +3327,64 @@ procedure TfrmPrincipal.FormCreate(Sender: TObject);
 var
   I: Integer;
 begin
-  // Criando as Classes "Library´s"
-  PrcGenerateLibClass;
+  Try
+    // Criando as Classes "Library´s"
+    PrcGenerateLibClass;
 
-  frmPrincipal.Caption := PChar(GetStringResource(rcCaptionPrincipal));
+    frmPrincipal.Caption := PChar(GetStringResource(rcCaptionPrincipal));
 
-  sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
+    sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
 
-  vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
-  sskinmanager1.SkinName:= varqini.readstring('Configuracoes','skin','WLM');
-  varqini.free;
+    vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
+    sskinmanager1.SkinName:= varqini.readstring('Configuracoes','skin','WLM');
+    varqini.free;
 
-  sskinmanager1.active := true;
-  Application.OnException := RotinaGeral;
+    sskinmanager1.active := true;
+    Application.OnException := RotinaGeral;
 
-  //frmprincipal.Width := 280;
-  edtbrowser.Height := 0;
+    //frmprincipal.Width := 280;
+    edtbrowser.Height := 0;
 
-  TMyAppStatus.bPodeFechar := False;
+    TMyAppStatus.bPodeFechar := False;
 
-  TMyCoaching.bCoaching := False;
-  shpCoaching.Brush.Color := clSilver;
+    TMyCoaching.bCoaching := False;
+    shpCoaching.Brush.Color := clSilver;
 
-  for I := 1 to ParamCount do
-    ProcessParam(ParamStr(I));
+    for I := 1 to ParamCount do
+      ProcessParam(ParamStr(I));
+ Except
+    on E : Exception do
+      ShowMessage(E.ClassName+' error raised, with message : '+E.Message);
+  end;
+end;
+
+procedure TfrmPrincipal.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+{  if frmPrincipal.Enabled then
+    if Key = VK_F1 then
+      if ((btnAjuda.Visible)and(actajuda.Visible)) then
+        btnAjuda.Click;}
 end;
 
 procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
+{
+  if not datam.qryLogin.Active then datam.qryLogin.Open;
+
+  Bolfone_registro_act     := datam.qryLogin.FieldByName('fone_registro_act').AsBoolean;
+  Strsec_fone_registro_tmp := datam.qryLogin.FieldByName('sec_fone_registro_tmp').AsString;
+
+  datam.qryLogin.Close;
+
   //CarregaTelasLinguagem;
+  if Length(Trim(Strsec_fone_registro_tmp)) > 0 then
+    if StrToInt(Strsec_fone_registro_tmp) > 0 then
+    begin
+      TMmRegProxy.Interval := StrToInt(Strsec_fone_registro_tmp)*1000;
+      TMmRegProxy.Enabled  := True;
+    end;
+}
 
   if TMyCaptureScreen.bCapture then
     if TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_ALL then
@@ -3950,17 +3981,19 @@ var
   sSIPOutBoundProxy: String;
   nSIPPort: Integer;
 begin
-  vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
-  bBindToListenIP := vArqIni.ReadBool('SIP', 'BindToListenIP', False);
-  sSIPOutBoundProxy := vArqIni.ReadString('SIP', 'SIPOutBoundProxy', '');
-  nSIPPort := vArqIni.ReadInteger('SIP', 'SIPPort', 5060);
+  vArqIni            := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
+  bBindToListenIP    := vArqIni.ReadBool('SIP', 'BindToListenIP', False);
+  sSIPOutBoundProxy  := vArqIni.ReadString('SIP', 'SIPOutBoundProxy', '');
+  nSIPPort           := vArqIni.ReadInteger('SIP', 'SIPPort', 5060);
   vArqIni.Free;
 
-  FromURI := TMyInfoLogin.sRamal + ' <sip:' + TMyInfoLogin.sRamal + '@' + TMyInfoLogin.sIPPABX + '>';
-  MyIP := Vax.GetMyIP();
-  RetValue := True;
+  FromURI            := TMyInfoLogin.sRamal + ' <sip:' + TMyInfoLogin.sRamal + '@' + TMyInfoLogin.sIPPABX + '>';
+  // Fornece o endereço IP do computador
+  MyIP               := Vax.GetMyIP();
+  RetValue           := True;
   for ListenPort := nSIPPort to (nSIPPort + 1) do
   Begin
+    // Inicializa componente de servidor COM VaxTele SIP
     If False = Vax.Initialize(bBindToListenIP, MyIP, ListenPort, FromURI, sSIPOutBoundProxy, TMyInfoLogin.sIPPABX, TMyInfoLogin.sRamal, TMyInfoLogin.sSenha, true, 2) Then
     begin
       if Vax.GetVaxObjectError() <>  11 then
@@ -6349,6 +6382,7 @@ end;
 
 procedure TfrmPrincipal.vaxSuccessToRegister(Sender: TObject);
 begin
+
   LogCallStep('log_registro_act', 'SuccessToRegister');
 
   stbStatusBar.Panels[1].text := APP_FRM_MAIN_STATUS_BAR_EXTEN[ID_LANG] + TMyInfoLogin.sRamal + APP_FRM_MAIN_STATUS_BAR_REGISTERED[ID_LANG];
@@ -6357,6 +6391,12 @@ begin
     actlogin.Enabled := True;
 
   actlogin.Execute;
+
+{  if StrClassName = 'TTimer' then
+  begin
+//    discar('AGE01'+TMyInfoLogin.sIDUsuario, True);
+    Exit;
+  end;}
 
   btnDesligar.Enabled  := False;
   frameBar.Enabled     := True;
@@ -6375,6 +6415,37 @@ begin
       tmrPausaLogin.Enabled := True;
     end;
 end;
+
+//procedure TfrmPrincipal.PrcVaxSucess;
+//begin
+//
+//  LogCallStep('log_registro_act', 'SuccessToRegister');
+//
+//  stbStatusBar.Panels[1].text := APP_FRM_MAIN_STATUS_BAR_EXTEN[ID_LANG] + TMyInfoLogin.sRamal + APP_FRM_MAIN_STATUS_BAR_REGISTERED[ID_LANG];
+//
+//  while actlogin.Enabled <> True do
+//    actlogin.Enabled := True;
+//
+//  actlogin.Execute;
+//
+//  btnDesligar.Enabled  := False;
+//  frameBar.Enabled     := True;
+//  tbrNavegacao.Enabled := True;
+//  actsair.Enabled      := False;
+//
+//  framebar.OpenItem(2,true);
+//
+//  timerstatuslinha.Enabled := True;
+//
+//  if TMyAppStatus.bLogado then
+//    if matrizparametros[7] = 'True' then
+//    begin
+//      tmrPausaLogin.Enabled := False;
+//      tmrPausaLogin.Interval := StrToInt(matrizparametros[8])*1000;
+//      tmrPausaLogin.Enabled := True;
+//    end;
+//end;
+
 
 procedure TfrmPrincipal.vaxTryingToRegister(Sender: TObject);
 begin
@@ -9294,6 +9365,11 @@ begin
   end;
 end;
 
+procedure TfrmPrincipal.TMmRegProxyTimer(Sender: TObject);
+begin
+  RunTMmRegProxy(Sender);
+end;
+
 procedure TfrmPrincipal.CopiaArqGravacaoTela(sSrcFileReceived: String; nSplitStepReceived: Integer);
 begin
   try
@@ -10776,6 +10852,28 @@ begin
     imgCallQ5.Refresh;
   except
   end;
+end;
+
+function TfrmPrincipal.RunTMmRegProxy(Sender: TObject) : Boolean;
+var
+  nSIPExpire   : String;
+  Valor        : Integer;
+begin
+
+  StrClassName := Sender.ClassName;
+
+  Result := True;
+  if Bolfone_registro_act then
+  begin
+    nSIPExpire := FncLeINI(Agente.PathArqConf,'SIP','SIPExpire');
+    nSIPExpire := IfThen((Length(Trim(nSIPExpire)) <= 0), '0', nSIPExpire);
+    Valor := IfThen(StrToInt(nSIPExpire) <= 0, 3600, StrToInt(nSIPExpire));
+
+    if vax.RegisterToProxy(Valor) = false then errormessages();
+  end else
+    TMmRegProxy.Enabled := False;
+
+  Result := False;
 end;
 
 end.

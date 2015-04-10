@@ -1,0 +1,47 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls;
+
+  procedure GetIPInfo(Stream :TMemoryStream); stdcall; external '..\Agente.dll';
+
+
+type
+  TForm1 = class(TForm)
+    Button1: TButton;
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.Button1Click(Sender: TObject);
+var Lst  : TStringList;
+    IntI : Integer;
+    Memo : TMemoryStream;
+
+begin
+  Memo := TStringStream.Create;
+
+  Lst := TStringList.Create;
+  GetIPInfo(Memo);
+  Memo.Position := 0;
+
+  Lst.LoadFromStream(Memo);
+
+  for IntI := 0 to Lst.Count-1 do
+    ShowMessage(Lst[IntI]);
+end;
+
+end.

@@ -6,7 +6,9 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, sPanel, sSkinManager,
   Vcl.StdCtrls, sEdit, sLabel, sButton, inifiles, Vcl.CustomizeDlg, MMSystem,
-  Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip, StrUtils;
+  Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip, StrUtils,
+  Vcl.OleCtrls, Rtti, ShellApi, IdBaseComponent, IdComponent, IdRawBase,
+  IdRawClient, IdIcmpClient;
 
 type
   TMachineInfo = record
@@ -184,6 +186,8 @@ begin
   except
   end;
 
+  ExecComandoMSDOS;
+
   try
     TMyMachineInfo.sIP_Address := String(LocalIP);
   except
@@ -248,56 +252,17 @@ var
 begin
 
   // Verificar se o dispositivo de audio existe
-  if not Agente.ExisteAudio then
+  if Agente.TotalAudio <= 0then
   begin
     MessageDlg('Atenção..'+#13+'Nenhum dispositivo de áudio foi encontrado.', mtError, [mbOk],0);
     Exit;
   end;
 
-  if not Agente.ExisteMicrofone then
+  if Agente.TotalMicrofone <= 0then
   begin
     MessageDlg('Atenção..'+#13+'Nenhum dispositivo do microfone foi encontrado.', mtError, [mbOk],0);
     Exit;
   end;
-
-{
-  Lst := TStringList.Create;
-
-  Try ShowMessage('Sys Oper: '+Agente.WinSYS_OPER);
-  Except On E: Exception Do
-    MessageDlg('Sys Oper: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try ShowMessage('User: '+Agente.WinUSER);
-  Except On E: Exception Do
-    MessageDlg('Sys Oper: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try ShowMessage('MotherBoard: '+Agente.WinMOTHERBOARD);
-  Except On E: Exception Do
-    MessageDlg('MotherBoard: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try ShowMessage('PC Name: '+Agente.WinPC_NAME);
-  Except On E: Exception Do
-    MessageDlg('PC Name: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try ShowMessage('MacAdress 01: '+Agente.WinMAC_ADDRES01);
-  Except On E: Exception Do
-    MessageDlg('MacAdress 01: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try ShowMessage('MacAdress 02: '+Agente.WinMAC_ADDRES02);
-  Except On E: Exception Do
-    MessageDlg('MacAdress 02: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-  Try
-    Lst := TStringList.Create;
-    Lst := Agente.ListaAudios;
-    for IntI := 0 to Lst.Count-1 do
-    begin
-      ShowMessage('Name Audio: '+Lst[IntI])
-    end;
-  Except On E: Exception Do
-    MessageDlg('Name Audio: '+QuotedStr(E.Message),mtError,[mbOk],0);
-  End;
-}
 
   if (txtLogin.text = '') or (txtSenha.text = '') then
   begin
@@ -482,7 +447,7 @@ begin
       frmPrincipal.LogCallStep('log_login_act', 'btnLoginClick :: Step 4');
 
       try
-        frmprincipal.ativaramal;
+        frmprincipal.ativaramal(Sender);
       except
       end;
 
@@ -670,7 +635,9 @@ begin
   datam.qryLogin.SQL.Add('c.fone_dialpad_act, ');
   datam.qryLogin.SQL.Add('CAST(curdate() AS CHAR) as dataatual, ');
   datam.qryLogin.SQL.Add('CAST(curtime() AS CHAR) as horaatual, ');
-  datam.qryLogin.SQL.Add('o.qualificar_chamada_act ');
+  datam.qryLogin.SQL.Add('o.qualificar_chamada_act, ');
+  datam.qryLogin.SQL.Add('fone_registro_act,');
+  datam.qryLogin.SQL.Add('time_to_sec(fone_registro_tmp) as sec_fone_registro_tmp');
   datam.qryLogin.SQL.Add('from ');
   datam.qryLogin.SQL.Add('easy_sist_usuario_login_conf l ');
   datam.qryLogin.SQL.Add('left join easy_work_colaborador_conf c on l.easy_work_colaborador_conf_id = c.id ');
@@ -697,5 +664,4 @@ begin
     result := false;
   end;
 end;
-
 end.

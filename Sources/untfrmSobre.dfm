@@ -3,7 +3,7 @@ object frmSobre: TfrmSobre
   Top = 0
   BorderIcons = []
   BorderStyle = bsSingle
-  ClientHeight = 257
+  ClientHeight = 315
   ClientWidth = 869
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,119 +20,15 @@ object frmSobre: TfrmSobre
   PixelsPerInch = 96
   TextHeight = 13
   object sPanel1: TsPanel
-    Left = 5
-    Top = 5
+    Left = 3
+    Top = 8
     Width = 860
-    Height = 250
+    Height = 299
     TabOrder = 0
     SkinData.SkinSection = 'PANEL'
-    object lblEmpresa: TsLabel
-      Left = 5
-      Top = 5
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-    end
-    object lblAPP: TsLabel
-      Left = 5
-      Top = 45
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-    end
-    object lblCopyright: TsLabel
-      Left = 5
-      Top = 125
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-    end
-    object lblDesenvolvidoPor: TsLabel
-      Left = 5
-      Top = 165
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-    end
-    object lblEmpresaTxt: TsLabel
-      Left = 5
-      Top = 25
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-    end
-    object lblAPPTxt: TsLabel
-      Left = 5
-      Top = 65
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-    end
-    object lblCopyrightTxt: TsLabel
-      Left = 5
-      Top = 145
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-    end
-    object lblDesenvolvidoPorTxt: TsLabel
-      Left = 5
-      Top = 185
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-    end
     object Image1: TImage
       Left = 681
-      Top = 5
+      Top = 18
       Width = 149
       Height = 169
       Picture.Data = {
@@ -2499,35 +2395,9 @@ object frmSobre: TfrmSobre
         FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF0000}
       Transparent = True
     end
-    object lblVersaoTxt: TsLabel
-      Left = 5
-      Top = 105
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-    end
-    object lblVersao: TsLabel
-      Left = 5
-      Top = 85
-      Width = 12
-      Height = 16
-      Caption = '...'
-      ParentFont = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-    end
     object cmdSolicitarAjuda: TsButton
       Left = 722
-      Top = 180
+      Top = 193
       Width = 66
       Height = 66
       Caption = 'Solicitar Ajuda'
@@ -2537,7 +2407,7 @@ object frmSobre: TfrmSobre
     end
     object cmdFechar: TsButton
       Left = 790
-      Top = 180
+      Top = 193
       Width = 66
       Height = 66
       Caption = 'Fechar'
@@ -2547,13 +2417,541 @@ object frmSobre: TfrmSobre
     end
     object cmdCompactarLogs: TsButton
       Left = 654
-      Top = 180
+      Top = 193
       Width = 66
       Height = 66
       Caption = 'Compactar Logs'
       TabOrder = 1
       OnClick = cmdCompactarLogsClick
       SkinData.SkinSection = 'BUTTON_HUGE'
+    end
+    object PageControl1: TPageControl
+      Left = 5
+      Top = 6
+      Width = 643
+      Height = 287
+      ActivePage = TbsAudio
+      TabOrder = 3
+      object tbsGerais: TTabSheet
+        Caption = 'Informa'#231#245'es Gerais'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
+        object lblEmpresa: TsLabel
+          Left = 5
+          Top = 33
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblEmpresaTxt: TsLabel
+          Left = 5
+          Top = 53
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object lblAPP: TsLabel
+          Left = 5
+          Top = 73
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblAPPTxt: TsLabel
+          Left = 5
+          Top = 94
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object lblVersao: TsLabel
+          Left = 5
+          Top = 114
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblVersaoTxt: TsLabel
+          Left = 5
+          Top = 135
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object lblCopyright: TsLabel
+          Left = 5
+          Top = 155
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblCopyrightTxt: TsLabel
+          Left = 5
+          Top = 176
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object lblDesenvolvidoPor: TsLabel
+          Left = 5
+          Top = 196
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblDesenvolvidoPorTxt: TsLabel
+          Left = 5
+          Top = 217
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+      end
+      object TbsAudio: TTabSheet
+        Caption = 'Hardware'
+        ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
+        object sLabel5: TsLabel
+          Left = 0
+          Top = 4
+          Width = 48
+          Height = 16
+          Caption = 'Us'#250'ario'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblUser: TsLabel
+          Left = 0
+          Top = 18
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object lblIP: TsLabel
+          Left = 407
+          Top = 18
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object sLabel8: TsLabel
+          Left = 407
+          Top = 4
+          Width = 13
+          Height = 16
+          Caption = 'IP'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object sLabel9: TsLabel
+          Left = 204
+          Top = 4
+          Width = 25
+          Height = 16
+          Caption = 'S.O.'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblSO: TsLabel
+          Left = 204
+          Top = 18
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object sLabel11: TsLabel
+          Left = 518
+          Top = 4
+          Width = 29
+          Height = 16
+          Caption = 'MAC'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+        end
+        object lblMAC: TsLabel
+          Left = 518
+          Top = 18
+          Width = 12
+          Height = 16
+          Caption = '...'
+          ParentFont = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+        end
+        object PageControl2: TPageControl
+          Left = 0
+          Top = 39
+          Width = 635
+          Height = 220
+          ActivePage = TabSheet1
+          Align = alBottom
+          TabOrder = 0
+          object TabSheet1: TTabSheet
+            Caption = 'Dispositivos de '#193'udio e Microfone'
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
+            object LblDispositivosMic: TsLabel
+              Left = 4
+              Top = 78
+              Width = 9
+              Height = 13
+              Caption = '...'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object LblDispositivosSom: TsLabel
+              Left = 4
+              Top = 1
+              Width = 9
+              Height = 13
+              Caption = '...'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object sLabel2: TsLabel
+              Left = 4
+              Top = 154
+              Width = 160
+              Height = 13
+              Caption = 'Dispositivo de A'#250'dio Padr'#227'o:'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object sLabel1: TsLabel
+              Left = 4
+              Top = 174
+              Width = 184
+              Height = 13
+              Caption = 'Dispositivo de Microfone Padr'#227'o:'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object lblAudio: TsLabel
+              Left = 196
+              Top = 154
+              Width = 24
+              Height = 13
+              Caption = '......'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+            end
+            object lblMic: TsLabel
+              Left = 196
+              Top = 174
+              Width = 24
+              Height = 13
+              Caption = '......'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+            end
+            object MmDispositivosMic: TMemo
+              Left = 4
+              Top = 97
+              Width = 620
+              Height = 49
+              BevelInner = bvNone
+              BevelOuter = bvNone
+              BorderStyle = bsNone
+              Color = clBtnFace
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              Lines.Strings = (
+                'Dispositivo 01'
+                'Dispositivo 02'
+                'Dispositivo 03')
+              ParentFont = False
+              ReadOnly = True
+              ScrollBars = ssBoth
+              TabOrder = 0
+            end
+            object MmDispositivosSom: TMemo
+              Left = 4
+              Top = 20
+              Width = 620
+              Height = 49
+              BevelInner = bvNone
+              BevelOuter = bvNone
+              BorderStyle = bsNone
+              Color = clBtnFace
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              Lines.Strings = (
+                'Dispositivo 01'
+                'Dispositivo 02'
+                'Dispositivo 03')
+              ParentFont = False
+              ReadOnly = True
+              ScrollBars = ssBoth
+              TabOrder = 1
+            end
+          end
+          object TabSheet2: TTabSheet
+            Caption = 'Ethernet Infoma'#231#245'es'
+            ImageIndex = 1
+            OnHide = TabSheet2Hide
+            OnShow = TabSheet2Show
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
+            object sLabel3: TsLabel
+              Left = 3
+              Top = 54
+              Width = 60
+              Height = 13
+              Caption = 'Adaptador'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object Label32: TLabel
+              Left = 3
+              Top = 4
+              Width = 99
+              Height = 13
+              Caption = 'Ethernet adaptador:'
+            end
+            object sLabel4: TsLabel
+              Left = 3
+              Top = 75
+              Width = 55
+              Height = 13
+              Caption = 'Descri'#231#227'o'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object sLabel6: TsLabel
+              Left = 3
+              Top = 96
+              Width = 69
+              Height = 13
+              Caption = 'MacAddress'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+            end
+            object lblAdapter: TsLabel
+              Left = 94
+              Top = 54
+              Width = 24
+              Height = 13
+              Caption = '......'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+            end
+            object lblDescricao: TsLabel
+              Left = 94
+              Top = 75
+              Width = 24
+              Height = 13
+              Caption = '......'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+            end
+            object lblMacAddress: TsLabel
+              Left = 94
+              Top = 96
+              Width = 24
+              Height = 13
+              Caption = '......'
+              ParentFont = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+            end
+            object DBGrid1: TDBGrid
+              Left = 0
+              Top = 121
+              Width = 627
+              Height = 71
+              Align = alBottom
+              DataSource = DS
+              TabOrder = 0
+              TitleFont.Charset = DEFAULT_CHARSET
+              TitleFont.Color = clWindowText
+              TitleFont.Height = -11
+              TitleFont.Name = 'Tahoma'
+              TitleFont.Style = []
+              Columns = <
+                item
+                  Expanded = False
+                  FieldName = 'IP'
+                  Width = 158
+                  Visible = True
+                end
+                item
+                  Expanded = False
+                  FieldName = 'MASK'
+                  Width = 206
+                  Visible = True
+                end>
+            end
+            object AdapterCB: TComboBox
+              Left = 3
+              Top = 21
+              Width = 621
+              Height = 21
+              Style = csDropDownList
+              TabOrder = 1
+              OnChange = AdapterCBChange
+            end
+          end
+        end
+      end
     end
   end
   object sSkinManager1: TsSkinManager
@@ -2592,5 +2990,25 @@ object frmSobre: TfrmSobre
     ThirdParty.ThirdUpDown = ' '
     Left = 776
     Top = 24
+  end
+  object CDS: TClientDataSet
+    Aggregates = <>
+    Params = <>
+    Left = 272
+    Top = 72
+    object CDSIP: TStringField
+      FieldName = 'IP'
+      Size = 50
+    end
+    object CDSMASK: TStringField
+      DisplayLabel = 'Sub-rede'
+      FieldName = 'MASK'
+      Size = 50
+    end
+  end
+  object DS: TDataSource
+    DataSet = CDS
+    Left = 232
+    Top = 72
   end
 end

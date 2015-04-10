@@ -2,6 +2,7 @@ program HosannaAgente20;
 
 uses
   Forms,
+  dialogs,
   Windows,
   RotinasGerais,
   untPrincipal in 'untPrincipal.pas' {frmPrincipal},
@@ -27,7 +28,6 @@ uses
   untFuncoes in 'untFuncoes.pas';
 
 {$R *.res}
-
 {$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
 
 function CanStart: Boolean;
@@ -65,7 +65,6 @@ begin
   Application.CreateForm(TfrmRingPopup, frmRingPopup);
   Application.CreateForm(TfrmDesbloquear, frmDesbloquear);
   Application.CreateForm(TfrmProgressBar, frmProgressBar);
-  Application.CreateForm(TfrmSobre, frmSobre);
   Application.CreateForm(TfrmConfAudio, frmConfAudio);
   Application.Run;
   end

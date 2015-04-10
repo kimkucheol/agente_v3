@@ -14,16 +14,16 @@ unit untLibrary;
 ############################################################################
 }
 interface
-  uses SysUtils, Forms, mmsystem, Windows, Classes, NB30, iphlpapi, IpTypes, Winsock,
-       Winapi.DirectShow9, Winapi.ActiveX;
+  uses SysUtils, Forms, Windows, Classes, iphlpapi, IpTypes, Winsock,
+       IdComponent, IdIPWatch, mmsystem;
 
 Type
 
   TAgente = Class
   private
     function GetPathArqConf: string;
-    function GetExisteAudio: boolean;
-    function GetExisteMicrofone: boolean;
+    function GetTotalAudio: Integer;
+    function GetTotalMicrofone: Integer;
     function GetWinSYS_OPER: string;
     function GetWinUSER: string;
     function GetWinMOTHERBOARD: string;
@@ -31,17 +31,21 @@ Type
     function GetWinMAC_ADDRES01: string;
     function GetWinMAC_ADDRES02: string;
     function GetListaAudios: TStringList;
+    function GetListaMics: TStringList;
+    function GetwinIP: string;
   public
     property PathArqConf     : string read GetPathArqConf;
-    property ExisteMicrofone : boolean read GetExisteMicrofone;
-    property ExisteAudio     : boolean read GetExisteAudio;
+    property TotalMicrofone  : Integer read GetTotalMicrofone;
+    property TotalAudio      : Integer read GetTotalAudio;
     property ListaAudios     : TStringList read GetListaAudios;
+    property ListaMics       : TStringList read GetListaMics;
     property WinUSER         : string read GetWinUSER;
     property WinPC_NAME      : string read GetWinPC_NAME;
     property WinMAC_ADDRES01 : string read GetWinMAC_ADDRES01;
     property WinMAC_ADDRES02 : string read GetWinMAC_ADDRES02;
     property WinSYS_OPER     : string read GetWinSYS_OPER;
     property WinMOTHERBOARD  : string read GetWinMOTHERBOARD;
+    property WinIP           : string read GetwinIP;
   End;
 
 
@@ -55,12 +59,22 @@ Type
     function Getcmd05: string;
   public
     property cmd01: string read Getcmd01;
-    property cmd02: string read Getcmd01;
-    property cmd03: string read Getcmd02;
-    property cmd04: string read Getcmd03;
-    property cmd05: string read Getcmd04;
-    property cmd06: string read Getcmd05;
+    property cmd02: string read Getcmd02;
+    property cmd03: string read Getcmd03;
+    property cmd04: string read Getcmd04;
+    property cmd05: string read Getcmd05;
   End;
+
+// Classe de Devices Agente.dll
+  TDevice=class(TPersistent)
+  private
+    FIP   : WideString;
+    FMask : WideString;
+  public
+    property IP  : WideString read FIP write FIP;
+    property MASK: WideString read FMASK write FMASK;
+  end;
+
 
   Var Configuracao : TConfiguracoes;  // Conf.ini
       Agente       : TAgente;         // HosannaAgente.exe
@@ -99,71 +113,54 @@ begin
 end;
 
 { TAgente }
-function TAgente.GetExisteAudio: boolean;
+function TAgente.GetTotalAudio: Integer;
 begin
-  result := WaveOutGetNumDevs > 0;
+//  result := WaveOutGetNumDevs > 0;
+  result := WaveOutGetNumDevs;
 end;
 
-function TAgente.GetExisteMicrofone: boolean;
+function TAgente.GetTotalMicrofone: integer;
 begin
-  result := waveInGetNumDevs > 0;
+//  result := waveInGetNumDevs > 0;
+  result := waveInGetNumDevs;
+end;
+
+function TAgente.GetwinIP: string;
+var
+  IPWatch : TIdIPWatch;
+begin
+ IPWatch := TIdIPWatch.Create(nil);
+ Result := IPWatch.LocalIP;
+ FreeAndNil(IPWatch);
 end;
 
 function TAgente.GetListaAudios: TStringList;
-var
-  dsCreateDevEnum  : ICreateDevEnum;
-  EnumDevice       : IEnumMoniker;
-  DeviceMoniker    : IMoniker;
-  Data             : Integer;
-  DevicePropBag    : IPropertyBag;
-  DeviceName       : OLEVariant;
-  IntI             : Integer;
-  StrReplace       : String;
-  Resultado        : TStringList;
-
-const
-  IID_IPropertyBag          : TGUID = '{55272A00-42CB-11CE-8135-00AA004BB851}';
-
+Var StrResultado : TStringList;
 begin
-  if Assigned(Result) then FreeAndNil(Result);
+{  StrResultado := TStringList.Create;
+  if Assigned(StrResultado) then
+    StrResultado := FncRetornaAudio('DirectSound:');
+  Result := StrResultado;}
 
   Result := TStringList.Create;
-  try
-    // CLSID_CQzFilterClassManager = Entire DirectShow Filter List
-    If CoCreateInstance(CLSID_SystemDeviceEnum,nil,CLSCTX_INPROC_SERVER,IID_ICreateDevEnum,dsCreateDevEnum) = S_OK then
-    Begin
-      If dsCreateDevEnum.CreateClassEnumerator(CLSID_AudioRendererCategory,EnumDevice,0) = S_OK then
-      Begin
-        IntI := 0;
-        EnumDevice.Reset;
-        While EnumDevice.Next(1,DeviceMoniker,@Data) = S_OK do
-        Begin
-          If DeviceMoniker.BindToStorage(nil,nil,IID_IPropertyBag,DevicePropBag) = NOERROR then
-          Begin
-            If DevicePropBag.Read('FriendlyName',DeviceName,nil) = NOERROR then
-            Begin
-              if Pos('DirectSound:', DeviceName) > 0 then
-              begin
-                StrReplace := StringReplace(DeviceName, 'DirectSound:', '', []);
-                StrReplace := StringReplace(StrReplace, 'Alto-falantes', '', []);
-                StrReplace := StringReplace(StrReplace, '(', '', []);
-                StrReplace := StringReplace(StrReplace, ')', '', []);
 
-                Result.Add(StrReplace);
-              end;
-              Inc(IntI);
-            End;
-            DevicePropBag := nil;
-          End;
-          DeviceMoniker := nil;
-        End;
-        EnumDevice := nil;
-      End;
-      dsCreateDevEnum := nil;
-    End;
+  if Assigned(Result) then
+    PrcRetornaAudioOUT(Result);
 
-  finally
-  end;
+  if Result.Count <= 0 then
+    Result.Add('Dispositivo desconhecido.');
+
+end;
+
+function TAgente.GetListaMics: TStringList;
+begin
+  Result := TStringList.Create;
+
+  if Assigned(Result) then
+    PrcRetornaAudioIN(Result);
+
+  if Result.Count <= 0 then
+    Result.Add('Dispositivo desconhecido.');
 end;
 
 function TAgente.GetPathArqConf: string;
@@ -172,10 +169,10 @@ begin
 end;
 
 function TAgente.GetWinMAC_ADDRES01: string;
-var pAdapterInfo:PIP_ADAPTER_INFO;
-    BufLen,Status:cardinal; i:Integer;
+{var pAdapterInfo:PIP_ADAPTER_INFO;
+    BufLen,Status:cardinal; i:Integer;}
 begin
-  result:='';
+{  result:='';
   BufLen:= sizeof(IP_ADAPTER_INFO);
   GetAdaptersInfo(nil, BufLen);
   pAdapterInfo:= AllocMem(BufLen);
@@ -198,7 +195,7 @@ begin
       result := result + IntToHex(pAdapterInfo^.Address[I], 2);
   finally
     Freemem(pAdapterInfo);
-  end;
+  end;}
 end;
 
 function TAgente.GetWinMAC_ADDRES02: string;
@@ -224,11 +221,11 @@ begin
       (ID1.D4[7] = ID2.D4[7]) then
       begin
         Result :=
-        IntToHex(ID1.D4[2], 2) +
-        IntToHex(ID1.D4[3], 2) +
-        IntToHex(ID1.D4[4], 2) +
-        IntToHex(ID1.D4[5], 2) +
-        IntToHex(ID1.D4[6], 2) +
+        IntToHex(ID1.D4[2], 2) +'.'+
+        IntToHex(ID1.D4[3], 2) +'.'+
+        IntToHex(ID1.D4[4], 2) +'.'+
+        IntToHex(ID1.D4[5], 2) +'.'+
+        IntToHex(ID1.D4[6], 2) +'.'+
         IntToHex(ID1.D4[7], 2);
       end;
     end;

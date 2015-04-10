@@ -15,29 +15,42 @@ unit untFuncoes;
 }
 interface
 Uses
-  Registry, IniFiles, SysUtils, Messages, Dialogs, Winapi.Windows;
+  Registry, IniFiles, SysUtils, Messages, Dialogs, Winapi.Windows, Classes, Forms,
+  mmsystem, NB30, iphlpapi, IpTypes, Winsock, Winapi.DirectShow9, Winapi.ActiveX,
+  Vcl.StdCtrls, StrUtils, VAXSIPUSERAGENTOCXLib_TLB, Rtti,
+
+  untLibrary, untPrincipal;
 
 // Declarações
   // Le o arquivo ini
   function FncLeINI(Path:String;ChavePrincipal:String;ChaveSecundaria:String):String;
-  // Grava o no arquivo ini
+  // Grava no arquivo ini
   procedure PrcGravaIni(Path:String;ChavePrincipal:String;ChaveSecundaria:String;Valor:String);
   // Executa e Retorna as mensagens do Prompt de comando do MSDOS
   function FncComandoMSDOS(Comando, DiretorioTrabalho: string): string;
-
   // Cria as Classes (Library´s do sistema)
   procedure PrcGenerateLibClass();
   // Destroi as Classes (Library´s do sistema)
   procedure PrcDestructorLibClass();
-
   //1. Modo de busca pelo nome do Sistema Operacional
   function GetSOComputer01: string;
   //2. Modo de busca pelo nome do Sistema Operacional
   function GetSOComputer02: string;
+  //Retorna Lista de audio (Dispositivos de Saida)
+  procedure PrcRetornaAudioIN(Const Lst : TStrings);
+  //Retorna Lista de audio (Dispositivos de Entrada)
+  procedure PrcRetornaAudioOUT(Var Lst : TStringList);
+  //Verifica se é Windows 64 ou 32 Bits
+  function IsWindows64: Boolean;
+  //Executa comando MSDOS
+  procedure ExecComandoMSDOS;
 
+{Agente.dll }
+  procedure GetIPInfo(Stream :TMemoryStream); stdcall; external 'Agente.dll';
+  procedure GetAdaptadorInfo(AdapterName : WideString; Var AdapterType, Description, Physicaladdress, Gateway, DHCP, DHCPServer,
+                           SecondaryWINS, PrimaryWINS : WideString; Var Device : Array of  TDevice); stdcall; external 'Agente.dll';
 
 implementation
-uses untLibrary;
 
 function FncLeINI(Path:String;ChavePrincipal:String;ChaveSecundaria:String):String;
 var
@@ -149,6 +162,9 @@ begin
       Result := Reg.ReadString('ProductName');
       Reg.CloseKey;
     end;
+  if Length(Trim(Result)) > 0 then
+    Result := IfThen(IsWindows64, Result+' 64Bits', Result+' 32Bits');
+
   finally
     Reg.Free;
   end;
@@ -185,9 +201,131 @@ begin
     end;
   end;
   if (Result='') then
-    Result:='Sistema operacional desconhecido.ID: '+IntToStr(VersionInfo.dwPlatformId)+' Versão: '+IntToStr(VersionInfo.dwMinorVersion);
+    Result:='Sistema operacional desconhecido.ID: '+IntToStr(VersionInfo.dwPlatformId)+' Versão: '+IntToStr(VersionInfo.dwMinorVersion)
+  else
+    Result := IfThen(IsWindows64, Result+' 64Bits', Result+' 32Bits');
+end;
+
+
+procedure PrcRetornaAudioIN(Const Lst : TStrings);
+var
+  nDeviceIndex : Integer;
+  sDeviceName : String;
+  Total : Integer;
+begin
+
+  Lst.Clear;
+
+  Total := frmPrincipal.vax.GetAudioInDevTotal;
+  for nDeviceIndex := 0 to Total - 1 do
+  begin
+//    nDeviceId   := frmPrincipal.vax.GetAudioInDevId(nDeviceIndex);
+    Try sDeviceName := frmPrincipal.vax.GetAudioInDevName(nDeviceIndex); Except End;
+    Lst.Add(sDeviceName);
+  end;
+
+end;
+
+
+procedure PrcRetornaAudioOUT(Var Lst : TStringList);
+var
+  nDeviceIndex : Integer;
+  sDeviceName  : WideString;
+  Total        : Integer;
+begin
+  Lst.Clear;
+
+  Total := frmPrincipal.vax.GetAudioOutDevTotal();
+  for nDeviceIndex := 0 to Total - 1 do
+  begin
+//    nDeviceId   := frmPrincipal.vax.GetAudioOutDevId(nDeviceIndex);
+    Try sDeviceName := frmPrincipal.vax.GetAudioOutDevName(nDeviceIndex); Except End;
+    Lst.Add(sDeviceName);
+  end;
+end;
+
+function IsWindows64: Boolean;
+type
+  TIsWow64Process = function(AHandle:THandle; var AIsWow64: BOOL): BOOL; stdcall;
+var
+  vKernel32Handle: DWORD;
+  vIsWow64Process: TIsWow64Process;
+  vIsWow64       : BOOL;
+begin
+  // 1) assume that we are not running under Windows 64 bit
+  Result := False;
+
+  // 2) Load kernel32.dll library
+  vKernel32Handle := LoadLibrary('kernel32.dll');
+  if (vKernel32Handle = 0) then Exit; // Loading kernel32.dll was failed, just return
+
+  try
+
+    // 3) Load windows api IsWow64Process
+    @vIsWow64Process := GetProcAddress(vKernel32Handle, 'IsWow64Process');
+    if not Assigned(vIsWow64Process) then Exit; // Loading IsWow64Process was failed, just return
+
+    // 4) Execute IsWow64Process against our own process
+    vIsWow64 := False;
+    if (vIsWow64Process(GetCurrentProcess, vIsWow64)) then
+      Result := vIsWow64;   // use the returned value
+
+  finally
+    FreeLibrary(vKernel32Handle);  // unload the library
+  end;
 end;
 // Fim da Função SO
+
+procedure ExecComandoMSDOS;
+var
+  StrCMD       : String;
+  TypObj       : TRttiType;
+  Prop         : TRttiProperty;
+  ctxRtti      : TRttiContext;
+  Comando      : String;
+  Path         : String;
+  Msg          : String;
+begin
+  Try Application.ProcessMessages; Except End;
+
+  try
+    // Manipulando as property´s das classe Configuracao
+    ctxRtti := TRttiContext.Create;
+    TypObj  := ctxRtti.GetType(TObject(Configuracao).ClassInfo);
+
+    // PRIMEIRO PELO COMANDO DOS
+    for Prop in TypObj.GetProperties do
+    begin
+      // Somente executa os comandos CMD0*
+      if pos('CMD0',UpperCase(Prop.Name)) > 0 then
+      begin
+        // Verificar se tem algum comando no ini
+        if Length(Trim(Prop.GetValue(Configuracao).AsString)) > 0 Then
+        begin
+          // enviando e Retornando as mensagens do comando MSDOS
+          Comando := Prop.GetValue(Configuracao).AsString;
+          if pos('.\',UpperCase(Comando)) > 0 then
+          begin
+            Comando := StringReplace(Comando, '.\', '', []);
+            Path := ExtractFilePath(Application.ExeName);
+            Comando := IncludeTrailingBackslash(Path)+Comando;
+          end;
+
+          StrCMD := FncComandoMSDOS(Comando, 'c:\');
+          // se houve retorno mostra
+          if Length(Trim(StrCMD)) > 0 then
+            MessageDlg('Comando: '+UpperCase(Prop.Name)+#13+StrCMD, mtInformation, [mbOk],0);
+        end;
+      end;
+    end;
+
+  except
+    on E : Exception do
+      ShowMessage(E.ClassName+' Erro ao atribuir os comandos : '+E.Message);
+  end;
+
+end;
+
 
 
 end.
