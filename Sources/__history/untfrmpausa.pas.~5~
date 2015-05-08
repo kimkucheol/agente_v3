@@ -1,0 +1,264 @@
+unit untfrmpausa;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, sButton,
+  Vcl.ExtCtrls, sLabel, sComboBox, RotinasGerais;
+
+type
+  TfrmPausa = class(TFrame)
+    btnPausa: TsButton;
+    cbpausas: TsComboBox;
+    procedure btnPausaClick(Sender: TObject);
+    procedure carregapausa;
+    procedure CarregaTelasLinguagem;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmPausa: TfrmPausa;
+
+implementation
+
+uses untPrincipal, unttranslate, untfrmDesbloquear, untFuncoes, untLibrary;
+
+{$R *.dfm}
+
+{$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
+
+procedure TfrmPausa.btnPausaClick(Sender: TObject);
+var
+  nFor: Integer;
+  sTextPausa: String;
+begin
+  frmprincipal.tmrPausaLogin.Enabled := False;
+
+  if (btnPausa.caption = APP_FRM_PAUSE_START_PAUSE[ID_LANG]) or
+     (btnPausa.caption = APP_FRM_PAUSE_CHANGE_PAUSE[ID_LANG]) or
+     (btnPausa.caption = APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG]) then
+  begin
+    if (frmprincipal.TMyAppStatus.bAtendido = true) and
+       (frmPrincipal.TMyClassificacao.bAuto = False) then
+    begin
+        frmprincipal.mensagem(APP_MB_ERR_CANNOT_PAUSE[ID_LANG]);
+    end
+    else
+    begin
+      if cbpausas.text <> '' then
+      begin
+        {if (lbxrestricao.Items.Strings[cbpausas.itemindex] = 'Y') and (strtoint(lbxrealizadas.Items.Strings[cbpausas.itemindex]) >= strtoint(lbxqtd.Items.Strings[cbpausas.itemindex])) then
+        begin
+          application.MessageBox(PChar(APP_MB_WAR_CANNOT_CHANGE_PAUSE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+        end
+        else
+        begin
+          lbxrealizadas.Items.Strings[cbpausas.itemindex] := inttostr(strtoint(lbxrealizadas.Items.Strings[cbpausas.itemindex])+1);
+          vtempopausa := strtotime(lbxtempo.Items.Strings[cbpausas.itemindex]);}
+
+          if btnPausa.caption = APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG] then
+          begin
+            frmPrincipal.TMyClassificacao.bAutoAgendouPausa := True;
+            frmPrincipal.TMyClassificacao.sAutoAgendouPausaTipo := cbpausas.text;
+            frmPrincipal.TMyClassificacao.nAutoAgendouPausaIndex := cbpausas.ItemIndex;
+
+            cbpausas.Enabled := False;
+            btnPausa.Caption := APP_FRM_PAUSE_CANCEL_PAUSE[ID_LANG];
+            Exit;
+          end;
+
+          if TMyInfoLogin.nTipo = 1 then
+            if nChatDinamicosCriados >= 0 then
+            begin
+              for nFor := 0 to nChatDinamicosCriados do
+              begin
+                if (vChatClassificando = 1) or (matrizchatsala[nFor, 0] <> IntToStr(CHAT_STATUS_FREE)) then
+                begin
+                  frmPrincipal.mensagem(APP_MB_WAR_PAUSE_AGENT_IN_CHAT[ID_LANG]);
+                  Break;
+                end;
+              end;
+
+              for nFor := 0 to nChatDinamicosCriados do
+                if (matrizchatsala[nFor, 0] = IntToStr(CHAT_STATUS_FREE)) then
+                  lblChatCabecalho[nFor].Caption := APP_FRM_MAIN_CHAT_STATUS_PAUSE[ID_LANG];
+            end;//if nChatDinamicosCriados >= 0 then
+
+          LogCallStep('log_pause_act', cbpausas.text);
+          sTextPausa := cbpausas.text;
+          frmprincipal.pausar(sTextPausa);
+
+          for nFor := 0 to Agente.SQL.sVNumPausa-1 do
+          begin
+            if matrizpausa[1,nFor] = sTextPausa then
+            begin
+              if matrizpausa[17, nFor] = 'True' then
+              begin
+                frmPrincipal.Visible := False;
+                frmDesbloquear.CarregaTelasLinguagem;
+                frmDesbloquear.Caption := frmPrincipal.lbstatus.Caption;
+                frmDesbloquear.idPausa := matrizpausa[0, nFor];
+                if frmDesbloquear.ShowModal = mrOk then
+                begin
+                  frmPrincipal.Visible := True;
+                  frmDesbloquear.Caption := '';
+                end;
+              end;
+
+              Break;
+            end;
+          end;
+
+          frmprincipal.tmrVerificaTrocaPausa.Enabled := False;
+          frmprincipal.TMyPausa.bTrocandoPausa := False;
+        //end;
+      end
+      else
+      begin
+        application.MessageBox(PChar(APP_MB_WAR_SELECT_PAUSE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+      end;
+    end;
+  end
+  else//Despausa
+  begin
+    if btnPausa.caption = APP_FRM_PAUSE_CANCEL_PAUSE[ID_LANG] then
+    begin
+      frmPrincipal.TMyClassificacao.bAutoAgendouPausa := False;
+      frmPrincipal.TMyClassificacao.sAutoAgendouPausaTipo := '';
+
+      cbpausas.Enabled := True;
+      cbpausas.ItemIndex := -1;
+      frmPrincipal.TMyClassificacao.nAutoAgendouPausaIndex := cbpausas.ItemIndex;
+      if (frmprincipal.TMyAppStatus.bAtendido = true) and (frmPrincipal.TMyClassificacao.bAuto) then
+        btnPausa.caption := APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG]
+      else
+        btnPausa.caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
+
+      Exit;
+    end;
+
+    if frmprincipal.vax.IsLineBusy(0) = true then
+    begin
+      frmprincipal.mensagem(APP_MB_ERR_CANNOT_UNPAUSE[ID_LANG]);
+      exit;
+    end;
+
+    if (frmprincipal.TMyPausa.sPausaTipo = APP_PAUSE_TYPE_AFTER_HU[ID_LANG]) and (frmprincipal.TMyClassificacao.bClassificou = false) then
+    begin
+      frmprincipal.mensagem(APP_MB_ERR_PLEASE_CLASSIFY[ID_LANG]);
+      exit;
+    end;
+
+    if (frmprincipal.TMyPausa.sPausaTipo <> APP_PAUSE_TYPE_AFTER_HU[ID_LANG]) then
+    begin
+      if frmprincipal.TMyPausa.nPausaDurMinAct = 1 then
+      begin
+        if frmprincipal.TMyAppStatus.dtvInicioPausa + frmprincipal.TMyPausa.tPausaDurMinVal < now then
+        begin
+          frmprincipal.TMyPausa.nPausaDurMinAct := 0;
+          frmprincipal.TMyPausa.tPausaDurMinVal := 0;
+        end
+        else
+        begin
+          frmprincipal.mensagem(APP_MB_ERR_WAIT_END_PAUSE[ID_LANG]);
+          Exit;
+        end;
+      end;
+    end;
+
+    LogCallStep('log_unpause_act', frmprincipal.lbstatus.Caption);
+    frmprincipal.tmrPausaPos.Enabled := False;
+    frmprincipal.tmrLastClassAuto.Enabled := False;
+
+    frmprincipal.TMyPausa.bAtivoPausa := false;
+    frmprincipal.lbpausarest.Visible := false;
+    frmprincipal.lbpausarest.caption := '00:00:00';
+    frmprincipal.tmrPausa.enabled := false;
+    frmprincipal.lbtempopausa.Caption := '00:00:00';
+    frmprincipal.discar('AGE04'+TMyInfoLogin.sIDUsuario+frmprincipal.TMyPausa.sIDPausa, True);
+    frmPrincipal.vax.DisableDonotDisturb;
+    LogCallStep('log_dnd_off_act', 'btnPausaClick');
+    if (frmprincipal.TMyAppStatus.bAtendido = true) and (frmPrincipal.TMyClassificacao.bAuto) then
+      btnPausa.caption := APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG]
+    else
+      btnPausa.caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
+
+    frmprincipal.TMyPausa.tTempoPausa := 0;
+
+    frmprincipal.VerificaLoginAtivo;
+    frmprincipal.lbstatus.Caption := APP_FRM_MAIN_STATUS_AVAILABLE[ID_LANG];
+    frmprincipal.pnstatus.Color := claqua;
+
+    if TMyInfoLogin.nTipo = 1 then
+      if nChatDinamicosCriados >= 0 then
+        for nFor := 0 to nChatDinamicosCriados do
+          if (matrizchatsala[nFor, 0] = IntToStr(CHAT_STATUS_FREE)) then
+            lblChatCabecalho[nFor].Caption := APP_FRM_MAIN_CHAT_AVAILABLE[ID_LANG];
+
+    cbpausas.enabled := true;
+
+    frmprincipal.TMyAppStatus.sTipoEvento := APP_EVENT_TYPE_UNPAUSE[ID_LANG];
+    frmprincipal.actlogoff.Enabled := True;
+
+    frmPrincipal.TMyPausa.bPausado := False;
+  end;
+end;
+
+procedure TfrmPausa.carregapausa;
+var
+  ind: integer;
+begin
+  cbpausas.Items.Clear;
+  for ind := 0 to Agente.SQL.sVNumPausa-1 do
+  begin
+    if matrizpausa[2,ind] = 'M' then
+    begin
+      cbpausas.Items.Add(matrizpausa[1,ind]);
+    end;
+  end;
+
+  if frmprincipal.TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG] then
+  begin
+    btnPausa.Caption := APP_FRM_PAUSE_END_PAUSE[ID_LANG];
+    cbpausas.Enabled := false;
+  end
+  else
+  begin
+    if frmprincipal.TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_CHANGEPAUSE[ID_LANG] then
+    begin
+      btnPausa.Caption := APP_FRM_PAUSE_CHANGE_PAUSE[ID_LANG];
+      cbpausas.Enabled := True;
+    end
+    else
+    begin
+      if frmprincipal.TMyClassificacao.bAutoAgendouPausa then
+      begin
+        btnPausa.Caption := APP_FRM_PAUSE_CANCEL_PAUSE[ID_LANG];
+        cbpausas.ItemIndex := frmPrincipal.TMyClassificacao.nAutoAgendouPausaIndex;
+        cbpausas.Enabled := false;
+      end
+      else
+      begin
+        if (frmprincipal.TMyAppStatus.bAtendido = true) and (frmPrincipal.TMyClassificacao.bAuto) then
+          btnPausa.caption := APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG]
+        else
+          btnPausa.Caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
+        cbpausas.Enabled := true;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmPausa.CarregaTelasLinguagem;
+begin
+  if (frmprincipal.TMyAppStatus.bAtendido = true) and (frmPrincipal.TMyClassificacao.bAuto) then
+    btnPausa.caption := APP_FRM_PAUSE_SCHED_PAUSE[ID_LANG]
+  else
+    btnPausa.Caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
+end;
+
+end.

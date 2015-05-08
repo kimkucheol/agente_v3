@@ -1,0 +1,55 @@
+select l.descricao as nome,                                                             
+       l.login as login,                                                                
+       l.senha as senha,                                                                
+       c.email as email,                                                                
+'Y' as dialpad,                                                           
+       l.easy_call_operacao_conf_id as easy_callcenter_operacao_conf_id,                
+       c.easy_sist_usuario_perfil_conf_id as easy_sistema_usuario_perfil_conf_id,       
+       s.name as ramal,                                                                 
+       s.secret as senha_ramal,                                                         
+       p.ipaddress as proxy_ramal,                                                      
+       c.id,                                                                            
+       c.agente_idioma as idioma,                                                       
+       l.easy_call_empresa_conf_id as empresa,                                          
+       c.fone_atendimento_auto_act as atendimento_auto_act,                             
+       c.fone_controle_audio_act as controle_audio_act,                                 
+       c.fone_controle_audio_fone as controle_audio_fone,                               
+       c.fone_controle_audio_mic as controle_audio_mic,                                 
+       c.fone_conferencia_act as conferencia_act,                                       
+       c.fone_classificacao_auto_act as classificacao_auto_act,                         
+       c.supervisor_id as easy_sistema_usuario_conf_super_id,                           
+       c.agente_tipo as tipo,                                                           
+       c.chat_nsalas_qde,                                                               
+       CAST(c.qualidade_plogin AS CHAR) as qualidade_plogin,                            
+       c.qualidade_plogin_act,                                                          
+       CAST(NOW() AS CHAR) as qualidade_plogin2,                                        
+       o.usar_rota_inteligente_fixa_act, o.easy_pabx_serv_rota_inteligente_conf_id,     
+       c.chat_classificacao_auto_act,                                                   
+       o.webfaq_act,                                                                    
+       o.easy_wfaq_conf_id,                                                             
+       c.gravador_tela_act,                                                             
+       c.gravador_tela_cursor_act,                                                      
+       c.gravador_tela_modo_cfg,                                                        
+       time_to_sec(c.gravador_tela_modo_tmp) as gravador_tela_modo_tmp2,                
+       c.gravador_tela_storage_dst,                                                     
+       c.codigo_externo,                                                                
+       c.fone_dialpad_act,                                                              
+       CAST(curdate() AS CHAR) as dataatual,                                            
+       CAST(curtime() AS CHAR) as horaatual,                                            
+       o.qualificar_chamada_act,                                                        
+       fone_registro_act,                                                               
+       time_to_sec(fone_registro_tmp) as sec_fone_registro_tmp,                         
+       coalesce(c.easy_work_equipe_conf_id, 0) as equipe_id                             
+from easy_sist_usuario_login_conf l                                                     
+     left join easy_work_colaborador_conf c on l.easy_work_colaborador_conf_id = c.id   
+     left join easy_call_operacao_conf o on l.easy_call_operacao_conf_id = o.id         
+     left join easy_call_empresa_conf e on o.easy_call_empresa_conf_id = e.id           
+     left join easy_pabx_serv_ramal_sip_conf s on s.id = l.id                           
+     left join easy_sist_servidor_sip_conf p on c.easy_sist_servidor_sip_conf_id = p.id 
+where True                                                                              
+  and l.active = 'Y'
+  and c.active = 'Y'
+  and o.active = 'Y'
+  and e.active = 'Y'
+  and l.login = 'rogerio'
+  and l.senha = '123456'

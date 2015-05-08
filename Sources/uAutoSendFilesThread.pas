@@ -33,7 +33,7 @@ type
 
 implementation
 
-uses untPrincipal, unttranslate;
+uses untPrincipal, unttranslate, untLibrary;
 
 procedure TAutoSendFilesThread.Execute;
 var
@@ -117,7 +117,7 @@ end;
 procedure TAutoSendFilesThread.UpdateThreadCount;
 begin
   try
-    Dec(frmPrincipal.TMyCaptureScreen.nThreadsRunning);
+    Dec(TMyCaptureScreen.nThreadsRunning);
   except
     sThreadMsgLog := APP_FRM_PROGRESSBAR_ERRCNT[ID_LANG];
     Synchronize(MostraLog);

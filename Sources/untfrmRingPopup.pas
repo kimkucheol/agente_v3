@@ -36,7 +36,7 @@ implementation
 
 {$R *.dfm}
 
-uses untPrincipal, untfrmdialpad, untdm;
+uses untPrincipal, untLibrary, untfrmdialpad, untdm, untFuncoes;
 
 procedure TfrmRingPopup.FormCreate(Sender: TObject);
 var
@@ -71,12 +71,12 @@ begin
 
   frmPrincipal.Show;
 
-  if frmPrincipal.TMyVaxIncomingCallParam.bIncomingCall then
-    if not frmPrincipal.TMyAppStatus.bAtendido then
-      frmPrincipal.vax.RejectCall(frmPrincipal.TMyVaxIncomingCallParam.CallId);
+  if TMyVaxIncomingCallParam.bIncomingCall then
+    if not TMyAppStatus.bAtendido then
+      frmPrincipal.vax.RejectCall(TMyVaxIncomingCallParam.CallId);
 
-  frmPrincipal.TMyVaxIncomingCallParam.sUniqueID := frmPrincipal.processacallername(frmPrincipal.TMyVaxIncomingCallParam.displayname, 3);
-  frmPrincipal.TMyVaxIncomingCallParam.sFila     := frmPrincipal.processacallername(frmPrincipal.TMyVaxIncomingCallParam.displayname, 6);
+  TMyVaxIncomingCallParam.sUniqueID := frmPrincipal.processacallername(TMyVaxIncomingCallParam.displayname, 3);
+  TMyVaxIncomingCallParam.sFila     := frmPrincipal.processacallername(TMyVaxIncomingCallParam.displayname, 6);
 
   datam.qryUpdateRejectCall.Active := False;
   datam.qryUpdateRejectCall.SQL.Clear;
@@ -84,15 +84,15 @@ begin
   datam.qryUpdateRejectCall.SQL.Add('(`data`,hora,uniqueid,is_tipo,easy_work_colaborador_conf_id,easy_pabx_serv_fila_universal_ctr_id) ');
   datam.qryUpdateRejectCall.SQL.Add('values ');
   datam.qryUpdateRejectCall.SQL.Add('(curdate(),curtime(),');
-  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(frmPrincipal.TMyVaxIncomingCallParam.sUniqueID) + ',');
+  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(TMyVaxIncomingCallParam.sUniqueID) + ',');
   datam.qryUpdateRejectCall.SQL.Add('1,');
-  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario) + ',');
-  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(frmPrincipal.TMyVaxIncomingCallParam.sFila) + ')');
+  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(TMyInfoLogin.sIDUsuario) + ',');
+  datam.qryUpdateRejectCall.SQL.Add(QuotedStr(TMyVaxIncomingCallParam.sFila) + ')');
   datam.qryUpdateRejectCall.ExecSQL;
   datam.qryUpdateRejectCall.Active := False;
 
-  frmPrincipal.TMyVaxIncomingCallParam.sUniqueID := '';
-  frmPrincipal.TMyVaxIncomingCallParam.sFila     := '';
+  TMyVaxIncomingCallParam.sUniqueID := '';
+  TMyVaxIncomingCallParam.sFila     := '';
 
   frmPrincipal.Desligar('A');
 end;

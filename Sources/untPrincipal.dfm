@@ -573,10 +573,10 @@ object frmPrincipal: TfrmPrincipal
       end
     end
     object MemoOld: TMemo
-      Left = 5
-      Top = 108
-      Width = 271
-      Height = 374
+      Left = 26
+      Top = 374
+      Width = 229
+      Height = 129
       Lines.Strings = (
         '')
       TabOrder = 2
@@ -726,7 +726,7 @@ object frmPrincipal: TfrmPrincipal
       Top = 96
       Width = 817
       Height = 593
-      ActivePage = tabChatHist
+      ActivePage = tabChat
       Align = alClient
       TabOrder = 2
       SkinData.SkinManager = sSkinManager1
@@ -735,6 +735,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Cliente'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browsercliente: TWebBrowser
           Left = 0
           Top = 0
@@ -865,6 +869,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Agenda'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browseragenda: TWebBrowser
           Left = 0
           Top = 0
@@ -885,6 +893,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Script'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browserscript: TWebBrowser
           Left = 0
           Top = 0
@@ -1585,6 +1597,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'CHAT Hist'#243'rico'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object memChatPesquisaHistorico: TsRichEdit
           Left = 0
           Top = 55
@@ -1798,6 +1814,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'FAQ'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object sPanel7: TsPanel
           Left = 0
           Top = 0
@@ -2065,6 +2085,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'E-Mail'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object panEMailPrincipal: TsPanel
           Left = 250
           Top = 0
@@ -2410,6 +2434,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'FAX'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browserfax: TWebBrowser
           Left = 0
           Top = 0
@@ -2430,6 +2458,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'SMS'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browsersms: TWebBrowser
           Left = 0
           Top = 0
@@ -2450,6 +2482,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Pesquisa'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browserpesquisa: TWebBrowser
           Left = 0
           Top = 0
@@ -2471,6 +2507,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Ajuda'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object browserajuda: TWebBrowser
           Left = 0
           Top = 0
@@ -2491,6 +2531,10 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Confer'#234'ncia'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object sPanel20: TsPanel
           Left = 0
           Top = 0
@@ -2849,8 +2893,8 @@ object frmPrincipal: TfrmPrincipal
     Height = 105
     TabOrder = 6
     ControlData = {
-      00000100901A0000DA0A00000000000000000000000000010000000000000005
-      D0020004393937360101000000000000000000F0BF020044AC00008000}
+      00000100901A0000DA0A00000000000000000000000000010000000000005605
+      9F020004393937360101000000000000000000F0BF020044AC00008000}
   end
   object ActionList1: TActionList
     Images = ImageList1
@@ -2883,7 +2927,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 56
     Bitmap = {
-      494C01010700E000DC0410001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010700E0002C0510001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000FEFEFE00FAFAFA00EAEAEA00E3E3E300E9E9E900F9F9F9000000
@@ -3221,7 +3265,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 104
     Bitmap = {
-      494C010103009800740418001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103009800C40418001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       000000000000000000000000000000000000FEFEFE00FEFEFE00FEFEFE00FEFE
       FE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFE
@@ -3538,7 +3582,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 152
     Bitmap = {
-      494C01010B004800FC0430003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010B0048004C0530003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000C000000090000000010020000000000000B0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -7232,7 +7276,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 208
     Bitmap = {
-      494C0101010048004C0430003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101010048009C0430003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000C00000003000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -9683,7 +9727,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 648
     Bitmap = {
-      494C010102000C00A80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000C00F80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000000000000000000000000000003B
       58000072BE00001F3B000000000000000000000000000000000000060B000037
@@ -9872,6 +9916,12 @@ object frmPrincipal: TfrmPrincipal
     Interval = 7000
     OnTimer = TMmRegProxyTimer
     Left = 624
+    Top = 208
+  end
+  object TmReconect: TTimer
+    Enabled = False
+    OnTimer = TmReconectTimer
+    Left = 720
     Top = 208
   end
 end

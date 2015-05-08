@@ -1,0 +1,1 @@
+C: EZSQLException >> SQL Error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'select logado from easy_dash_pabx_serv_fila_de_atendimento where easy_work_colab' at line 1

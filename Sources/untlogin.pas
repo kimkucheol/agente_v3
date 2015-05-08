@@ -11,19 +11,6 @@ uses
   IdRawClient, IdIcmpClient;
 
 type
-  TMachineInfo = record
-    sIP_Address: String;
-    sMac_Address: String;
-    sComputer_Name: array[0..255] of char;
-  end;
-
-  TConfigInfo = record
-    sDatabaseIP  : String;
-    sDatabaseName: String;
-    sDatabaseUser: String;
-    sDatabasePass: String;
-    nDatabasePort: Integer;
-  end;
 
   TfrmLogin = class(TForm)
     sPanel1: TsPanel;
@@ -38,7 +25,8 @@ type
     tmrAutoLogin: TTimer;
     lblChangePassword: TsLabel;
     procedure btnLoginClick(Sender: TObject);
-    function verificalogin(vplogin,vpsenha:string):boolean;
+    function FncFilaEquipe():boolean;
+
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCancelarClick(Sender: TObject);
@@ -46,8 +34,6 @@ type
     procedure FormActivate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure conecta;
-    function VerificaVersao: Boolean;
-    function VerificaLogado: Boolean;
     procedure tmrAutoLoginTimer(Sender: TObject);
     procedure lblChangePasswordClick(Sender: TObject);
     procedure lblChangePasswordMouseEnter(Sender: TObject);
@@ -55,8 +41,6 @@ type
   private
     { Private declarations }
   public
-    TMyMachineInfo: TMachineInfo;
-    TMyConfigInfo: TConfigInfo;
     vping: boolean;
     vpingtempo: integer;
     vpinghost : string;
@@ -161,16 +145,18 @@ end;
 
 procedure TfrmLogin.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  if frmprincipal.TMyAppStatus.bLogado = true then
+  if TMyAppStatus.bLogado = true then
   begin
     application.MessageBox(PChar(APP_MB_WAR_CANNOT_CLOSE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
     canclose := false;
   end;
+
 end;
 
 procedure TfrmLogin.FormCreate(Sender: TObject);
 var
   size: dword;
+
 begin
   // Construindo as Classes "Library´s"
   PrcGenerateLibClass;
@@ -200,13 +186,14 @@ begin
   except
   end;
 
+  conecta;
+
   frmlogin.Caption := PChar(GetStringResource(rcCaptionPrincipal));
 
-  conecta;
   sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
 
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
-  sskinmanager1.SkinName:= varqini.readstring('Configuracoes','skin','Cold');
+  sskinmanager1.SkinName:= varqini.readstring('skin','skin','Cold');
   varqini.free;
 
   sskinmanager1.active := true;
@@ -254,12 +241,14 @@ begin
   // Verificar se o dispositivo de audio existe
   if Agente.TotalAudio <= 0then
   begin
+    LogCallStep('log_login_act', 'sem dispositivo de audio');
     MessageDlg('Atenção..'+#13+'Nenhum dispositivo de áudio foi encontrado.', mtError, [mbOk],0);
     Exit;
   end;
 
   if Agente.TotalMicrofone <= 0then
   begin
+    LogCallStep('log_login_act', 'sem dispositivo de microfone');
     MessageDlg('Atenção..'+#13+'Nenhum dispositivo do microfone foi encontrado.', mtError, [mbOk],0);
     Exit;
   end;
@@ -270,7 +259,7 @@ begin
   end
   else
   begin
-    if VerificaVersao = False then
+    if Agente.VerificaVersao = False then
     begin
       frmlogin.Hide;
       frmprincipal.Hide;
@@ -279,34 +268,44 @@ begin
     end;
 
     Screen.Cursor := crSQLWait;
-    if verificalogin(txtLogin.text, txtSenha.Text) = true then
+    TMyInfoLogin.sLoginUser     := txtLogin.text;
+    TMyInfoLogin.sLoginSenha    := txtSenha.Text;
+
+    if Agente.SQL.VerificaLogin then
     begin
-      frmprincipal.TMyInfoLogin.sNome       := datam.qryLogin.fields[0].AsString;
-      frmprincipal.TMyInfoLogin.sPerfil     := datam.qryLogin.FieldByName('easy_sistema_usuario_perfil_conf_id').AsString;
-      frmprincipal.TMyInfoLogin.sUsuario    := datam.qryLogin.fields[1].AsString;
-      frmprincipal.TMyInfoLogin.sEMail      := datam.qryLogin.fieldbyname('email').AsString;
-      frmprincipal.TMyInfoLogin.sRamal      := datam.qryLogin.fieldbyname('ramal').AsString;
-      frmprincipal.TMyInfoLogin.sIDUsuario  := datam.qryLogin.fieldbyname('id').AsString;
-      frmprincipal.TMyInfoLogin.sSenha      := datam.qryLogin.fieldbyname('senha_ramal').AsString;
-      frmprincipal.TMyInfoLogin.sIPPABX     := datam.qryLogin.fieldbyname('proxy_ramal').AsString;
-      frmprincipal.TMyInfoLogin.sIDOperacao := datam.qryLogin.fields[5].asstring;
+
+      //FncFilaEquipe;
+      TMyInfoLogin.sNome       := datam.qryLogin.fields[0].AsString;
+      TMyInfoLogin.sPerfil     := datam.qryLogin.FieldByName('easy_sistema_usuario_perfil_conf_id').AsString;
+      TMyInfoLogin.sUsuario    := datam.qryLogin.fields[1].AsString;
+      TMyInfoLogin.sEMail      := datam.qryLogin.fieldbyname('email').AsString;
+      TMyInfoLogin.sRamal      := datam.qryLogin.fieldbyname('ramal').AsString;
+      TMyInfoLogin.sIDUsuario  := datam.qryLogin.fieldbyname('id').AsString;
+      TMyInfoLogin.sSenha      := datam.qryLogin.fieldbyname('senha_ramal').AsString;
+      TMyInfoLogin.sIPPABX     := datam.qryLogin.fieldbyname('proxy_ramal').AsString;
+      TMyInfoLogin.sIDOperacao := datam.qryLogin.fields[5].asstring;
+
+      TMyInfoLogin.bFone_registro_act := datam.qryLogin.FieldByName('fone_registro_act').AsBoolean;
+      TMyInfoLogin.sSec_fone_registro_tmp := datam.qryLogin.FieldByName('sec_fone_registro_tmp').AsString;
+      TMyInfoLogin.iEasy_work_equipe_conf_id := datam.qryLogin.FieldByName('equipe_id').AsInteger;
       //frmprincipal.ersaovoperacao := datam.qryLogin.fields[7].asstring;
-      //frmprincipal.carregaoperacao(frmprincipal.TMyInfoLogin.sIDOperacao);
+      //frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
 
       ID_LANG := (datam.qryLogin.Fields[11].AsInteger) - 1;
-      frmprincipal.TMyInfoLogin.sIDEmpresa  := datam.qryLogin.Fields[12].AsString;
-      frmprincipal.TMyVaxIncomingCallParam.bAutoAnswer := datam.qryLogin.fieldbyname('atendimento_auto_act').AsBoolean;
+      TMyInfoLogin.sIDEmpresa := datam.qryLogin.Fields[12].AsString;
 
-      frmprincipal.TMyVaxIncomingCallParam.bSetAudioFromDB := datam.qryLogin.fieldbyname('controle_audio_act').AsBoolean;
-      frmprincipal.TMyVaxIncomingCallParam.SetSpkVolume    := datam.qryLogin.fieldbyname('controle_audio_fone').AsInteger;
-      frmprincipal.TMyVaxIncomingCallParam.SetMicVolume    := datam.qryLogin.fieldbyname('controle_audio_mic').AsInteger;
+      TMyVaxIncomingCallParam.bAutoAnswer := datam.qryLogin.fieldbyname('atendimento_auto_act').AsBoolean;
 
-      frmPrincipal.TMyInfoLogin.bConferencia := datam.qryLogin.fieldbyname('conferencia_Act').AsBoolean;
-      frmPrincipal.TMyClassificacao.bAuto := datam.qryLogin.fieldbyname('classificacao_auto_act').AsBoolean;
-      frmPrincipal.TMyInfoLogin.sIDSupervisor := datam.qryLogin.fieldbyname('easy_sistema_usuario_conf_super_id').AsString;
-      frmPrincipal.TMyInfoLogin.nTipo := (datam.qryLogin.fieldbyname('tipo').AsInteger) - 1;
+      TMyVaxIncomingCallParam.bSetAudioFromDB := datam.qryLogin.fieldbyname('controle_audio_act').AsBoolean;
+      TMyVaxIncomingCallParam.SetSpkVolume := datam.qryLogin.fieldbyname('controle_audio_fone').AsInteger;
+      TMyVaxIncomingCallParam.SetMicVolume := datam.qryLogin.fieldbyname('controle_audio_mic').AsInteger;
 
-      frmPrincipal.TMyInfoLogin.nChatSalasQtd := datam.qryLogin.fieldbyname('chat_nsalas_qde').AsInteger;
+      TMyInfoLogin.bConferencia := datam.qryLogin.fieldbyname('conferencia_Act').AsBoolean;
+      TMyClassificacao.bAuto := datam.qryLogin.fieldbyname('classificacao_auto_act').AsBoolean;
+      TMyInfoLogin.sIDSupervisor := datam.qryLogin.fieldbyname('easy_sistema_usuario_conf_super_id').AsString;
+      TMyInfoLogin.nTipo := (datam.qryLogin.fieldbyname('tipo').AsInteger) - 1;
+
+      TMyInfoLogin.nChatSalasQtd := datam.qryLogin.fieldbyname('chat_nsalas_qde').AsInteger;
 
       if datam.qryLogin.FieldByName('qualidade_plogin_act').AsBoolean then
       begin
@@ -315,69 +314,69 @@ begin
         datam.qryAtualizaQualidade.SQL.Add('update easy_work_colaborador_conf set ');
         datam.qryAtualizaQualidade.SQL.Add('qualidade_plogin_act = ' + QuotedStr('N') + ', ');
         datam.qryAtualizaQualidade.SQL.Add('qualidade_plogin = now() ');
-        datam.qryAtualizaQualidade.SQL.Add('where id = ' + QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario));
+        datam.qryAtualizaQualidade.SQL.Add('where id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
         datam.qryAtualizaQualidade.ExecSQL;
         datam.qryAtualizaQualidade.Active := False;
 
-        frmPrincipal.TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin2').AsString;
+        TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin2').AsString;
       end
       else
-        frmPrincipal.TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin').AsString;
+        TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin').AsString;
 
       //Rota inteligente
-      frmPrincipal.TMyInfoLogin.bRotaInteligente   := datam.qryLogin.FieldByName('usar_rota_inteligente_fixa_act').AsBoolean;
-      frmPrincipal.TMyInfoLogin.nIdRotaInteligente := datam.qryLogin.FieldByName('easy_pabx_serv_rota_inteligente_conf_id').AsInteger;
+      TMyInfoLogin.bRotaInteligente   := datam.qryLogin.FieldByName('usar_rota_inteligente_fixa_act').AsBoolean;
+      TMyInfoLogin.nIdRotaInteligente := datam.qryLogin.FieldByName('easy_pabx_serv_rota_inteligente_conf_id').AsInteger;
 
       //Classificao de chat automatica
-      frmPrincipal.TMyChat.bAutoClassificacao := datam.qryLogin.FieldByName('chat_classificacao_auto_act').AsBoolean;
+      TMyChat.bAutoClassificacao := datam.qryLogin.FieldByName('chat_classificacao_auto_act').AsBoolean;
 
       //FAQ
-      frmPrincipal.TMyFaqClass.bFaqAct := datam.qryLogin.FieldByName('webfaq_act').AsBoolean;
-      frmPrincipal.TMyFaqClass.nFaqIdConf := datam.qryLogin.FieldByName('easy_wfaq_conf_id').AsInteger;
+      TMyFaqClass.bFaqAct := datam.qryLogin.FieldByName('webfaq_act').AsBoolean;
+      TMyFaqClass.nFaqIdConf := datam.qryLogin.FieldByName('easy_wfaq_conf_id').AsInteger;
 
       //Captura Tela
-      frmPrincipal.TMyCaptureScreen.nThreadsRunning := 0;
-      frmPrincipal.TMyCaptureScreen.bCapture := datam.qryLogin.FieldByName('gravador_tela_act').AsBoolean;
-      if frmPrincipal.TMyCaptureScreen.bCapture then
+      TMyCaptureScreen.nThreadsRunning := 0;
+      TMyCaptureScreen.bCapture := datam.qryLogin.FieldByName('gravador_tela_act').AsBoolean;
+      if TMyCaptureScreen.bCapture then
       begin
         sCaptureMode := datam.qryLogin.FieldByName('gravador_tela_modo_cfg').AsString;
         if UpperCase(sCaptureMode) = UpperCase('TEL') then
-          frmPrincipal.TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_PHONE
+          TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_PHONE
         else
           {if UpperCase(sCaptureMode) = UpperCase('CHAT') then
-            frmPrincipal.TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_CHAT
+            TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_CHAT
           else
             if UpperCase(sCaptureMode) = UpperCase('INT') then
-              frmPrincipal.TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_INTERACTIVE
+              TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_INTERACTIVE
             else}
               if UpperCase(sCaptureMode) = UpperCase('COM') then
-                frmPrincipal.TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_ALL;
+                TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_ALL;
 
-        frmPrincipal.TMyCaptureScreen.bCaptureCursor := datam.qryLogin.FieldByName('gravador_tela_cursor_act').AsBoolean;
+        TMyCaptureScreen.bCaptureCursor := datam.qryLogin.FieldByName('gravador_tela_cursor_act').AsBoolean;
 
-        frmPrincipal.TMyCaptureScreen.nSplitInterval := (datam.qryLogin.FieldByName('gravador_tela_modo_tmp2').AsInteger) * 1000;
-        frmPrincipal.TMyCaptureScreen.nSplitStep := 0;
-        frmPrincipal.TMyCaptureScreen.sCaptureFileFormat := '.avi';
-        frmPrincipal.TMyCaptureScreen.sCaptureStorageSrc := ExtractFilePath(Application.ExeName) + 'rec_screen\';
-        frmPrincipal.TMyCaptureScreen.sCaptureStorageDst := IncludeTrailingPathDelimiter(datam.qryLogin.FieldByName('gravador_tela_storage_dst').AsString);
+        TMyCaptureScreen.nSplitInterval := (datam.qryLogin.FieldByName('gravador_tela_modo_tmp2').AsInteger) * 1000;
+        TMyCaptureScreen.nSplitStep := 0;
+        TMyCaptureScreen.sCaptureFileFormat := '.avi';
+        TMyCaptureScreen.sCaptureStorageSrc := ExtractFilePath(Application.ExeName) + 'rec_screen\';
+        TMyCaptureScreen.sCaptureStorageDst := IncludeTrailingPathDelimiter(datam.qryLogin.FieldByName('gravador_tela_storage_dst').AsString);
       end;
 
       //Codigo para integrador CRM
-      frmPrincipal.TMyInfoLogin.sCodigoExterno := datam.qryLogin.FieldByName('codigo_externo').AsString;
+      TMyInfoLogin.sCodigoExterno := datam.qryLogin.FieldByName('codigo_externo').AsString;
 
       //Recupera dialpad
-      frmPrincipal.TMyInfoLogin.bDialPad := datam.qryLogin.FieldByName('fone_dialpad_act').AsBoolean;
+      TMyInfoLogin.bDialPad := datam.qryLogin.FieldByName('fone_dialpad_act').AsBoolean;
 
       //Recupera Data/Hora atual do BD
-      frmPrincipal.TMyInfoLogin.sDataLogin := datam.qryLogin.FieldByName('dataatual').AsString;
-      frmPrincipal.TMyInfoLogin.sHoraLogin := datam.qryLogin.FieldByName('horaatual').AsString;
+      TMyInfoLogin.sDataLogin := datam.qryLogin.FieldByName('dataatual').AsString;
+      TMyInfoLogin.sHoraLogin := datam.qryLogin.FieldByName('horaatual').AsString;
 
       //Recupera obrigatoriedade de informar qualidade da chamada
-      frmPrincipal.TMyInfoLogin.bQualidadeChamada := datam.qryLogin.FieldByName('qualificar_chamada_act').AsBoolean;
+      TMyInfoLogin.bQualidadeChamada := datam.qryLogin.FieldByName('qualificar_chamada_act').AsBoolean;
 
       datam.qryLogin.active := False;
 
-      if VerificaLogado = False then
+      if Agente.VerificaLogado = False then
       begin
         frmlogin.Hide;
         frmprincipal.Hide;
@@ -387,7 +386,7 @@ begin
 
       //qr_has_queue
       datam.qry_has_fila.active := false;
-      datam.qry_has_fila.Params[0].Value := frmprincipal.TMyInfoLogin.sIDUsuario;
+      datam.qry_has_fila.Params[0].Value := TMyInfoLogin.sIDUsuario;
       datam.qry_has_fila.active := true;
       if (datam.qry_has_fila.RecordCount <= 0) or (datam.qry_has_fila.Fields[0].AsInteger = 0) then
       begin
@@ -401,7 +400,7 @@ begin
 
       //qry_has_pause
       datam.qry_has_pause.active := false;
-      datam.qry_has_pause.Params[0].Value := frmprincipal.TMyInfoLogin.sIDOperacao;
+      datam.qry_has_pause.Params[0].Value := TMyInfoLogin.sIDOperacao;
       datam.qry_has_pause.active := true;
       if (datam.qry_has_pause.RecordCount <= 0) or (datam.qry_has_pause.Fields[0].AsInteger = 0) then
       begin
@@ -415,7 +414,7 @@ begin
 
       //qry_has_classif_fila
       datam.qry_has_classif_fila.active := false;
-      datam.qry_has_classif_fila.Params[0].Value := frmprincipal.TMyInfoLogin.sIDEmpresa;
+      datam.qry_has_classif_fila.Params[0].Value := TMyInfoLogin.sIDEmpresa;
       datam.qry_has_classif_fila.active := true;
       if ((datam.qry_has_classif_fila.RecordCount <= 0) or (datam.qry_has_classif_fila.Fields[0].AsInteger = 0)) then
       begin
@@ -429,7 +428,7 @@ begin
 
       //qry_has_pausarestritiva
       datam.qry_has_pausarestritiva.active := false;
-      datam.qry_has_pausarestritiva.Params[0].Value := frmprincipal.TMyInfoLogin.sIDUsuario;
+      datam.qry_has_pausarestritiva.Params[0].Value := TMyInfoLogin.sIDUsuario;
       datam.qry_has_pausarestritiva.active := true;
       if (datam.qry_has_pausarestritiva.RecordCount <= 0) or (datam.qry_has_pausarestritiva.Fields[0].AsBoolean = True) then
       begin
@@ -442,9 +441,9 @@ begin
       end;
 
       frmprincipal.CarregaTelasLinguagem;
-      frmprincipal.carregaoperacao(frmprincipal.TMyInfoLogin.sIDOperacao);
+      frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
 
-      frmPrincipal.LogCallStep('log_login_act', 'btnLoginClick :: Step 4');
+      LogCallStep('log_login_act', 'btnLoginClick :: Step 4');
 
       try
         frmprincipal.ativaramal(Sender);
@@ -479,17 +478,17 @@ var
 begin
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
 
-  TMyConfigInfo.sDatabaseIP := varqini.ReadString('BD','PROXY','');
+  TMyConfigInfo.sDatabaseIP   := varqini.ReadString('BD','PROXY','');
   TMyConfigInfo.sDatabaseName := varqini.ReadString('BD','DNAME','');
   TMyConfigInfo.sDatabaseUser := varqini.ReadString('BD','DUSER','root');
   TMyConfigInfo.sDatabasePass := varqini.ReadString('BD','DPASS','sqladmin');
   TMyConfigInfo.nDatabasePort := varqini.ReadInteger('BD','DPORT',3306);
 
-  vping := varqini.readbool('PING','habilita',false);
+  vping := varqini.readbool('CMD_Ping','habilita',false);
   if vping = true then
   begin
-    vpinghost := varqini.readstring('PING','ip','');
-    vpingtempo := varqini.readinteger('PING','tempo',0)*1000;
+    vpinghost := varqini.readstring('CMD_Ping','ip','');
+    vpingtempo := varqini.readinteger('CMD_Ping','tempo',0)*1000;
   end;
 
   varqini.free;
@@ -530,138 +529,17 @@ begin
   end;
 end;
 
-function TfrmLogin.VerificaVersao: Boolean;
-begin
-  datam.qrySistemaVersao.Active := False;
-  datam.qrySistemaVersao.SQL.Clear;
-  datam.qrySistemaVersao.SQL.Add('select tipo, versao, acao ');
-  datam.qrySistemaVersao.SQL.Add('from easy_sist_software_versao_conf ');
-  datam.qrySistemaVersao.SQL.Add('where tipo = 0 ');
-  datam.qrySistemaVersao.Active := True;
-
-  if datam.qrySistemaVersao.RecordCount > 0 then
-  begin
-    if datam.qrySistemaVersao.Fields[1].AsString <> frmPrincipal.VersaoExe then
-    begin
-      case datam.qrySistemaVersao.Fields[2].AsInteger of
-        0:
-        begin
-          if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
-            application.MessageBox(PChar(APP_MB_WAR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
-        end;
-        1:
-        begin
-          datam.qrySistemaVersao.Active := False;
-          if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
-            application.MessageBox(PChar(APP_MB_ERR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
-          Result := False;
-          Exit;
-        end;
-      end;
-    end;
-  end;
-  datam.qrySistemaVersao.Active := False;
-  Result := True;
-end;
-
-function TfrmLogin.VerificaLogado: Boolean;//Verifica se usuario ja logado em outra estacao
-begin
-  datam.qrySistemaLogado.Active := False;
-  datam.qrySistemaLogado.SQL.Clear;
-  datam.qrySistemaLogado.SQL.Add('select logado ');
-  datam.qrySistemaLogado.SQL.Add('from easy_dash_pabx_serv_fila_de_atendimento ');
-  datam.qrySistemaLogado.SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario));
-  datam.qrySistemaLogado.Active := True;
-
-  if datam.qrySistemaLogado.RecordCount > 0 then
-  begin
-    if datam.qrySistemaLogado.Fields[0].AsBoolean = True then
-    begin
-      datam.qrySistemaLogado.Active := False;
-      application.MessageBox(PChar(APP_MB_ERR_ALREADY_LOGGED[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
-      Result := False;
-      Exit;
-    end;
-  end;
-  datam.qrySistemaLogado.Active := False;
-  Result := True;
-end;
-
 procedure TfrmLogin.btnCancelarClick(Sender: TObject);
 begin
   close;
 end;
 
-function TfrmLogin.verificalogin(vplogin, vpsenha: string): boolean;
+function TfrmLogin.FncFilaEquipe():boolean;
 begin
-  datam.qryLogin.Active := False;
-  datam.qryLogin.SQL.Clear;
-  datam.qryLogin.SQL.Add('select ');
-  datam.qryLogin.SQL.Add('l.descricao as nome, ');
-  datam.qryLogin.SQL.Add('l.login as login, ');
-  datam.qryLogin.SQL.Add('l.senha as senha, ');
-  datam.qryLogin.SQL.Add('c.email as email, ');
-  datam.qryLogin.SQL.Add(QuotedStr('Y') + ' as dialpad, ');
-  datam.qryLogin.SQL.Add('l.easy_call_operacao_conf_id as easy_callcenter_operacao_conf_id, ');
-  datam.qryLogin.SQL.Add('c.easy_sist_usuario_perfil_conf_id as easy_sistema_usuario_perfil_conf_id, ');
-  datam.qryLogin.SQL.Add('s.name as ramal, ');
-  datam.qryLogin.SQL.Add('s.secret as senha_ramal, ');
-  datam.qryLogin.SQL.Add('p.ipaddress as proxy_ramal, ');
-  datam.qryLogin.SQL.Add('c.id, ');
-  datam.qryLogin.SQL.Add('c.agente_idioma as idioma, ');
-  datam.qryLogin.SQL.Add('l.easy_call_empresa_conf_id as empresa, ');
-  datam.qryLogin.SQL.Add('c.fone_atendimento_auto_act as atendimento_auto_act, ');
-  datam.qryLogin.SQL.Add('c.fone_controle_audio_act as controle_audio_act, ');
-  datam.qryLogin.SQL.Add('c.fone_controle_audio_fone as controle_audio_fone, ');
-  datam.qryLogin.SQL.Add('c.fone_controle_audio_mic as controle_audio_mic, ');
-  datam.qryLogin.SQL.Add('c.fone_conferencia_act as conferencia_act, ');
-  datam.qryLogin.SQL.Add('c.fone_classificacao_auto_act as classificacao_auto_act, ');
-  datam.qryLogin.SQL.Add('c.supervisor_id as easy_sistema_usuario_conf_super_id, ');
-  datam.qryLogin.SQL.Add('c.agente_tipo as tipo, ');
-  datam.qryLogin.SQL.Add('c.chat_nsalas_qde, ');
-  datam.qryLogin.SQL.Add('CAST(c.qualidade_plogin AS CHAR) as qualidade_plogin, ');
-  datam.qryLogin.SQL.Add('c.qualidade_plogin_act, ');
-  datam.qryLogin.SQL.Add('CAST(NOW() AS CHAR) as qualidade_plogin2, ');
-  datam.qryLogin.SQL.Add('o.usar_rota_inteligente_fixa_act, o.easy_pabx_serv_rota_inteligente_conf_id, ');
-  datam.qryLogin.SQL.Add('c.chat_classificacao_auto_act, ');
-  datam.qryLogin.SQL.Add('o.webfaq_act, ');
-  datam.qryLogin.SQL.Add('o.easy_wfaq_conf_id, ');
-  datam.qryLogin.SQL.Add('c.gravador_tela_act, ');
-  datam.qryLogin.SQL.Add('c.gravador_tela_cursor_act, ');
-  datam.qryLogin.SQL.Add('c.gravador_tela_modo_cfg, ');
-  datam.qryLogin.SQL.Add('time_to_sec(c.gravador_tela_modo_tmp) as gravador_tela_modo_tmp2, ');
-  datam.qryLogin.SQL.Add('c.gravador_tela_storage_dst, ');
-  datam.qryLogin.SQL.Add('c.codigo_externo, ');
-  datam.qryLogin.SQL.Add('c.fone_dialpad_act, ');
-  datam.qryLogin.SQL.Add('CAST(curdate() AS CHAR) as dataatual, ');
-  datam.qryLogin.SQL.Add('CAST(curtime() AS CHAR) as horaatual, ');
-  datam.qryLogin.SQL.Add('o.qualificar_chamada_act, ');
-  datam.qryLogin.SQL.Add('fone_registro_act,');
-  datam.qryLogin.SQL.Add('time_to_sec(fone_registro_tmp) as sec_fone_registro_tmp');
-  datam.qryLogin.SQL.Add('from ');
-  datam.qryLogin.SQL.Add('easy_sist_usuario_login_conf l ');
-  datam.qryLogin.SQL.Add('left join easy_work_colaborador_conf c on l.easy_work_colaborador_conf_id = c.id ');
-  datam.qryLogin.SQL.Add('left join easy_call_operacao_conf o on l.easy_call_operacao_conf_id = o.id ');
-  datam.qryLogin.SQL.Add('left join easy_call_empresa_conf e on o.easy_call_empresa_conf_id = e.id ');
-  datam.qryLogin.SQL.Add('left join easy_pabx_serv_ramal_sip_conf s on s.id = l.id ');
-  datam.qryLogin.SQL.Add('left join easy_sist_servidor_sip_conf p on c.easy_sist_servidor_sip_conf_id = p.id ');
-  datam.qryLogin.SQL.Add('where ');
-  datam.qryLogin.SQL.Add('true ');
-  datam.qryLogin.SQL.Add('and l.active = ' + QuotedStr('Y'));
-  datam.qryLogin.SQL.Add('and c.active = ' + QuotedStr('Y'));
-  datam.qryLogin.SQL.Add('and o.active = ' + QuotedStr('Y'));
-  datam.qryLogin.SQL.Add('and e.active = ' + QuotedStr('Y'));
-  datam.qryLogin.SQL.Add('and l.login = ' + QuotedStr(vplogin));
-  datam.qryLogin.SQL.Add('and l.senha = ' + QuotedStr(vpsenha));
-  datam.qryLogin.Active := true;
+  if datam.qryUserFila.Active then datam.qryUserFila.Close;
+  datam.qryUserFila.Open;
 
-  if datam.qryLogin.RecordCount > 0 then
-  begin
-    result := true;
-  end
-  else
-  begin
-    result := false;
-  end;
+  Result := Boolean(High(UserFile) > 0);
 end;
+
 end.

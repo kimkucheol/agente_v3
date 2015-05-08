@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses untPrincipal, unttranslate;
+uses untPrincipal, unttranslate, untFuncoes, untLibrary;
 
 {$R *.dfm}
 
@@ -44,34 +44,34 @@ begin
   end
   else
   begin
-    if frmprincipal.TMyAppStatus.bAtendido = true then
+    if TMyAppStatus.bAtendido = true then
     begin
       case tabxfer.TabIndex of
         0:
-        for nForXfer := 0 to frmprincipal.vnumxferfila-1 do
+        for nForXfer := 0 to Agente.SQL.vnumxferfila -1 do
         begin
-          if (frmprincipal.matrizxferfila[1,nForXfer] = cboXFer.text) then
+          if (matrizxferfila[1,nForXfer] = cboXFer.text) then
           begin
-            frmprincipal.vax.TransferCallEx(0, '48' + frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxferfila[0,nForXfer] + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo + frmprincipal.TMyAppStatus.sNumero);
-            frmprincipal.LogCallStep('log_xfer_act', '48' + frmprincipal.matrizxferfila[0,nForXfer]);
-            frmprincipal.TMyXFer.bXFerExec := True;
-            frmprincipal.TMyXFer.sXFerTipo := 'Fila';
-            frmprincipal.TMyXFer.sXFerDest := frmprincipal.matrizxferfila[0,nForXfer];
+            frmprincipal.vax.TransferCallEx(0, '48' + TMyInfoLogin.sRamal + matrizxferfila[0,nForXfer] + TMyVaxIncomingCallParam.sCodTipo + TMyAppStatus.sNumero);
+            LogCallStep('log_xfer_act', '48' + matrizxferfila[0,nForXfer]);
+            TMyXFer.bXFerExec := True;
+            TMyXFer.sXFerTipo := 'Fila';
+            TMyXFer.sXFerDest := matrizxferfila[0,nForXfer];
             break;
           end;
         end;
 
         1:
         begin
-          for nForXfer := 0 to frmprincipal.vnumxferura-1 do
+          for nForXfer := 0 to Agente.SQL.vnumxferura-1 do
           begin
-            if (frmprincipal.matrizxferura[1,nForXfer] = cboXFer.text) then
+            if (matrizxferura[1,nForXfer] = cboXFer.text) then
             begin
-              frmprincipal.vax.TransferCallEx(0, '58' + frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxferura[0,nForXfer] + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo + frmprincipal.TMyAppStatus.sNumero);
-              frmprincipal.LogCallStep('log_xfer_act', '58' + frmprincipal.matrizxferura[0,nForXfer]);
-              frmprincipal.TMyXFer.bXFerExec := True;
-              frmprincipal.TMyXFer.sXFerTipo := 'Ura';
-              frmprincipal.TMyXFer.sXFerDest := frmprincipal.matrizxferura[0,nForXfer];
+              frmprincipal.vax.TransferCallEx(0, '58' + TMyInfoLogin.sRamal + matrizxferura[0,nForXfer] + TMyVaxIncomingCallParam.sCodTipo + TMyAppStatus.sNumero);
+              LogCallStep('log_xfer_act', '58' + matrizxferura[0,nForXfer]);
+              TMyXFer.bXFerExec := True;
+              TMyXFer.sXFerTipo := 'Ura';
+              TMyXFer.sXFerDest := matrizxferura[0,nForXfer];
               break;
             end;
           end;
@@ -79,20 +79,20 @@ begin
 
         2:
         begin
-          for nForXfer := 0 to frmprincipal.vnumxferramal-1 do
+          for nForXfer := 0 to Agente.SQL.vnumxferramal-1 do
           begin
-            if (frmprincipal.matrizxferramal[1,nForXfer] = cboXFer.text) then
+            if (matrizxferramal[1,nForXfer] = cboXFer.text) then
             begin
               if btnXFer.Caption = APP_FRM_XFER_XFER1[ID_LANG] then
                 frmprincipal.ExecutaXFerAssistida(0, 1)
               else
               begin
-                //frmprincipal.CriaXFerAssistida(1, 68, frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxferramal[0,nForXfer] + frmprincipal.TMyAppStatus.sNumero);
-                frmprincipal.vax.TransferCallEx(0, '68' + frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxferramal[0,nForXfer] + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo + frmprincipal.TMyAppStatus.sNumero);
-                frmprincipal.LogCallStep('log_xfer_act', '68' + frmprincipal.matrizxferramal[0,nForXfer]);
-                frmprincipal.TMyXFer.bXFerExec := True;
-                frmprincipal.TMyXFer.sXFerTipo := 'Ramal';
-                frmprincipal.TMyXFer.sXFerDest := frmprincipal.matrizxferramal[0,nForXfer];
+                //frmprincipal.CriaXFerAssistida(1, 68, TMyInfoLogin.sRamal + matrizxferramal[0,nForXfer] + TMyAppStatus.sNumero);
+                frmprincipal.vax.TransferCallEx(0, '68' + TMyInfoLogin.sRamal + matrizxferramal[0,nForXfer] + TMyVaxIncomingCallParam.sCodTipo + TMyAppStatus.sNumero);
+                LogCallStep('log_xfer_act', '68' + matrizxferramal[0,nForXfer]);
+                TMyXFer.bXFerExec := True;
+                TMyXFer.sXFerTipo := 'Ramal';
+                TMyXFer.sXFerDest := matrizxferramal[0,nForXfer];
               end;
               break;
             end;
@@ -101,15 +101,15 @@ begin
 
         3:
         begin
-          for nForXfer := 0 to frmprincipal.vnumxferpesquisa-1 do
+          for nForXfer := 0 to Agente.SQL.vnumxferpesquisa-1 do
           begin
-            if (frmprincipal.matrizxferpesquisa[1,nForXfer] = cboXFer.text) then
+            if (matrizxferpesquisa[1,nForXfer] = cboXFer.text) then
             begin
-              frmprincipal.vax.TransferCallEx(0, '78' + frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxferpesquisa[0,nForXfer] + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo + frmprincipal.TMyAppStatus.sNumero);
-              frmprincipal.LogCallStep('log_xfer_act', '78' + frmprincipal.matrizxferpesquisa[0,nForXfer]);
-              frmprincipal.TMyXFer.bXFerExec := True;
-              frmprincipal.TMyXFer.sXFerTipo := 'Pesquisa';
-              frmprincipal.TMyXFer.sXFerDest := frmprincipal.matrizxferpesquisa[0,nForXfer];
+              frmprincipal.vax.TransferCallEx(0, '78' + TMyInfoLogin.sRamal + matrizxferpesquisa[0,nForXfer] + TMyVaxIncomingCallParam.sCodTipo + TMyAppStatus.sNumero);
+              LogCallStep('log_xfer_act', '78' + matrizxferpesquisa[0,nForXfer]);
+              TMyXFer.bXFerExec := True;
+              TMyXFer.sXFerTipo := 'Pesquisa';
+              TMyXFer.sXFerDest := matrizxferpesquisa[0,nForXfer];
               break;
             end;
           end;
@@ -117,15 +117,15 @@ begin
 
         4:
         begin
-          for nForXfer := 0 to frmprincipal.vnumxfervirtual-1 do
+          for nForXfer := 0 to Agente.SQL.vnumxfervirtual-1 do
           begin
-            if (frmprincipal.matrizxfervirtual[1,nForXfer] = cboXFer.text) then
+            if (matrizxfervirtual[1,nForXfer] = cboXFer.text) then
             begin
-              frmprincipal.vax.TransferCallEx(0, '88' + frmPrincipal.TMyInfoLogin.sRamal + frmprincipal.matrizxfervirtual[0,nForXfer] + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo + frmprincipal.TMyAppStatus.sNumero);
-              frmprincipal.LogCallStep('log_xfer_act', '88' + frmprincipal.matrizxfervirtual[0,nForXfer]);
-              frmprincipal.TMyXFer.bXFerExec := True;
-              frmprincipal.TMyXFer.sXFerTipo := 'Virtual';
-              frmprincipal.TMyXFer.sXFerDest := frmprincipal.matrizxfervirtual[0,nForXfer];
+              frmprincipal.vax.TransferCallEx(0, '88' + TMyInfoLogin.sRamal + matrizxfervirtual[0,nForXfer] + TMyVaxIncomingCallParam.sCodTipo + TMyAppStatus.sNumero);
+              LogCallStep('log_xfer_act', '88' + matrizxfervirtual[0,nForXfer]);
+              TMyXFer.bXFerExec := True;
+              TMyXFer.sXFerTipo := 'Virtual';
+              TMyXFer.sXFerDest := matrizxfervirtual[0,nForXfer];
               break;
             end;
           end;
@@ -133,22 +133,22 @@ begin
 
         5:
         begin
-          for nForXfer := 0 to frmprincipal.vnumxferconsulta-1 do
+          for nForXfer := 0 to Agente.SQL.vnumxferconsulta-1 do
           begin
-            if (frmprincipal.matrizxferconsulta[1,nForXfer] = cboXFer.text) then
+            if (matrizxferconsulta[1,nForXfer] = cboXFer.text) then
             begin
-              frmprincipal.CriaConsulta(1, 98, frmprincipal.matrizxferconsulta[0,nForXfer]);
-              frmprincipal.LogCallStep('log_xfer_act', '98' + frmprincipal.matrizxferconsulta[0,nForXfer]);
+              frmprincipal.CriaConsulta(1, 98, matrizxferconsulta[0,nForXfer]);
+              LogCallStep('log_xfer_act', '98' + matrizxferconsulta[0,nForXfer]);
               break;
             end;
           end;
         end;
       end;
     end
-    else//if frmprincipal.TMyAppStatus.bAtendido = true then
+    else//if TMyAppStatus.bAtendido = true then
     begin
       frmprincipal.mensagem(APP_MB_ERR_CANNOT_XFER[ID_LANG]);
-    end;//if frmprincipal.TMyAppStatus.bAtendido = true then
+    end;//if TMyAppStatus.bAtendido = true then
   end;
 end;
 
@@ -166,19 +166,19 @@ begin
     0:
     begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_QUEUE[ID_LANG];
-      for ind := 0 to frmprincipal.vnumxferfila-1 do
+      for ind := 0 to Agente.SQL.vnumxferfila-1 do
       begin
-        if frmPrincipal.TMyVaxIncomingCallParam.sFila <> frmprincipal.matrizxferfila[0,ind] then
-          cboXFer.Items.Add(frmprincipal.matrizxferfila[1,ind]);
+        if TMyVaxIncomingCallParam.sFila <> matrizxferfila[0,ind] then
+          cboXFer.Items.Add(matrizxferfila[1,ind]);
       end;
     end;
 
     1:
     begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_IVR[ID_LANG];
-      for ind := 0 to frmprincipal.vnumxferura-1 do
+      for ind := 0 to Agente.SQL.vnumxferura-1 do
       begin
-        cboXFer.Items.Add(frmprincipal.matrizxferura[1,ind]);
+        cboXFer.Items.Add(matrizxferura[1,ind]);
       end;
     end;
 
@@ -186,15 +186,15 @@ begin
     begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_EXTEN[ID_LANG];
 
-      for ind := 0 to frmprincipal.vnumxferramal-1 do
+      for ind := 0 to Agente.SQL.vnumxferramal-1 do
       begin
-        cboXFer.Items.Add(frmprincipal.matrizxferramal[1,ind]);
+        cboXFer.Items.Add(matrizxferramal[1,ind]);
       end;
 
-      if frmprincipal.TMyAtxferCallClass.bInAtxferCall = True then
+      if TMyAtxferCallClass.bInAtxferCall = True then
       begin
         cboXFer.Enabled := False;
-        cboXFer.ItemIndex := frmprincipal.TMyAtxferCallClass.nLastDest;
+        cboXFer.ItemIndex := TMyAtxferCallClass.nLastDest;
         Exit;
       end
       else
@@ -204,18 +204,18 @@ begin
     3:
     begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_RESEARCH[ID_LANG];
-      for ind := 0 to frmprincipal.vnumxferpesquisa-1 do
+      for ind := 0 to Agente.SQL.vnumxferpesquisa-1 do
       begin
-        cboXFer.Items.Add(frmprincipal.matrizxferpesquisa[1,ind]);
+        cboXFer.Items.Add(matrizxferpesquisa[1,ind]);
       end;
     end;
 
     4:
     begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_VIRTUAL[ID_LANG];
-      for ind := 0 to frmprincipal.vnumxfervirtual-1 do
+      for ind := 0 to Agente.SQL.vnumxfervirtual-1 do
       begin
-        cboXFer.Items.Add(frmprincipal.matrizxfervirtual[1,ind]);
+        cboXFer.Items.Add(matrizxfervirtual[1,ind]);
       end;
     end;
 
@@ -224,16 +224,16 @@ begin
       lblSelecioneXfer.Caption := APP_FRM_XFER_SELECT_CONSULTATION[ID_LANG];
       btnXFer.Caption := APP_FRM_XFER_XFER2[ID_LANG];
 
-      for ind := 0 to frmprincipal.vnumxferconsulta-1 do
+      for ind := 0 to Agente.SQL.vnumxferconsulta-1 do
       begin
-        cboXFer.Items.Add(frmprincipal.matrizxferconsulta[1,ind]);
+        cboXFer.Items.Add(matrizxferconsulta[1,ind]);
       end;
 
-      if frmprincipal.TMyConsultaCallClass.bInConsCall = True then
+      if TMyConsultaCallClass.bInConsCall = True then
       begin
         btnXFer.Enabled := False;
         cboXFer.Enabled := False;
-        cboXFer.ItemIndex := frmprincipal.TMyConsultaCallClass.nLastDest;
+        cboXFer.ItemIndex := TMyConsultaCallClass.nLastDest;
         Exit;
       end;
     end;

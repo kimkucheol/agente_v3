@@ -1,6 +1,6 @@
 object datam: Tdatam
   OldCreateOrder = False
-  Height = 634
+  Height = 753
   Width = 940
   object con_connect: TZConnection
     AutoCommit = False
@@ -10,17 +10,19 @@ object datam: Tdatam
     Port = 33306
     User = 'root'
     Password = 'sqladmin'
-    Left = 60
-    Top = 8
+    Left = 64
+    Top = 9
   end
   object qryLogin: TZQuery
     Connection = con_connect
+    BeforeOpen = qryLoginBeforeOpen
     Params = <>
-    Left = 60
-    Top = 56
+    Left = 178
+    Top = 60
   end
   object qr_carrega_pausa: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_pausaBeforeOpen
     SQL.Strings = (
       'SELECT '
       ' p.id, '
@@ -59,8 +61,8 @@ object datam: Tdatam
         Name = 'vidoperacao'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 152
+    Left = 178
+    Top = 163
     ParamData = <
       item
         DataType = ftUnknown
@@ -70,11 +72,12 @@ object datam: Tdatam
   end
   object qr_verifica_pausa: TZQuery
     Params = <>
-    Left = 429
-    Top = 8
+    Left = 440
+    Top = 9
   end
   object qr_carrega_sites: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_sitesBeforeOpen
     SQL.Strings = (
       'select * from easy_call_operacao_agente_botoes_conf'
       'where easy_call_operacao_conf_id = :voperacao'
@@ -85,8 +88,8 @@ object datam: Tdatam
         Name = 'voperacao'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 296
+    Left = 178
+    Top = 319
     ParamData = <
       item
         DataType = ftUnknown
@@ -96,29 +99,43 @@ object datam: Tdatam
   end
   object qry_carrega_class_fila: TZQuery
     Connection = con_connect
+    BeforeOpen = qry_carrega_class_filaBeforeOpen
     Params = <>
-    Left = 60
-    Top = 200
+    Left = 178
+    Top = 215
   end
   object qryGravaClassificacao: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 255
-    Top = 296
+    Left = 304
+    Top = 320
   end
   object qryTempoFila: TZQuery
     Connection = con_connect
-    Params = <>
-    Left = 60
-    Top = 248
+    BeforeOpen = qryTempoFilaBeforeOpen
+    Params = <
+      item
+        DataType = ftString
+        Name = 'VCallId'
+        ParamType = ptInput
+      end>
+    Left = 178
+    Top = 267
+    ParamData = <
+      item
+        DataType = ftString
+        Name = 'VCallId'
+        ParamType = ptInput
+      end>
   end
   object qr_verifica_logoff: TZQuery
     Params = <>
-    Left = 429
-    Top = 56
+    Left = 440
+    Top = 60
   end
   object qr_carrega_integrador: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_integradorBeforeOpen
     SQL.Strings = (
       'SELECT  '
       '  i.id,'
@@ -178,8 +195,8 @@ object datam: Tdatam
         Name = 'vidoperacao'
         ParamType = ptUnknown
       end>
-    Left = 255
-    Top = 8
+    Left = 304
+    Top = 9
     ParamData = <
       item
         DataType = ftUnknown
@@ -203,8 +220,8 @@ object datam: Tdatam
         Name = 'vusuario'
         ParamType = ptUnknown
       end>
-    Left = 428
-    Top = 288
+    Left = 440
+    Top = 319
     ParamData = <
       item
         DataType = ftUnknown
@@ -225,8 +242,8 @@ object datam: Tdatam
         Name = 'vcolaborador'
         ParamType = ptUnknown
       end>
-    Left = 255
-    Top = 152
+    Left = 304
+    Top = 164
     ParamData = <
       item
         DataType = ftUnknown
@@ -247,8 +264,8 @@ object datam: Tdatam
         Name = 'vcolaborador'
         ParamType = ptUnknown
       end>
-    Left = 255
-    Top = 200
+    Left = 304
+    Top = 216
     ParamData = <
       item
         DataType = ftUnknown
@@ -278,8 +295,8 @@ object datam: Tdatam
         Name = 'vidpausa'
         ParamType = ptUnknown
       end>
-    Left = 255
-    Top = 248
+    Left = 304
+    Top = 268
     ParamData = <
       item
         DataType = ftUnknown
@@ -294,6 +311,7 @@ object datam: Tdatam
   end
   object qr_carrega_xfer_ura: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_xfer_uraBeforeOpen
     SQL.Strings = (
       'select'
       ' id, '
@@ -310,8 +328,8 @@ object datam: Tdatam
         Name = 'vempresa'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 392
+    Left = 178
+    Top = 423
     ParamData = <
       item
         DataType = ftUnknown
@@ -321,44 +339,50 @@ object datam: Tdatam
   end
   object qryCarregaXFerFila: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaXFerFilaBeforeOpen
     Params = <>
-    Left = 60
-    Top = 344
+    Left = 178
+    Top = 371
   end
   object qryVerificaLoginAtivo: TZQuery
     Connection = con_connect
+    BeforeOpen = qryVerificaLoginAtivoBeforeOpen
     Params = <>
-    Left = 255
-    Top = 104
+    Left = 304
+    Top = 112
   end
   object qry_operacao_has_parametros: TZQuery
     Connection = con_connect
+    BeforeOpen = qry_operacao_has_parametrosBeforeOpen
     Params = <>
-    Left = 255
-    Top = 440
+    Left = 304
+    Top = 475
   end
   object qry_carrega_LogCallStep: TZQuery
     Connection = con_connect
+    BeforeOpen = qry_carrega_LogCallStepBeforeOpen
     SQL.Strings = (
       '')
     Params = <>
-    Left = 255
-    Top = 344
+    Left = 304
+    Top = 371
   end
   object qry_carrega_class_operacao: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 255
-    Top = 392
+    Left = 304
+    Top = 423
   end
   object qryCarregaXFerRamal: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaXFerRamalBeforeOpen
     Params = <>
-    Left = 60
-    Top = 440
+    Left = 178
+    Top = 475
   end
   object qr_carrega_xfer_pesquisa: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_xfer_pesquisaBeforeOpen
     SQL.Strings = (
       'select'
       ' id,'
@@ -376,8 +400,8 @@ object datam: Tdatam
         Name = 'vempresa'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 488
+    Left = 178
+    Top = 527
     ParamData = <
       item
         DataType = ftUnknown
@@ -388,8 +412,8 @@ object datam: Tdatam
   object qryChatQueue: TZQuery
     Connection = conChatQueue
     Params = <>
-    Left = 872
-    Top = 64
+    Left = 64
+    Top = 120
   end
   object conChatQueue: TZConnection
     AutoCommit = False
@@ -399,26 +423,28 @@ object datam: Tdatam
     Port = 33306
     User = 'root'
     Password = 'sqladmin'
-    Left = 872
-    Top = 8
+    Left = 64
+    Top = 64
   end
   object qryChatCarrega: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 560
-    Top = 8
+    Left = 564
+    Top = 9
   end
   object qryChatCarregaRespGrupo: TZQuery
     Connection = con_connect
+    BeforeOpen = qryChatCarregaRespGrupoBeforeOpen
     Params = <>
-    Left = 560
-    Top = 152
+    Left = 564
+    Top = 164
   end
   object qryChatCarregaResp: TZQuery
     Connection = con_connect
+    BeforeOpen = qryChatCarregaRespBeforeOpen
     Params = <>
-    Left = 560
-    Top = 96
+    Left = 564
+    Top = 112
   end
   object qryChangePass: TZQuery
     Connection = con_connect
@@ -470,8 +496,8 @@ object datam: Tdatam
         Name = 'vsenha'
         ParamType = ptUnknown
       end>
-    Left = 424
-    Top = 104
+    Left = 440
+    Top = 112
     ParamData = <
       item
         DataType = ftUnknown
@@ -487,34 +513,47 @@ object datam: Tdatam
   object qryChatUpdateDash: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 560
-    Top = 208
+    Left = 564
+    Top = 216
   end
   object dtsChatPesquisaHist: TDataSource
     DataSet = qryChatPesquisaHist
-    Left = 872
-    Top = 184
+    Left = 64
+    Top = 176
   end
   object qryChatPesquisaHist: TZQuery
     Connection = con_connect
-    Params = <>
-    Left = 560
-    Top = 264
+    BeforeOpen = qryChatPesquisaHistBeforeOpen
+    Params = <
+      item
+        DataType = ftString
+        Name = 'ID'
+        ParamType = ptInput
+      end>
+    Left = 564
+    Top = 268
+    ParamData = <
+      item
+        DataType = ftString
+        Name = 'ID'
+        ParamType = ptInput
+      end>
   end
   object qryChatPesquisaHistMsg: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 560
-    Top = 320
+    Left = 564
+    Top = 319
   end
   object qryUpdateStatus: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 424
-    Top = 152
+    Left = 440
+    Top = 164
   end
   object qrySistemaVersao: TZQuery
     Connection = con_connect
+    BeforeOpen = qrySistemaVersaoBeforeOpen
     SQL.Strings = (
       'select'
       '  u.nome,'
@@ -557,8 +596,8 @@ object datam: Tdatam
         Name = 'vsenha'
         ParamType = ptUnknown
       end>
-    Left = 255
-    Top = 56
+    Left = 304
+    Top = 60
     ParamData = <
       item
         DataType = ftUnknown
@@ -571,29 +610,32 @@ object datam: Tdatam
         ParamType = ptUnknown
       end>
   end
-  object qryFaqConf: TZQuery
+  object qryFaqGrupoConf: TZQuery
     Connection = con_connect
+    BeforeOpen = qryFaqGrupoConfBeforeOpen
     Params = <>
-    Left = 664
-    Top = 8
+    Left = 698
+    Top = 9
   end
   object qry_nregistro_hist: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 255
-    Top = 488
+    Left = 304
+    Top = 527
   end
   object qryConferencia: TZQuery
     Connection = con_connect
+    BeforeOpen = qryConferenciaBeforeOpen
     Params = <>
-    Left = 560
-    Top = 368
+    Left = 564
+    Top = 371
   end
-  object qryConferenciaTipo: TZQuery
+  object qryConferenciaTipoNInterno: TZQuery
     Connection = con_connect
+    BeforeOpen = qryConferenciaTipoNInternoBeforeOpen
     Params = <>
-    Left = 560
-    Top = 416
+    Left = 564
+    Top = 423
   end
   object qry_has_pause: TZQuery
     Connection = con_connect
@@ -618,8 +660,8 @@ object datam: Tdatam
         Name = 'vidoperacao'
         ParamType = ptUnknown
       end>
-    Left = 428
-    Top = 336
+    Left = 440
+    Top = 371
     ParamData = <
       item
         DataType = ftUnknown
@@ -649,8 +691,8 @@ object datam: Tdatam
         Name = 'vidoperacao'
         ParamType = ptUnknown
       end>
-    Left = 428
-    Top = 384
+    Left = 440
+    Top = 423
     ParamData = <
       item
         DataType = ftUnknown
@@ -671,8 +713,8 @@ object datam: Tdatam
         Name = 'vcolaborador'
         ParamType = ptUnknown
       end>
-    Left = 428
-    Top = 480
+    Left = 440
+    Top = 475
     ParamData = <
       item
         DataType = ftUnknown
@@ -683,35 +725,39 @@ object datam: Tdatam
   object qryLoginSup: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 60
-    Top = 104
+    Left = 178
+    Top = 111
   end
   object qryChatCarregaConf: TZQuery
     Connection = con_connect
+    BeforeOpen = qryChatCarregaConfBeforeOpen
     Params = <>
-    Left = 560
-    Top = 56
+    Left = 564
+    Top = 60
   end
   object qryCarregaCoaching: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaCoachingBeforeOpen
     Params = <>
-    Left = 425
-    Top = 200
+    Left = 440
+    Top = 216
   end
   object qryUpdateCoaching: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 426
-    Top = 246
+    Left = 440
+    Top = 268
   end
   object qryCarregaFilas: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaFilasBeforeOpen
     Params = <>
     Left = 564
-    Top = 480
+    Top = 527
   end
   object qrySistemaLogado: TZQuery
     Connection = con_connect
+    BeforeOpen = qrySistemaLogadoBeforeOpen
     SQL.Strings = (
       'select'
       '  u.nome,'
@@ -754,8 +800,8 @@ object datam: Tdatam
         Name = 'vsenha'
         ParamType = ptUnknown
       end>
-    Left = 663
-    Top = 56
+    Left = 698
+    Top = 112
     ParamData = <
       item
         DataType = ftUnknown
@@ -770,6 +816,7 @@ object datam: Tdatam
   end
   object qr_carrega_xfer_virtual: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_xfer_virtualBeforeOpen
     SQL.Strings = (
       'select'
       ' id,'
@@ -788,8 +835,8 @@ object datam: Tdatam
         Name = 'vempresa'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 536
+    Left = 178
+    Top = 579
     ParamData = <
       item
         DataType = ftUnknown
@@ -799,18 +846,20 @@ object datam: Tdatam
   end
   object qryCentroCusto: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCentroCustoBeforeOpen
     Params = <>
-    Left = 664
-    Top = 104
+    Left = 698
+    Top = 164
   end
   object qryAtualizaQualidade: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 668
-    Top = 208
+    Left = 698
+    Top = 216
   end
   object qr_carrega_xfer_consulta: TZQuery
     Connection = con_connect
+    BeforeOpen = qr_carrega_xfer_consultaBeforeOpen
     SQL.Strings = (
       'select'
       ' id,'
@@ -828,8 +877,8 @@ object datam: Tdatam
         Name = 'vempresa'
         ParamType = ptUnknown
       end>
-    Left = 60
-    Top = 584
+    Left = 178
+    Top = 631
     ParamData = <
       item
         DataType = ftUnknown
@@ -839,20 +888,65 @@ object datam: Tdatam
   end
   object qryCarregaLoja: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaLojaBeforeOpen
     Params = <>
-    Left = 255
-    Top = 536
+    Left = 304
+    Top = 579
   end
   object qryUpdateRejectCall: TZQuery
     Connection = con_connect
     Params = <>
-    Left = 426
-    Top = 534
+    Left = 440
+    Top = 527
   end
   object qryCarregaEMails: TZQuery
     Connection = con_connect
+    BeforeOpen = qryCarregaEMailsBeforeOpen
     Params = <>
     Left = 564
-    Top = 536
+    Top = 579
+  end
+  object qryUserFila: TZQuery
+    Connection = con_connect
+    BeforeOpen = qryUserFilaBeforeOpen
+    AfterOpen = qryUserFilaAfterOpen
+    Params = <>
+    Left = 304
+    Top = 631
+  end
+  object qryChatCarregaSala: TZQuery
+    Connection = con_connect
+    BeforeOpen = qryChatCarregaSalaBeforeOpen
+    Params = <>
+    Left = 698
+    Top = 268
+  end
+  object qryChatCarregaTrans: TZQuery
+    Connection = con_connect
+    BeforeOpen = qryChatCarregaTransBeforeOpen
+    Params = <>
+    Left = 698
+    Top = 320
+  end
+  object qry_carrega_class_fila_sub: TZQuery
+    Connection = con_connect
+    BeforeOpen = qry_carrega_class_fila_subBeforeOpen
+    Params = <>
+    Left = 698
+    Top = 372
+  end
+  object qryFaqRespConf: TZQuery
+    Connection = con_connect
+    BeforeOpen = qryFaqRespConfBeforeOpen
+    Params = <>
+    Left = 698
+    Top = 60
+  end
+  object qryConferenciaTipoNExterno: TZQuery
+    Connection = con_connect
+    BeforeOpen = qryConferenciaTipoNExternoBeforeOpen
+    Params = <>
+    Left = 562
+    Top = 476
   end
 end

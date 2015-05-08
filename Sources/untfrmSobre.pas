@@ -247,12 +247,10 @@ begin
 
   lblEmpresaTxt.Caption         := GetStringResource(rcNomeEmpresa);
   lblAPPTxt.Caption             := GetStringResource(rcCaptionPrincipal);
-  lblVersaoTxt.Caption          := frmPrincipal.VersaoExe + '(' + frmPrincipal.stbStatusBar.Hint + ')';
+  lblVersaoTxt.Caption          := Agente.VersaoExe + '(' + frmPrincipal.stbStatusBar.Hint + ')';
   lblCopyrightTxt.Caption       := GetStringResource(rcCopyright);
   lblDesenvolvidoPorTxt.Caption := GetStringResource(rcDevelopedBy);
 
-  lblAudio.Caption              := MmDispositivosSom.Lines[0];
-  lblMic.Caption                := MmDispositivosMic.Lines[0];
   lblUser.Caption               := Agente.WinUSER;
   lblSO.Caption                 := Agente.WinSYS_OPER;
   lblIP.Caption                 := Agente.WinIP;
@@ -282,6 +280,9 @@ begin
   lblMic.Caption := MmDispositivosMic.Lines[0];
 
   FreeAndNil(Lst);
+
+  MmDispositivosSom.SelStart := 0;
+  MmDispositivosMic.SelStart := 0;
 
 //  MmDispositivosMic.Lines.Assign(Agente.ListaMics);
 end;

@@ -39,7 +39,7 @@ var
 
 implementation
 
-uses untPrincipal, untdm, unttranslate, untlogin;
+uses untPrincipal, untdm, unttranslate, untlogin, untFuncoes, untLibrary;
 
 {$R *.dfm}
 
@@ -151,13 +151,13 @@ begin
       datam.qryLoginSup.SQL.Add(') values (');
       datam.qryLoginSup.SQL.Add('curdate(), curtime(), ');
       datam.qryLoginSup.SQL.Add(idPausa + ',');
-      datam.qryLoginSup.SQL.Add(frmPrincipal.TMyInfoLogin.sIDUsuario + ',');
+      datam.qryLoginSup.SQL.Add(TMyInfoLogin.sIDUsuario + ',');
       datam.qryLoginSup.SQL.Add(idSup + ')');
       datam.qryLoginSup.ExecSQL;
       datam.qryLoginSup.Active := False;
 
       frmPrincipal.actlogoffExecute(Nil);
-      frmPrincipal.TMyAppStatus.bPodeFechar := True;
+      TMyAppStatus.bPodeFechar := True;
       frmPrincipal.Close;
     end
     else

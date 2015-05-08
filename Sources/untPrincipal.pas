@@ -4,214 +4,16 @@ interface
 
 uses
   {Winapi.}Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList, Vcl.ImgList, sSkinManager,
-  sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo,
-  Vcl.OleCtrls, inifiles, sBevel, sCheckBox, sLabel, Math,
-  sPageControl, sEdit, sFrameBar, sStatusBar,
-  Vcl.Grids, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-  IdExplicitTLSClientServerBase, IdFTP, acProgressBar, Vcl.Buttons,
-  sSpeedButton, SHDocVw, acPNG, ZDataset, sMemo, ShellApi, sComboBox,
-  sRichEdit, fs_synmemo, Data.DB, ZAbstractRODataset, ZAbstractDataset,
-  ZStoredProcedure, sGroupBox, Vcl.Menus, Vcl.DBGrids, ClipBrd, Vcl.Mask,
-  sMaskEdit, sCustomComboEdit, sTooledit, sListBox, sListView, sTreeView,
-  ad3SpellBase, ad3Spell, ad4Live, IdRawBase, IdRawClient, IdIcmpClient,
-  Vcl.MPlayer, MMSystem, sTabControl, StrUtils, Registry, RichEdit,
-  ZConnection, SCREEN2VIDEOLib_TLB, PdfDoc, PReport, PRAnnotation,
-  PRJpegImage, RotinasGerais, untStartup, sScrollBar, OverbyteIcsWndControl,
-  OverbyteIcsWSocket, Vcl.OleServer, VAXSIPUSERAGENTOCXLib_TLB;
-
-type
-  TAppStatus = record
-    bPodeFechar: Boolean;
-    bLogado: Boolean;
-    bAtendido: Boolean;
-    bSainte: Boolean;
-    sTipoChamada: String;
-    sTipoEvento: String;
-    sNumero: String;
-
-    dtvInicioChamada: TDateTime;
-    dtvFimChamada: TDateTime;
-    dtvInicioPausa: TDateTime;
-
-    tTempoHoldTotal: TTime;
-    tTempoHoldIni: TTime;
-    tTempoHoldFim: TTime;
-
-    sSipDialID: String;
-    sSipDialStatus: String;
-    sTipoDesconexao: String;
-
-    nCallQuality: Integer;
-  end;
-
-  TInfoLogin = record
-    sNome             : String;
-    sUsuario          : String;
-    sEMail            : String;
-    sRamal            : String;
-    sIDUsuario        : String;
-    sSenha            : String;
-    sIPPABX           : String;
-    sIDOperacao       : String;
-    sIDEmpresa        : String;
-    bConferencia      : Boolean;
-    sIDSupervisor     : String;
-    nTipo             : Integer;
-    sQualidadePLogin  : String;
-    sPerfil           : String;
-
-    bRotaInteligente  : Boolean;
-    nIdRotaInteligente: Integer;
-
-    nChatSalasQtd     : Integer;
-
-    //Utilizado no integrador
-    sCodigoExterno    : String;
-
-    //Recupera dialpad
-    bDialPad          : Boolean;
-
-    //Data/Hora BD
-    sDataLogin        : String;
-    sHoraLogin        : String;
-
-    //Qualidade da Chamada
-    bQualidadeChamada : Boolean;
-  end;
-
-  TVaxIncomingCallParams = record
-    bAutoAnswer: Boolean;
-    bIncomingCall: Boolean;
-    CallId: WideString;
-    DisplayName: WideString;
-    UserName: WideString;
-    FromURI: WideString;
-    ToURI: WideString;
-
-    sProtocolo: String;
-    sTipoOperacao: String;
-    sTipoLigacao: String;
-    sUniqueID: String;
-    sFila: String;
-    sFilaDSC: String;
-    sCodTipo: String;
-    sNomeLoja: String;
-    sCampo: array[1..10] of String;
-
-    //Audio parameters
-    bSetAudioFromDB: Boolean;
-    SetSpkVolume: Integer;
-    SetMicVolume: Integer;
-
-    //AudioRing Info
-    sRingFile: String;
-    nTotalDevices: Integer;
-    nCurrentDevice: Integer;
-
-    //Record
-    bRecord: Boolean;
-  end;
-
-  TPausa = record
-    bPausado       : Boolean;
-    bDiscouPausa   : Boolean;
-    bAtivoPausa    : Boolean;
-    bTrocandoPausa : Boolean;
-    bTravaRestricao: Boolean;
-    bLastCallRedial: Boolean;
-
-    sIDPausa       : String;
-    sPausaTipo     : String;
-    nPausaDurMinAct: Integer;
-    tPausaDurMinVal: TTime;
-    tTempoPausa    : TTime;
-  end;
-
-  TFaqClass = record
-    bFaqAct: Boolean;
-    nFaqIdConf: Integer;
-
-    nQtdGrupoConf: Integer;
-    matrizGrupoConf: array of array of string;
-
-    nQtdRespostaConf: Integer;
-    matrizRespostaConf: array of array of string;
-  end;
-
-  TConfCallClass = record
-    bInConfCall: Boolean;
-    bExterno: Boolean;
-    sNum2Dial: String;
-    nQtdConfCall: Integer;
-    matrizConfCall: array of array of string;
-
-    nQtdIntConfCall: Integer;
-    matrizIntConfCall: array of array of string;
-
-    nQtdExtConfCall: Integer;
-    matrizExtConfCall: array of array of string;
-  end;
-
-  TConsultaCallClass = record
-    bInConsCall  : Boolean;
-    sLastAppState: String;
-    nLastDest    : Integer;
-  end;
-
-  TAtxferCallClass = record
-    bInAtxferCall: Boolean;
-    nLastDest    : Integer;
-    sLastState   : String;
-  end;
-
-  TClassificacao = record
-    bAuto: Boolean;
-    bClassificou: Boolean;
-    bClassificando: Boolean;
-
-    bAutoAgendouPausa: Boolean;
-    sAutoAgendouPausaTipo: String;
-    nAutoAgendouPausaIndex: Integer;
-  end;
-
-  TCoaching = record
-    bCoaching: Boolean;
-    sIdCoaching: String;
-    nCboCoachingIndex: Integer;
-  end;
-
-  TXFer = record
-    bXFerExec: Boolean;
-    sXFerTipo: String;
-    sXFerDest: String;
-  end;
-
-  TChat = record
-    nChatAtivo: Integer;
-    sDirBlobReceived: String;
-    bAutoClassificacao: Boolean;
-  end;
-
-  TCaptureScreen = record
-    bCapture: Boolean;
-    bCapturing: Boolean;
-    nCaptureMode: Integer;
-    bCaptureAudio: Boolean;
-    bCaptureCursor: Boolean;
-    //sCapturePort: String;
-    nSplitInterval: Integer;
-    nSplitStep: Integer;
-    sCaptureStorageSrc: String;
-    sCaptureStorageFile: String;
-    sCaptureFileFormat: String;
-    sCaptureStorageDst: String;
-    nThreadsRunning: Integer;
-
-    //sCaptureCurrentDirRec: String;
-    //sCaptureCurrentFileRec: String;
-  end;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList,
+  Vcl.ImgList, sSkinManager, sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo, Vcl.OleCtrls,
+  inifiles, sBevel, sCheckBox, sLabel, Math, sPageControl, sEdit, sFrameBar, sStatusBar, Vcl.Grids, IdBaseComponent,
+  IdComponent, IdTCPConnection, IdTCPClient, IdExplicitTLSClientServerBase, IdFTP, acProgressBar, Vcl.Buttons,
+  sSpeedButton, SHDocVw, acPNG, ZDataset, sMemo, ShellApi, sComboBox, sRichEdit, fs_synmemo, Data.DB,
+  ZAbstractRODataset, ZAbstractDataset, ZStoredProcedure, sGroupBox, Vcl.Menus, Vcl.DBGrids, ClipBrd, Vcl.Mask,
+  sMaskEdit, sCustomComboEdit, sTooledit, sListBox, sListView, sTreeView, ad3SpellBase, ad3Spell, ad4Live, IdRawBase,
+  IdRawClient, IdIcmpClient, Vcl.MPlayer, MMSystem, sTabControl, StrUtils, Registry, RichEdit, ZConnection,
+  SCREEN2VIDEOLib_TLB, PdfDoc, PReport, PRAnnotation, PRJpegImage, RotinasGerais, untStartup, sScrollBar,
+  OverbyteIcsWndControl, OverbyteIcsWSocket, Vcl.OleServer, VAXSIPUSERAGENTOCXLib_TLB, untLibrary;
 
 type
   TfrmPrincipal = class(TForm)
@@ -508,12 +310,12 @@ type
     tmrSendAGE0X: TTimer;
     AudioDevices1: TAudioDevices;
     TMmRegProxy: TTimer;
+    TmReconect: TTimer;
     procedure actloginExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure actsairExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     function InitVaxObject(): WordBool;
-    Function VersaoExe: String;
     //function OpenLines(): WordBool;
     function Abrelinha(numlinha: integer): WordBool;
     function GetSelectedAudioOut(): Integer;
@@ -565,7 +367,6 @@ type
       var Frame: TCustomFrame);
     function navegador(tipo: string): string;
     procedure Integrador(nTipo: Integer; nSalaChat: Integer);
-    procedure LogCallStep(tipo: String; arg: String);
     procedure LogPing(sTipo: String; sMsg: String);
     procedure despausapos;
     procedure AtivaFlashWindow(bAtiva: Boolean);
@@ -788,11 +589,11 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure TMmRegProxyTimer(Sender: TObject);
     function RunTMmRegProxy(Sender: TObject) : Boolean;
+    procedure TmReconectTimer(Sender: TObject);
   private
     { Private declarations }
     procedure PlayAudioRing(nDevice: Integer);
     function ConvertCharToDB(sTexto: String): String;
-    function ConvertCharToFE(sTexto: String): String;
     procedure CriaChatDinamicos(nQtdChat: Integer);
     procedure panChatDinamicoClick(Sender: TObject);
     procedure imgChatDiscarClick(Sender: TObject);
@@ -821,51 +622,38 @@ type
       message UM_ENSURERESTORED;
     procedure WMCopyData(var Msg: TWMCopyData);
     	message WM_COPYDATA;
-    procedure CriaEMailDinamico(nIndiceEMail: Integer);
     procedure panEMailDinamicoClick(Sender: TObject);
     procedure CriaTelaEMail;
     procedure NotificaTrayIcon(Msg: String; Timeout: Integer; Flag: Integer);
 //    procedure PrcVaxSucess;
   public
+
     { Public declarations }
-    TMyAppStatus: TAppStatus;
-    TMyInfoLogin: TInfoLogin;
-    TMyVaxIncomingCallParam: TVaxIncomingCallParams;
-    TMyPausa: TPausa;
-    TMyFaqClass: TFaqClass;
-    TMyConfCallClass: TConfCallClass;
-    TMyConsultaCallClass: TConsultaCallClass;
-    TMyAtxferCallClass: TAtxferCallClass;
-    TMyClassificacao: TClassificacao;
-    TMyCoaching: TCoaching;
-    TMyXFer: TXFer;
-    TMyChat: TChat;
-    TMyCaptureScreen: TCaptureScreen;
 
     //Qtd para definicao dos arrays
-    vnumpausa: Integer;
-    vnumfila: Integer;
-    vnumclass_fila: Integer;
-    vnumclasssub_fila: Integer;
-    vnumsites: Integer;
-    vnumloja: Integer;
-    vnumxferfila: Integer;
-    vnumxferura: Integer;
-    vnumxferramal: Integer;
-    vnumxferpesquisa: Integer;
-    vnumxfervirtual: Integer;
-    vnumxferconsulta: Integer;
-    vnumchatassunto: Integer;
-    vnumchatresp: Integer;
-    vnumchatrespgrupo: Integer;
-    vnumchatclassifica: Integer;
-    vnumchatclassificasub: Integer;
-    vnumcoaching: Integer;
-    vnumcentrocusto: Integer;
-    vnumemails: Integer;
+//    vnumpausa: Integer;
+//    vnumfila: Integer;
+//    vnumclass_fila: Integer;
+//    vnumclasssub_fila: Integer;
+//    vnumsites: Integer;
+//    vnumloja: Integer;
+//    vnumxferfila: Integer;
+//    vnumxferura: Integer;
+//    vnumxferramal: Integer;
+//    vnumxferpesquisa: Integer;
+//    vnumxfervirtual: Integer;
+//    vnumxferconsulta: Integer;
+//    vnumcoaching: Integer;
+//    vnumchatassunto: Integer;
+
+//    vnumchatresp: Integer;
+//    vnumchatrespgrupo: Integer;
+//    vnumchatclassifica: Integer;
+//    vnumchatclassificasub: Integer;
 
     //Arrays
-    matrizpausa: array of array of string;
+    // depois tirar
+{    matrizpausa: array of array of string;
     matrizcoaching: array of array of string;
     matriz_fila: array of array of string;
     matrizclassifica_fila: array of array of string;
@@ -881,7 +669,6 @@ type
     matrizurl: array of array of string;
     vintegrador: array [0..3] of string;
     vintegradorParams: array [0..39] of string;
-    vLogCallStep: array of string;
     vchat: array [0..3] of string;
     matrizchatassunto: array of array of string;
     matrizchatresposta: array of array of string;
@@ -890,7 +677,8 @@ type
     matrizchatclassificasub: array of array of string;
     matrizcentrocusto: array of array of string;
     matrizdialednums: array [0..9] of string;
-    matrizemails: array of array of string;
+    matrizemails: array of array of string;}
+    procedure CriaEMailDinamico(nIndiceEMail: Integer);
    protected
      procedure CreateParams(var Params: TCreateParams); override;
   end;
@@ -926,8 +714,6 @@ var
   vFlashWindowActive: Integer;
   mitCopyInfoCallItens: array[0..99] of TMenuItem;
 
-  Bolfone_registro_act     : Boolean;
-  Strsec_fone_registro_tmp : String;
   BolVaxSucess             : Boolean;
   StrClassName             : String;
 
@@ -975,7 +761,6 @@ var
 
   memChatHistory: array[0..MAX_CHAT_ROOM] of TsRichEdit;
 
-  qryChatRead: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatWrite: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatXFer: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatDesconecta: array[0..MAX_CHAT_ROOM] of TZQuery;
@@ -1048,9 +833,10 @@ implementation
 uses untfilho, untlogin, untdm, untfrmconfiguracoes, untfrmclassifica, untfrmxfer,
      unttranslate, untfrmdialpad, untfrmpausa, untfrmRingPopup, untfrmcoaching,
      untfrmDesbloquear, uAutoSendFilesThread, untProgressBar, uExecIntegradorThread,
-     untfrmSobre, untLibrary, untFuncoes;
+     untfrmSobre, untFuncoes;
 
 {$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
+
 
 procedure CloseMessageBox(AWnd: HWND; AMsg: UINT; AIDEvent: UINT_PTR;
   ATicks: DWORD); stdcall;
@@ -1121,43 +907,6 @@ begin
   Strings.Clear;
   Strings.DelimitedText := Value;
   Strings.Delimiter := Delimiter;
-end;
-
-Function TfrmPrincipal.VersaoExe: String;
-type
-  PFFI = ^vs_FixedFileInfo;
-  var
-  F : PFFI;
-  Handle : Dword;
-  Len : Longint;
-  Data : Pchar;
-  Buffer : Pointer;
-  Tamanho : Dword;
-  Parquivo: Pchar;
-  Arquivo : String;
-begin
-  Arquivo := Application.ExeName;
-  Parquivo := StrAlloc(Length(Arquivo) + 1);
-  StrPcopy(Parquivo, Arquivo);
-  Len := GetFileVersionInfoSize(Parquivo, Handle);
-  Result := '';
-  if Len > 0 then
-  begin
-    Data:=StrAlloc(Len+1);
-    if GetFileVersionInfo(Parquivo,Handle,Len,Data) then
-    begin
-      VerQueryValue(Data, '\',Buffer,Tamanho);
-      F := PFFI(Buffer);
-      Result := Format('%d.%d.%d.%d',
-      [HiWord(F^.dwFileVersionMs),
-      LoWord(F^.dwFileVersionMs),
-      HiWord(F^.dwFileVersionLs),
-      Loword(F^.dwFileVersionLs)]
-      );
-    end;
-    StrDispose(Data);
-  end;
-  StrDispose(Parquivo);
 end;
 
 function GetMIMEtype(FileName: String): String;
@@ -1562,7 +1311,7 @@ begin
   lbstatus.Caption := APP_FRM_MAIN_STATUS_PAUSE_LOGIN[ID_LANG];
   lbstatus.Color := clyellow;
 
-  for ind := 0 to vnumpausa-1 do
+  for ind := 0 to Agente.SQL.sVNumPausa-1 do
   begin
     if matrizpausa[0,ind] = '10001' then//if matrizpausa[1,ind] = APP_PAUSE_TYPE_LOGIN[ID_LANG] then
     begin
@@ -1684,18 +1433,25 @@ begin
   if framebar.Items[2].State = stOpened then
     Tfrmpausa(framebar.items[2].frame).btnPausa.Caption := APP_FRM_PAUSE_START_PAUSE[ID_LANG];
 
+   if Boolean(StrToInt(FncLeINI(Agente.PathArqConf,'SQL_PING','Actived','0'))) then
+   begin
+     GerarLogTmReconnect('### Ping_Base Conectado ###');
+
+     TmReconect.Interval := StrToInt(FncLeINI(Agente.PathArqConf,'SQL_PING','Interval','5000'));
+     TmReconect.Enabled  := True;
+   end;
 
   if frmLogin.vping = True then
   begin
-    icmpClientPing.Host := frmLogin.vpinghost;
-    icmpClientPing.PacketSize := 32;
+    icmpClientPing.Host           := frmLogin.vpinghost;
+    icmpClientPing.PacketSize     := 32;
     icmpClientPing.ReceiveTimeout := 1000;
 
     LogPing('PingStarted', icmpClientPing.Host);
 
-    tmrIcmpPing.Enabled := False;
+    tmrIcmpPing.Enabled  := False;
     tmrIcmpPing.Interval := frmLogin.vpingtempo;
-    tmrIcmpPing.Enabled := True;
+    tmrIcmpPing.Enabled  := True;
   end;
 
   // Tirar depois
@@ -1707,800 +1463,120 @@ var
   ind: integer;
   nForFaq: Integer;
   sFaqIn: String;
-  sChatFilaIn: String;
+//  sChatFilaIn: String;
   sRespChatIn: String;
   indSub: Integer;
   nForIntegrador: Integer;
+
 begin
   for ind := 0 to 9 do
     matrizdialednums[ind] := '';
 
+   Agente.SQL.CarregaOperLog;
+
+  Agente.InfLogConfPC;
+
   //LogCallStep
-  datam.qry_carrega_LogCallStep.Active := False;
-  datam.qry_carrega_LogCallStep.SQL.Clear;
-  datam.qry_carrega_LogCallStep.SQL.Add('select active, descricao, log_diretorio, log_nome, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_login_act, log_logout_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_pause_act, log_unpause_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_answer_act, log_hangup_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_dnd_on_act, log_dnd_off_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_registro_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_xfer_act, ');
-  datam.qry_carrega_LogCallStep.SQL.Add('log_sip_err ');
-  datam.qry_carrega_LogCallStep.SQL.Add('from easy_sist_software_log_conf ');
-  datam.qry_carrega_LogCallStep.Active := True;
-
-  SetLength(vLogCallStep, 15);
-
-  if datam.qry_carrega_LogCallStep.RecordCount > 0 then
-  begin
-    vLogCallStep[0]  := datam.qry_carrega_LogCallStep.Fields[0].AsString;
-    vLogCallStep[1]  := datam.qry_carrega_LogCallStep.Fields[1].AsString;
-    vLogCallStep[2]  := datam.qry_carrega_LogCallStep.Fields[2].AsString;
-    vLogCallStep[3]  := datam.qry_carrega_LogCallStep.Fields[3].AsString;
-    vLogCallStep[4]  := datam.qry_carrega_LogCallStep.Fields[4].AsString;
-    vLogCallStep[5]  := datam.qry_carrega_LogCallStep.Fields[5].AsString;
-    vLogCallStep[6]  := datam.qry_carrega_LogCallStep.Fields[6].AsString;
-    vLogCallStep[7]  := datam.qry_carrega_LogCallStep.Fields[7].AsString;
-    vLogCallStep[8]  := datam.qry_carrega_LogCallStep.Fields[8].AsString;
-    vLogCallStep[9]  := datam.qry_carrega_LogCallStep.Fields[9].AsString;
-    vLogCallStep[10] := datam.qry_carrega_LogCallStep.Fields[10].AsString;
-    vLogCallStep[11] := datam.qry_carrega_LogCallStep.Fields[11].AsString;
-    vLogCallStep[12] := datam.qry_carrega_LogCallStep.Fields[12].AsString;
-    vLogCallStep[13] := datam.qry_carrega_LogCallStep.Fields[13].AsString;
-    vLogCallStep[14] := datam.qry_carrega_LogCallStep.Fields[14].AsString;
-  end
-  else
-    vLogCallStep[0] := 'False';
-
-  datam.qry_carrega_LogCallStep.Active := False;
-  //LogCallStep
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 1');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 1');
 
   //Pausas
-  datam.qr_carrega_pausa.active := false;
-  datam.qr_carrega_pausa.Params[0].Value := TMyInfoLogin.sIDOperacao;
-  datam.qr_carrega_pausa.active := true;
-
-  vnumpausa := datam.qr_carrega_pausa.RecordCount;
-  setlength(matrizpausa,18,vnumpausa);
   TMyPausa.nPausaDurMinAct := 0;
   TMyPausa.tPausaDurMinVal := 0;
 
-  //lbxrestricao.items.clear;
-  //lbxqtd.items.clear;
-  //lbxtempo.items.clear;
-  //lbxrealizadas.items.clear;
+  Agente.SQL.CarregaPausa;
 
-  //datam.qr_verifica_pausa.active := false;
-  //datam.qr_verifica_pausa.params[0].Value := TMyInfoLogin.sRamal;
-  //datam.qr_verifica_pausa.active := true;
-
-  ind := 0;
-  while not datam.qr_carrega_pausa.eof do
-  begin
-    matrizpausa[0,ind] := datam.qr_carrega_pausa.Fields[0].AsString;   //id
-    matrizpausa[1,ind] := datam.qr_carrega_pausa.Fields[1].AsString;   //descricao
-    matrizpausa[2,ind] := datam.qr_carrega_pausa.Fields[2].AsString;   // tipo
-
-    matrizpausa[3,ind] := datam.qr_carrega_pausa.Fields[8].AsString;   //oper ativo
-    matrizpausa[4,ind] := datam.qr_carrega_pausa.Fields[9].AsString;   //transfer act
-
-    matrizpausa[5,ind] := datam.qr_carrega_pausa.Fields[10].AsString;  //restritiva duracao act
-    matrizpausa[6,ind] := datam.qr_carrega_pausa.Fields[11].AsString;  //restritiva duracao tempo
-
-    matrizpausa[7,ind] := datam.qr_carrega_pausa.Fields[12].AsString;  // restritiva qtd act
-    matrizpausa[8,ind] := datam.qr_carrega_pausa.Fields[13].AsString;  // restritiva qtd
-
-    matrizpausa[9,ind] := datam.qr_carrega_pausa.Fields[14].AsString;  //pausa conf id
-    matrizpausa[10,ind] := datam.qr_carrega_pausa.Fields[15].AsString; //operacao conf id
-
-    //matrizpausa[11,ind] := datam.qr_carrega_pausa.Fields[3].AsString;  //paus pos
-    //matrizpausa[12,ind] := datam.qr_carrega_pausa.Fields[4].AsString;  //tempo pos (sec)
-    //matrizpausa[13,ind] := datam.qr_carrega_pausa.Fields[5].AsString;  // tempo pos
-
-    matrizpausa[14,ind] := datam.qr_carrega_pausa.Fields[6].AsString;  //ativo em pausa
-
-    matrizpausa[15,ind] := datam.qr_carrega_pausa.Fields[16].AsString;  //duracao_min_act
-    matrizpausa[16,ind] := datam.qr_carrega_pausa.Fields[17].AsString;  //duracao_min_valor
-
-    matrizpausa[17,ind] := datam.qr_carrega_pausa.Fields[18].AsString;  //bloqueio_act
-
-    inc(ind);
-    datam.qr_carrega_pausa.next;
-  end;
-
-  datam.qr_verifica_pausa.active := false;
-  datam.qr_carrega_pausa.active := false;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 2');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 2');
 
   //Coaching
-  datam.qryCarregaCoaching.Active := False;
-  datam.qryCarregaCoaching.SQL.Clear;
-  datam.qryCarregaCoaching.SQL.Add('select u.id, u.descricao ');
-  datam.qryCarregaCoaching.SQL.Add('from easy_work_colaborador_conf u ');
-  datam.qryCarregaCoaching.SQL.Add('left join easy_sist_usuario_perfil_conf p on u.easy_sist_usuario_perfil_conf_id = p.id ');
-  datam.qryCarregaCoaching.SQL.Add('where ');
-  datam.qryCarregaCoaching.SQL.Add('true ');
-  datam.qryCarregaCoaching.SQL.Add('and u.active = ' + QuotedStr('Y'));
-  datam.qryCarregaCoaching.SQL.Add('and p.active = ' + QuotedStr('Y'));
-  datam.qryCarregaCoaching.SQL.Add('and p.tipo in (4, 5)' );
-  datam.qryCarregaCoaching.SQL.Add('and u.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa);
-  datam.qryCarregaCoaching.Active := True;
+  Agente.SQL.CarregaCoaching;
 
-  vnumcoaching := datam.qryCarregaCoaching.RecordCount;
-  SetLength(matrizcoaching,2,vnumcoaching);
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 3');
 
-  ind := 0;
-  while not datam.qryCarregaCoaching.Eof do
-  begin
-    matrizcoaching[0,ind] := datam.qryCarregaCoaching.Fields[0].AsString;
-    matrizcoaching[1,ind] := datam.qryCarregaCoaching.Fields[1].AsString;
+// Carrega Fila
+  Agente.SQL.CarregaFila;
 
-    inc(ind);
-    datam.qryCarregaCoaching.Next;
-  end;
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 4');
 
-  datam.qryCarregaCoaching.Active := False;
+  Agente.SQL.CarregaClassFila;
 
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 3');
+  Agente.SQL.CarregaClassFilaSub;
 
-  //Filas
-  datam.qryCarregaFilas.Active := False;
-  datam.qryCarregaFilas.SQL.Add('select ');
-  datam.qryCarregaFilas.SQL.Add('c1.id as codigo, ');
-  datam.qryCarregaFilas.SQL.Add('concat(c1.descricao," - ", c2.descricao) as fila ');
-  datam.qryCarregaFilas.SQL.Add('from ');
-  datam.qryCarregaFilas.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
-  datam.qryCarregaFilas.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
-  datam.qryCarregaFilas.SQL.Add('left join easy_pabx_serv_fila_universal_call_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-  datam.qryCarregaFilas.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
-  datam.qryCarregaFilas.SQL.Add('where ');
-  datam.qryCarregaFilas.SQL.Add('c1.active = ' + QuotedStr('Y'));
-  datam.qryCarregaFilas.SQL.Add('and c2.active = ' + QuotedStr('Y'));
-  datam.qryCarregaFilas.SQL.Add('and a.active = ' + QuotedStr('Y'));
-  datam.qryCarregaFilas.SQL.Add('and a.fone_atendimento_act = ' + QuotedStr('Y'));
-  datam.qryCarregaFilas.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
-  datam.qryCarregaFilas.SQL.Add('group by c1.id ');
-  datam.qryCarregaFilas.SQL.Add('order by 2 asc');
-  datam.qryCarregaFilas.Active := True;
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 5');
 
-  vnumfila := datam.qryCarregaFilas.RecordCount;
-  setlength(matriz_fila,2,vnumfila);
+  Agente.SQL.CarregaLoja;
 
-  ind := 0;
-  while not datam.qryCarregaFilas.Eof do
-  begin
-    matriz_fila[0,ind] := datam.qryCarregaFilas.Fields[0].AsString;
-    matriz_fila[1,ind] := datam.qryCarregaFilas.Fields[1].AsString;
+// Carrega Fila de Transferência '
+  Agente.SQL.CarregaFilaTransferencia;
 
-    inc(ind);
-    datam.qryCarregaFilas.Next;
-  end;
+  Agente.SQL.CarregaXFerURA;
 
-  datam.qryCarregaFilas.Active := False;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 4');
-
-  //Classificação
-  datam.qry_carrega_class_fila.Active := False;
-  datam.qry_carrega_class_fila.SQL.Clear;
-  datam.qry_carrega_class_fila.SQL.Add('SELECT ');
-  datam.qry_carrega_class_fila.SQL.Add('c.id, ');
-  datam.qry_carrega_class_fila.SQL.Add('c.descricao, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.easy_pabx_serv_fila_universal_ctr_id, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.disp_chat, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.disp_email, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.disp_sms ');
-  datam.qry_carrega_class_fila.SQL.Add('FROM ');
-  datam.qry_carrega_class_fila.SQL.Add('easy_pabx_serv_fila_universal_classificacao_conf c ');
-  datam.qry_carrega_class_fila.SQL.Add('left join easy_pabx_serv_fila_universal_has_classificacao a on a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id ');
-  datam.qry_carrega_class_fila.SQL.Add('where ');
-  datam.qry_carrega_class_fila.SQL.Add('a.active = ' + QuotedStr('Y'));
-  datam.qry_carrega_class_fila.SQL.Add('and c.active = ' + QuotedStr('Y'));
-  datam.qry_carrega_class_fila.SQL.Add('and c.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa + ' ');
-  datam.qry_carrega_class_fila.SQL.Add('order by c.descricao asc');
-  datam.qry_carrega_class_fila.Active := True;
-  vnumclass_fila := datam.qry_carrega_class_fila.recordcount;
-  setlength(matrizclassifica_fila,3,vnumclass_fila);
-
-  ind := 0;
-  while not datam.qry_carrega_class_fila.eof do
-  begin
-    matrizclassifica_fila[0,ind] := datam.qry_carrega_class_fila.Fields[0].AsString;
-    matrizclassifica_fila[1,ind] := datam.qry_carrega_class_fila.Fields[1].AsString;
-    matrizclassifica_fila[2,ind] := datam.qry_carrega_class_fila.Fields[2].AsString;
-
-    inc(ind);
-    datam.qry_carrega_class_fila.next;
-  end;
-
-  //Classificação Sub
-  datam.qry_carrega_class_fila.Active := False;
-  datam.qry_carrega_class_fila.SQL.Clear;
-  datam.qry_carrega_class_fila.SQL.Add('select ');
-  datam.qry_carrega_class_fila.SQL.Add('s.id as subclass_id, ');
-  datam.qry_carrega_class_fila.SQL.Add('s.descricao, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.easy_pabx_serv_fila_universal_classificacao_conf_id, ');
-  datam.qry_carrega_class_fila.SQL.Add('a.finalizadora, ');
-  datam.qry_carrega_class_fila.SQL.Add('DATE_ADD(curdate(), INTERVAL a.intervalo DAY), ');
-  datam.qry_carrega_class_fila.SQL.Add('a.redial ');
-  datam.qry_carrega_class_fila.SQL.Add('from ');
-  datam.qry_carrega_class_fila.SQL.Add('easy_pabx_serv_fila_universal_classificacao_sub_conf s ');
-  datam.qry_carrega_class_fila.SQL.Add('LEFT JOIN easy_pabx_serv_fila_universal_classificacao_has_sub a ');
-  datam.qry_carrega_class_fila.SQL.Add('ON a.easy_pabx_serv_fila_universal_classificacao_sub_conf_id = s.id ');
-  datam.qry_carrega_class_fila.SQL.Add('LEFT JOIN easy_pabx_serv_fila_universal_classificacao_conf c ');
-  datam.qry_carrega_class_fila.SQL.Add('ON a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id ');
-  datam.qry_carrega_class_fila.SQL.Add('where ');
-  datam.qry_carrega_class_fila.SQL.Add('s.active = ' + QuotedStr('Y'));
-  datam.qry_carrega_class_fila.SQL.Add('and a.active = ' + QuotedStr('Y'));
-  datam.qry_carrega_class_fila.SQL.Add('and s.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa + ' ');
-  datam.qry_carrega_class_fila.SQL.Add('ORDER BY s.descricao ASC');
-  datam.qry_carrega_class_fila.Active := True;
-
-  vnumclasssub_fila := datam.qry_carrega_class_fila.RecordCount;
-  SetLength(matrizclassificasub_fila, 6, vnumclasssub_fila);
-  ind := 0;
-  while not datam.qry_carrega_class_fila.Eof do
-  begin
-    matrizclassificasub_fila[0, ind] := datam.qry_carrega_class_fila.Fields[0].AsString;
-    matrizclassificasub_fila[1, ind] := datam.qry_carrega_class_fila.Fields[1].AsString;
-    matrizclassificasub_fila[2, ind] := datam.qry_carrega_class_fila.Fields[2].AsString;
-    matrizclassificasub_fila[3, ind] := datam.qry_carrega_class_fila.Fields[3].AsString;
-    matrizclassificasub_fila[4, ind] := datam.qry_carrega_class_fila.Fields[4].AsString;
-    matrizclassificasub_fila[5, ind] := datam.qry_carrega_class_fila.Fields[5].AsString;
-
-    Inc(ind);
-    datam.qry_carrega_class_fila.Next;
-  end;
-
-  datam.qry_carrega_class_fila.Active := False;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 5');
-
-  //Carrega Loja
-  datam.qryCarregaLoja.Active := False;
-  datam.qryCarregaLoja.SQL.Clear;
-  datam.qryCarregaLoja.SQL.Add('select ');
-  datam.qryCarregaLoja.SQL.Add('id, descricao ');
-  datam.qryCarregaLoja.SQL.Add('from ');
-  datam.qryCarregaLoja.SQL.Add('easy_call_empresa_loja_conf ');
-  datam.qryCarregaLoja.SQL.Add('where ');
-  datam.qryCarregaLoja.SQL.Add('easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa);
-  datam.qryCarregaLoja.Active := True;
-  vnumloja := datam.qryCarregaLoja.RecordCount;
-  setlength(matrizloja,2,vnumloja);
-
-  ind := 0;
-  while not datam.qryCarregaLoja.Eof do
-  begin
-    matrizloja[0,ind] := datam.qryCarregaLoja.Fields[0].AsString;
-    matrizloja[1,ind] := datam.qryCarregaLoja.Fields[1].AsString;
-
-    inc(ind);
-    datam.qryCarregaLoja.Next;
-  end;
-
-  datam.qryCarregaLoja.Active := False;
-
-  //XFER FILA
-  datam.qryCarregaXFerFila.Active := False;
-  datam.qryCarregaXFerFila.SQL.Clear;
-  datam.qryCarregaXFerFila.SQL.Add('select ');
-  datam.qryCarregaXFerFila.SQL.Add('c1.id as codigo, ');
-  datam.qryCarregaXFerFila.SQL.Add('concat(c1.descricao," - ", c2.descricao) as fila ');
-  datam.qryCarregaXFerFila.SQL.Add('from ');
-  datam.qryCarregaXFerFila.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
-  datam.qryCarregaXFerFila.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
-  datam.qryCarregaXFerFila.SQL.Add('left join easy_pabx_serv_fila_universal_call_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-  datam.qryCarregaXFerFila.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
-  datam.qryCarregaXFerFila.SQL.Add('where ');
-  datam.qryCarregaXFerFila.SQL.Add('c1.active = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerFila.SQL.Add('and c2.active = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerFila.SQL.Add('and a.active = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerFila.SQL.Add('and a.fone_transferencia_act = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerFila.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
-  datam.qryCarregaXFerFila.SQL.Add('group by c1.id ');
-  datam.qryCarregaXFerFila.SQL.Add('order by 2 asc');
-  datam.qryCarregaXFerFila.Active := True;
-
-  vnumxferfila := datam.qryCarregaXFerFila.RecordCount;
-  setlength(matrizxferfila,2,vnumxferfila);
-
-  ind := 0;
-  while not datam.qryCarregaXFerFila.Eof do
-  begin
-    matrizxferfila[0,ind] := datam.qryCarregaXFerFila.Fields[0].AsString;
-    matrizxferfila[1,ind] := datam.qryCarregaXFerFila.Fields[1].AsString;
-
-    inc(ind);
-    datam.qryCarregaXFerFila.Next;
-  end;
-
-  datam.qryCarregaXFerFila.Active := False;
-
-  //XFER URA
-  datam.qr_carrega_xfer_ura.active := false;
-  datam.qr_carrega_xfer_ura.Params[0].Value := TMyInfoLogin.sIDEmpresa;
-  datam.qr_carrega_xfer_ura.active := true;
-
-  vnumxferura := datam.qr_carrega_xfer_ura.recordcount;
-  setlength(matrizxferura,2,vnumxferura);
-
-  ind := 0;
-  while not datam.qr_carrega_xfer_ura.eof do
-  begin
-    matrizxferura[0,ind] := datam.qr_carrega_xfer_ura.Fields[0].AsString;
-    matrizxferura[1,ind] := datam.qr_carrega_xfer_ura.Fields[1].AsString;
-
-    inc(ind);
-    datam.qr_carrega_xfer_ura.next;
-  end;
-
-  datam.qr_carrega_xfer_ura.active := false;
-
-  //XFER RAMAL
-  datam.qryCarregaXFerRamal.Active := False;
-  datam.qryCarregaXFerRamal.SQL.Clear;
-  datam.qryCarregaXFerRamal.SQL.Add('select ');
-  datam.qryCarregaXFerRamal.SQL.Add('g.easy_work_colaborador_conf_id as id, ');
-  datam.qryCarregaXFerRamal.SQL.Add('u.descricao ');
-  datam.qryCarregaXFerRamal.SQL.Add('from ');
-  datam.qryCarregaXFerRamal.SQL.Add('easy_work_colaborador_has_grupo g ');
-  datam.qryCarregaXFerRamal.SQL.Add('left join easy_work_colaborador_conf u on g.easy_work_colaborador_conf_id = u.id ');
-  datam.qryCarregaXFerRamal.SQL.Add('where ');
-  datam.qryCarregaXFerRamal.SQL.Add('g.active = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerRamal.SQL.Add('and g.easy_call_grupo_conf_id in ( ');
-  datam.qryCarregaXFerRamal.SQL.Add('select ');
-  datam.qryCarregaXFerRamal.SQL.Add('g2.easy_call_grupo_conf_id ');
-  datam.qryCarregaXFerRamal.SQL.Add('from ');
-  datam.qryCarregaXFerRamal.SQL.Add('easy_work_colaborador_has_grupo g2 ');
-  datam.qryCarregaXFerRamal.SQL.Add('where ');
-  datam.qryCarregaXFerRamal.SQL.Add('true ');
-  datam.qryCarregaXFerRamal.SQL.Add('and g2.active = ' + QuotedStr('Y'));
-  datam.qryCarregaXFerRamal.SQL.Add('and g2.easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-  datam.qryCarregaXFerRamal.SQL.Add(') ');
-  datam.qryCarregaXFerRamal.SQL.Add('and g.easy_work_colaborador_conf_id not in (' + QuotedStr(TMyInfoLogin.sIDUsuario));
-  datam.qryCarregaXFerRamal.SQL.Add(') group by g.easy_work_colaborador_conf_id ');
-  datam.qryCarregaXFerRamal.SQL.Add('order by u.descricao asc ');
-  datam.qryCarregaXFerRamal.Active := True;
-
-  vnumxferramal := datam.qryCarregaXFerRamal.RecordCount;
-  setlength(matrizxferramal,2,vnumxferramal);
-
-  ind := 0;
-  while not datam.qryCarregaXFerRamal.Eof do
-  begin
-    matrizxferramal[0,ind] := datam.qryCarregaXFerRamal.Fields[0].AsString;
-    matrizxferramal[1,ind] := datam.qryCarregaXFerRamal.Fields[1].AsString;
-
-    inc(ind);
-    datam.qryCarregaXFerRamal.Next;
-  end;
-
-  datam.qryCarregaXFerRamal.Active := False;
+  Agente.SQL.CarregaXFerRamal;
 
   //XFER PESQUISA
-  datam.qr_carrega_xfer_pesquisa.active := false;
-  datam.qr_carrega_xfer_pesquisa.Params[0].Value := TMyInfoLogin.sIDEmpresa;
-  datam.qr_carrega_xfer_pesquisa.active := true;
+  Agente.SQL.CarregaXFerPesquisa;
 
-  vnumxferpesquisa := datam.qr_carrega_xfer_pesquisa.recordcount;
-  setlength(matrizxferpesquisa,2,vnumxferpesquisa);
-
-  ind := 0;
-  while not datam.qr_carrega_xfer_pesquisa.eof do
-  begin
-    matrizxferpesquisa[0,ind] := datam.qr_carrega_xfer_pesquisa.Fields[0].AsString;
-    matrizxferpesquisa[1,ind] := datam.qr_carrega_xfer_pesquisa.Fields[1].AsString;
-
-    inc(ind);
-    datam.qr_carrega_xfer_pesquisa.next;
-  end;
-
-  datam.qr_carrega_xfer_pesquisa.active := false;
-
-  //XFER RAMAL VIRTUAL
-  datam.qr_carrega_xfer_virtual.active := false;
-  datam.qr_carrega_xfer_virtual.Params[0].Value := TMyInfoLogin.sIDEmpresa;
-  datam.qr_carrega_xfer_virtual.active := true;
-
-  vnumxfervirtual := datam.qr_carrega_xfer_virtual.recordcount;
-  setlength(matrizxfervirtual,2,vnumxfervirtual);
-
-  ind := 0;
-  while not datam.qr_carrega_xfer_virtual.eof do
-  begin
-    matrizxfervirtual[0,ind] := FormatFloat('00000', datam.qr_carrega_xfer_virtual.Fields[0].AsInteger);
-    matrizxfervirtual[1,ind] := datam.qr_carrega_xfer_virtual.Fields[1].AsString;
-
-    inc(ind);
-    datam.qr_carrega_xfer_virtual.next;
-  end;
-
-  datam.qr_carrega_xfer_virtual.active := false;
+  Agente.SQL.CarregaXFerVirtual;
 
   //XFER CONSULTA
-  datam.qr_carrega_xfer_consulta.active := false;
-  datam.qr_carrega_xfer_consulta.Params[0].Value := TMyInfoLogin.sIDEmpresa;
-  datam.qr_carrega_xfer_consulta.active := true;
+  Agente.SQL.CarregaXFerConsulta;
 
-  vnumxferconsulta := datam.qr_carrega_xfer_consulta.recordcount;
-  setlength(matrizxferconsulta,2,vnumxferconsulta);
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 6');
 
-  ind := 0;
-  while not datam.qr_carrega_xfer_consulta.eof do
-  begin
-    matrizxferconsulta[0,ind] := datam.qr_carrega_xfer_consulta.Fields[0].AsString;
-    matrizxferconsulta[1,ind] := datam.qr_carrega_xfer_consulta.Fields[1].AsString;
+  Agente.SQL.CarregaOperHasParam;
 
-    inc(ind);
-    datam.qr_carrega_xfer_consulta.next;
-  end;
-
-  datam.qr_carrega_xfer_consulta.active := false;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 6');
-
-  //easy_callcenter_operacao_has_parametros
-  datam.qry_operacao_has_parametros.Active := False;
-  datam.qry_operacao_has_parametros.SQL.Clear;
-  datam.qry_operacao_has_parametros.SQL.Add('select p.deslogar_agente_painel_act, time_to_sec(p.deslogar_agente_painel_tmp), ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.pausa_pos_atendimento_act, time_to_sec(p.pausa_pos_atendimento_tmp), ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.pausa_pos_popup_act, time_to_sec(p.pausa_pos_popup_tmp), p.pausa_pos_popup_msg, ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.pausa_login_act, time_to_sec(p.pausa_login_tmp), ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.pausa_login_popup_act, time_to_sec(p.pausa_login_popup_tmp), pausa_login_popup_msg, ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.alarme_act, p.alarme_1_tmp, p.alarme_1_msg, ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.alarme_2_tmp, p.alarme_2_msg, ');
-  datam.qry_operacao_has_parametros.SQL.Add('p.alarme_3_tmp, p.alarme_3_msg ');
-  datam.qry_operacao_has_parametros.SQL.Add('from easy_call_operacao_parametros_conf p ');
-  datam.qry_operacao_has_parametros.SQL.Add('where p.easy_call_operacao_conf_id = ' + TMyInfoLogin.sIDOperacao);
-  datam.qry_operacao_has_parametros.ExecSQL;
-
-  datam.qry_operacao_has_parametros.Active := True;
-
-  setlength(matrizparametros,19);
-
-  matrizparametros[0] := datam.qry_operacao_has_parametros.Fields[0].AsString;
-  matrizparametros[1] := datam.qry_operacao_has_parametros.Fields[1].AsString;
-
-  //pausa pos atendimento
-  matrizparametros[2] := datam.qry_operacao_has_parametros.Fields[2].AsString;
-  matrizparametros[3] := datam.qry_operacao_has_parametros.Fields[3].AsString;
-  matrizparametros[4] := datam.qry_operacao_has_parametros.Fields[4].AsString;
-  matrizparametros[5] := datam.qry_operacao_has_parametros.Fields[5].AsString;
-  matrizparametros[6] := datam.qry_operacao_has_parametros.Fields[6].AsString;
-
-  //pausa login
-  matrizparametros[7] := datam.qry_operacao_has_parametros.Fields[7].AsString;
-  matrizparametros[8] := datam.qry_operacao_has_parametros.Fields[8].AsString;
-  matrizparametros[9] := datam.qry_operacao_has_parametros.Fields[9].AsString;
-  matrizparametros[10] := datam.qry_operacao_has_parametros.Fields[10].AsString;
-  matrizparametros[11] := datam.qry_operacao_has_parametros.Fields[11].AsString;
-
-  //tempos para notificacao de TMA
-  matrizparametros[12] := datam.qry_operacao_has_parametros.Fields[12].AsString;//act
-  matrizparametros[13] := datam.qry_operacao_has_parametros.Fields[13].AsString;//tmp1
-  matrizparametros[14] := datam.qry_operacao_has_parametros.Fields[14].AsString;//msg1
-  matrizparametros[15] := datam.qry_operacao_has_parametros.Fields[15].AsString;//tmp2
-  matrizparametros[16] := datam.qry_operacao_has_parametros.Fields[16].AsString;//msg2
-  matrizparametros[17] := datam.qry_operacao_has_parametros.Fields[17].AsString;//tmp3
-  matrizparametros[18] := datam.qry_operacao_has_parametros.Fields[18].AsString;//msg3
-
-  datam.qry_operacao_has_parametros.Active := False;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 7');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 7');
 
   //URA
   //Recuperar paineis que irão abrir!
-  datam.qr_carrega_sites.active := false;
-  datam.qr_carrega_sites.Params[0].Value := TMyInfoLogin.sIDOperacao;
-  datam.qr_carrega_sites.active := true;
-  vnumsites := datam.qr_carrega_sites.recordcount;
-  setlength(matrizurl,3,vnumsites);
+  Agente.SQL.CarregaSites(albrowser, tabCliente);
 
-  tabCliente.Tag := 0;
-
-  ind := 0;
-  while not datam.qr_carrega_sites.eof do
-  begin
-    matrizurl[0,ind] := datam.qr_carrega_sites.Fields[1].AsString;
-    matrizurl[1,ind] := datam.qr_carrega_sites.Fields[3].AsString;
-    matrizurl[2,ind] := datam.qr_carrega_sites.Fields[4].AsString;
-
-    if datam.qr_carrega_sites.Fields[1].AsString = 'True' then
-    begin
-      TAction(albrowser.Actions[ind]).Enabled := True;
-    end
-    else
-    begin
-      if (ind <> 0) and (ind <> 8) and (ind <> 10) then
-        TAction(albrowser.Actions[ind]).Enabled := False;
-
-      if ind = 0 then
-        tabCliente.Tag := -1;
-    end;
-
-    inc(ind);
-    datam.qr_carrega_sites.next;
-  end;
-  btnFAQ.Enabled := False;
-  cmdConferencia.Enabled := False;
-
-  datam.qr_carrega_sites.active := false;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 8');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 8');
 
   //Integrador
-  datam.qr_carrega_integrador.Active := false;
-  datam.qr_carrega_integrador.Params[0].Value := TMyInfoLogin.sIDOperacao;
-  datam.qr_carrega_integrador.Active := true;
+  Agente.SQL.CarregaIntegrador;
 
-  if datam.qr_carrega_integrador.RecordCount > 0 then
-  begin
-    vintegrador[0] := datam.qr_carrega_integrador.fields[1].AsString; //Ativo
-    vintegrador[1] := IntToStr(datam.qr_carrega_integrador.fields[3].AsInteger - 1); //Tipo
-    vintegrador[2] := datam.qr_carrega_integrador.fields[4].AsString; //destino
-    vintegrador[3] := datam.qr_carrega_integrador.fields[5].AsString; //separador
-
-    for nForIntegrador := 0 to 9 do
-    begin
-      vintegradorParams[nForIntegrador     ] := datam.qr_carrega_integrador.Fields[6 + nForIntegrador     ].AsString; //param x act
-      vintegradorParams[nForIntegrador + 10] := datam.qr_carrega_integrador.Fields[6 + nForIntegrador + 10].AsString; //param x val
-      vintegradorParams[nForIntegrador + 20] := datam.qr_carrega_integrador.Fields[6 + nForIntegrador + 20].AsString; //param x nome_act
-      vintegradorParams[nForIntegrador + 30] := datam.qr_carrega_integrador.Fields[6 + nForIntegrador + 30].AsString; //param x nome_txt
-    end;
-  end
-  else
-  begin
-    vintegrador[0] := 'False';
-  end;
-
-  datam.qr_carrega_integrador.Active := false;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 10');
 
   if TMyInfoLogin.nTipo = 1 then
   begin
-    //CHAT
-    datam.qryChatCarregaConf.Active := False;
-    datam.qryChatCarregaConf.SQL.Clear;
-    datam.qryChatCarregaConf.SQL.Add('select ');
-    datam.qryChatCarregaConf.SQL.Add('c1.id as sala, ');
-{    concat(c1.descricao," - ", c2.descricao) as descricao,
-        a.chat_atendimento_act,
-        a.chat_transferencia_act,}
-    datam.qryChatCarregaConf.SQL.Add('c2.wrapuptime as wrapuptime, ');
-    datam.qryChatCarregaConf.SQL.Add('c2.desconexao_auto_act as desconexao_msg_act, ');
-    datam.qryChatCarregaConf.SQL.Add('c2.desconexao_auto_tmp, ');
-    datam.qryChatCarregaConf.SQL.Add('c2.desconexao_auto_msg as desconexao_msg_txt ');
-    datam.qryChatCarregaConf.SQL.Add('from ');
-    datam.qryChatCarregaConf.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
-    datam.qryChatCarregaConf.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
-    datam.qryChatCarregaConf.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-    datam.qryChatCarregaConf.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
-    datam.qryChatCarregaConf.SQL.Add('where ');
-    datam.qryChatCarregaConf.SQL.Add('true ');
-    datam.qryChatCarregaConf.SQL.Add('and c1.active = ' + QuotedStr('Y'));
-    datam.qryChatCarregaConf.SQL.Add('and c2.active = ' + QuotedStr('Y'));
-    datam.qryChatCarregaConf.SQL.Add('and a.active = ' + QuotedStr('Y'));
-    datam.qryChatCarregaConf.SQL.Add('and a.chat_atendimento_act = ' + QuotedStr('Y'));
-    datam.qryChatCarregaConf.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
-    datam.qryChatCarregaConf.SQL.Add('group by c1.id ');
-    datam.qryChatCarregaConf.SQL.Add('order by c1.id asc ');
-    datam.qryChatCarregaConf.Active := True;
 
-    ind := 0;
-    sChatFilaIn := '';
-
-    nChatDinamicosCriados := -1;
+    Agente.SQL.sChatFilaIn := Agente.SQL.CarregaChatConf;
 
     if datam.qryChatCarregaConf.RecordCount > 0 then
     begin
-      nChatDinamicosCriados := 0;
 
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.1');
-
-      vchat[1] := '60';//desconexao_auto_tmp
-      vchat[3] := '1';//wrapuptime
-
-      while not datam.qryChatCarregaConf.Eof do
-      begin
-        vchat[0] := datam.qryChatCarregaConf.Fields[2].AsString;//desconexao_auto_act
-        if datam.qryChatCarregaConf.Fields[3].AsInteger > StrToInt(vchat[1]) then
-          vchat[1] := datam.qryChatCarregaConf.Fields[3].AsString;//desconexao_auto_tmp
-        vchat[2] := datam.qryChatCarregaConf.Fields[4].AsString;//desconexao_msg_txt
-        if datam.qryChatCarregaConf.Fields[1].AsInteger > StrToInt(vchat[3]) then
-          vchat[3] := datam.qryChatCarregaConf.Fields[1].AsString;//wrapuptime
-
-        sChatFilaIn := sChatFilaIn + datam.qryChatCarregaConf.Fields[0].AsString;
-        if ind < datam.qryChatCarregaConf.RecordCount-1 then
-          sChatFilaIn := sChatFilaIn + ',';
-
-        inc(ind);
-        datam.qryChatCarregaConf.Next;
-      end;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.2');
+      LogCallStep('log_login_act', 'carregaoperacao :: Step 10.2');
 
       //carrega Salas disponiveis para futura transferencia para outro chat / sala
-      datam.qryChatCarrega.Active := False;
-      datam.qryChatCarrega.SQL.Clear;
-      datam.qryChatCarrega.SQL.Add('select ');
-      datam.qryChatCarrega.SQL.Add('c1.id, ');
-      datam.qryChatCarrega.SQL.Add('concat(c1.descricao," - ", c2.descricao) as descricao ');
-      datam.qryChatCarrega.SQL.Add('from ');
-      datam.qryChatCarrega.SQL.Add('easy_work_colaborador_has_pabx_serv_fila_universal a ');
-      datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
-      datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-      datam.qryChatCarrega.SQL.Add('where ');
-      datam.qryChatCarrega.SQL.Add('true ');
-      datam.qryChatCarrega.SQL.Add('and c1.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and c2.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.chat_atendimento_act = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.easy_work_colaborador_conf_id = ' + TMyInfoLogin.sIDUsuario);
-      datam.qryChatCarrega.SQL.Add('group by c1.id');
-      datam.qryChatCarrega.SQL.Add('order by 2 asc');
-      datam.qryChatCarrega.Active := True;
+      Agente.SQL.CarregaChatSala;
 
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.3');
-
-      vnumchatassunto := datam.qryChatCarrega.RecordCount;
-      SetLength(matrizchatassunto, 2, vnumchatassunto);
-      ind := 0;
-      while not datam.qryChatCarrega.Eof do
-      begin
-        matrizchatassunto[0, ind] := datam.qryChatCarrega.Fields[0].AsString;//id
-        matrizchatassunto[1, ind] := ConvertCharToFE(datam.qryChatCarrega.Fields[1].AsString);//descricao
-
-        Inc(ind);
-        datam.qryChatCarrega.Next;
-      end;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.4');
+      LogCallStep('log_login_act', 'carregaoperacao :: Step 10.4');
 
       //chat transfer
-      datam.qryChatCarrega.Active := False;
-      datam.qryChatCarrega.SQL.Clear;
-      datam.qryChatCarrega.SQL.Add('select ');
-      datam.qryChatCarrega.SQL.Add('c1.id as codigo, ');
-      datam.qryChatCarrega.SQL.Add('concat(c1.descricao," - ", c2.descricao) as fila ');
-      datam.qryChatCarrega.SQL.Add('from ');
-      datam.qryChatCarrega.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
-      datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');
-      datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c2 on c1.id = c2.easy_pabx_serv_fila_universal_ctr_id ');
-//      datam.qryChatCarrega.SQL.Add('left join easy_work_colaborador_conf c on a.easy_work_colaborador_conf_id = c.id ');
-      datam.qryChatCarrega.SQL.Add('where ');
-      datam.qryChatCarrega.SQL.Add('true ');
-      datam.qryChatCarrega.SQL.Add('and c1.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and c2.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.active = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.chat_transferencia_act = ' + QuotedStr('Y') + ' ');
-      datam.qryChatCarrega.SQL.Add('and a.easy_sist_usuario_perfil_conf_id = ' + TMyInfoLogin.sPerfil);
-      datam.qryChatCarrega.SQL.Add('group by c1.id ');
-      datam.qryChatCarrega.SQL.Add('order by 2 asc ');
-      datam.qryChatCarrega.Active := True;
+      Agente.SQL.CarregaChatTrans;
 
-      mitChatXFer.Clear;
+      LogCallStep('log_login_act', 'carregaoperacao :: Step 10.6');
 
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.5');
+      Agente.SQL.CarregaChatResp;
 
-      ind := 0;
-      while not datam.qryChatCarrega.Eof do
-      begin
-        mitChatXFerAssunto[ind] := TMenuItem.Create(mnuChatMoreOptions);
-        mitChatXFerAssunto[ind].Caption := matrizchatassunto[1, ind];
-        mitChatXFerAssunto[ind].OnClick := mitChatXFerAssuntoClick;
-        mitChatXFerAssunto[ind].Tag := StrToInt(matrizchatassunto[0, ind]);
-        mitChatXFer.Add(mitChatXFerAssunto[ind]);
-
-        Inc(ind);
-        datam.qryChatCarrega.Next;
-      end;
-      datam.qryChatCarrega.Active := False;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.6');
-
-      //mensagens padrao
-      datam.qryChatCarregaResp.Active := False;
-      datam.qryChatCarregaResp.SQL.Clear;
-
-      datam.qryChatCarregaResp.SQL.Add('select ');
-      datam.qryChatCarregaResp.SQL.Add('g.id, ');
-      datam.qryChatCarregaResp.SQL.Add('g.descricao ');
-      datam.qryChatCarregaResp.SQL.Add('from ');
-      datam.qryChatCarregaResp.SQL.Add('easy_pabx_serv_fila_universal_chat_conf_has_resposta_grupo a ');
-      datam.qryChatCarregaResp.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf f on a.easy_pabx_serv_fila_universal_chat_conf_id = f.id ');
-      datam.qryChatCarregaResp.SQL.Add('left join easy_call_resposta_rapida_grupo_conf g on a.easy_call_resposta_rapida_grupo_conf_id = g.id ');
-      datam.qryChatCarregaResp.SQL.Add('where ');
-      datam.qryChatCarregaResp.SQL.Add('true ');
-      datam.qryChatCarregaResp.SQL.Add('and a.active = ' + QuotedStr('Y'));
-      datam.qryChatCarregaResp.SQL.Add('and g.active = ' + QuotedStr('Y'));
-      datam.qryChatCarregaResp.SQL.Add('and f.active = ' + QuotedStr('Y'));
-      datam.qryChatCarregaResp.SQL.Add('and f.id in (' + sChatFilaIn + ')');
-      datam.qryChatCarregaResp.Active := True;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.7');
-
-      cboChatGroup.Items.Clear;
-      cboChatGroup.ItemIndex := -1;
-      cboChatGroup.Text := APP_FRM_MAIN_CHAT_SELECT_GROUP[ID_LANG];
-
-      vnumchatresp := datam.qryChatCarregaResp.RecordCount;
-      SetLength(matrizchatresposta, 2, vnumchatresp);
-      ind := 0;
-      sRespChatIn := '';
-      while not datam.qryChatCarregaResp.Eof do
-      begin
-        matrizchatresposta[0, ind] := datam.qryChatCarregaResp.Fields[0].AsString;
-        matrizchatresposta[1, ind] := datam.qryChatCarregaResp.Fields[1].AsString;
-
-        if not datam.qryChatCarregaResp.Bof then
-          sRespChatIn := sRespChatIn + ',';
-        sRespChatIn := sRespChatIn + matrizchatresposta[0, ind];
-
-        cboChatGroup.Items.Add(matrizchatresposta[1, ind]);
-        Inc(ind);
-        datam.qryChatCarregaResp.Next;
-      end; //while not datam.qryChatCarregaResp.Eof do
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.8');
-
-      datam.qryChatCarregaRespGrupo.Active := False;
-      datam.qryChatCarregaRespGrupo.SQL.Clear;
-      datam.qryChatCarregaRespGrupo.SQL.Add('select ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('m.id, ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('m.descricao, ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('m.mensagem, ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('a.easy_call_resposta_rapida_grupo_conf_id ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('from ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('easy_call_resposta_rapida_msg_has_grupo a ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('left join easy_call_resposta_rapida_msg_conf m on a.easy_call_resposta_rapida_msg_conf_id = m.id ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('where ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('true ');
-      datam.qryChatCarregaRespGrupo.SQL.Add('and a.active = ' + QuotedStr('Y'));
-      datam.qryChatCarregaRespGrupo.SQL.Add('and m.active = ' + QuotedStr('Y'));
-      datam.qryChatCarregaRespGrupo.SQL.Add('and a.easy_call_resposta_rapida_grupo_conf_id in (' + sRespChatIn + ')');
-      datam.qryChatCarregaRespGrupo.Active := True;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.9');
+      LogCallStep('log_login_act', 'carregaoperacao :: Step 10.8');
 
       cboChatDefaultMsg.Items.Clear;
       cboChatDefaultMsg.ItemIndex := -1;
       cboChatDefaultMsg.Text := APP_FRM_MAIN_CHAT_SELECT_ANSWER[ID_LANG];
 
-      vnumchatrespgrupo := datam.qryChatCarregaRespGrupo.RecordCount;
-      SetLength(matrizchatrespostagrupo, 4, vnumchatrespgrupo);
-      ind := 0;
-      while not datam.qryChatCarregaRespGrupo.Eof do
-      begin
-        matrizchatrespostagrupo[0, ind] := datam.qryChatCarregaRespGrupo.Fields[0].AsString;
-        matrizchatrespostagrupo[1, ind] := datam.qryChatCarregaRespGrupo.Fields[1].AsString;
-        matrizchatrespostagrupo[2, ind] := datam.qryChatCarregaRespGrupo.Fields[2].AsString;
-        matrizchatrespostagrupo[3, ind] := datam.qryChatCarregaRespGrupo.Fields[3].AsString;
+      Agente.SQL.CarregaChatRespGrupo;
 
-        Inc(ind);
-        datam.qryChatCarregaRespGrupo.Next;
-      end;
-
-      frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 10.10');
+      LogCallStep('log_login_act', 'carregaoperacao :: Step 10.10');
 
       TAction(albrowser.Actions[3]).Enabled := True;
 
       if TMyInfoLogin.nChatSalasQtd > 0 then
-        CriaChatDinamicos(TMyInfoLogin.nChatSalasQtd)
+        CriaChatDinamicos(TMyInfoLogin.nChatSalasQtd);
     end; //if datam.qryChatCarregaConf.RecordCount > 0 then
-
-    datam.qryChatCarregaResp.Active := False;
-    datam.qryChatCarregaRespGrupo.Active := False;
-    datam.qryChatCarrega.Active := False;
-    datam.qryChatCarregaConf.Active := False;
-    //CHAT
   end;
 
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 11');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 11');
 
   //FAQ
   //easy_faq_conf
@@ -2509,82 +1585,11 @@ begin
     btnFAQ.Enabled := True;
 
     //easy_faq_grupo_conf
-    datam.qryFaqConf.Active := False;
-    datam.qryFaqConf.SQL.Clear;
-    datam.qryFaqConf.SQL.Add('select ');
-    datam.qryFaqConf.SQL.Add('g.id, ');
-    datam.qryFaqConf.SQL.Add('g.descricao ');
-    datam.qryFaqConf.SQL.Add('from ');
-    datam.qryFaqConf.SQL.Add('easy_wfaq_has_grupo a ');
-    datam.qryFaqConf.SQL.Add('left join easy_wfaq_grupo_conf g on a.easy_wfaq_grupo_conf_id = g.id ');
-    datam.qryFaqConf.SQL.Add('where ');
-    datam.qryFaqConf.SQL.Add('true ');
-    datam.qryFaqConf.SQL.Add('and a.active = ' + QuotedStr('Y'));
-    datam.qryFaqConf.SQL.Add('and g.active = ' + QuotedStr('Y'));
-    datam.qryFaqConf.SQL.Add('and a.easy_wfaq_conf_id = ' + IntToStr(TMyFaqClass.nFaqIdConf));
-    datam.qryFaqConf.Active := True;
-
-    TMyFaqClass.nQtdGrupoConf := datam.qryFaqConf.RecordCount;
-    SetLength(TMyFaqClass.matrizGrupoConf, TMyFaqClass.nQtdGrupoConf, 2);
-
-    if TMyFaqClass.nQtdGrupoConf > 0 then
-    begin
-      ind := 0;
-      while not datam.qryFaqConf.Eof do
-      begin
-        TMyFaqClass.matrizGrupoConf[ind, 0] := datam.qryFaqConf.Fields[0].AsString;
-        TMyFaqClass.matrizGrupoConf[ind, 1] := datam.qryFaqConf.Fields[1].AsString;
-
-        Inc(ind);
-        datam.qryFaqConf.Next;
-      end;
-    end;
+    Agente.SQL.CarregaChatRespGrupo;
 
     //easy_faq_resposta_conf
-    datam.qryFaqConf.Active := False;
-    datam.qryFaqConf.SQL.Clear;
-    datam.qryFaqConf.SQL.Add('select ');
-    datam.qryFaqConf.SQL.Add('p.id, ');
-    datam.qryFaqConf.SQL.Add('p.descricao, ');
-    datam.qryFaqConf.SQL.Add('p.texto, ');
-    datam.qryFaqConf.SQL.Add('a.easy_wfaq_grupo_conf_id ');
-    datam.qryFaqConf.SQL.Add('from ');
-    datam.qryFaqConf.SQL.Add('easy_wfaq_grupo_has_pergunta a ');
-    datam.qryFaqConf.SQL.Add('left join easy_wfaq_pergunta_conf p on a.easy_wfaq_pergunta_conf_id = p.id ');
-    datam.qryFaqConf.SQL.Add('where ');
-    datam.qryFaqConf.SQL.Add('true ');
-    datam.qryFaqConf.SQL.Add('and a.active = ' + QuotedStr('Y'));
-    datam.qryFaqConf.SQL.Add('and p.active = ' + QuotedStr('Y'));
+    Agente.SQL.CarregaFaqRespConf;
 
-    sFaqIn := '';
-    for nForFaq := 0 to TMyFaqClass.nQtdGrupoConf-1 do
-    begin
-      sFaqIn := sFaqIn + TMyFaqClass.matrizGrupoConf[nForFaq, 0];
-      if nForFaq < TMyFaqClass.nQtdGrupoConf-1 then
-        sFaqIn := sFaqIn + ',';
-    end;
-
-    datam.qryFaqConf.SQL.Add('and a.easy_wfaq_grupo_conf_id in (' + sFaqIn + ')');
-    datam.qryFaqConf.Active := True;
-
-    TMyFaqClass.nQtdRespostaConf := datam.qryFaqConf.RecordCount;
-    SetLength(TMyFaqClass.matrizRespostaConf, TMyFaqClass.nQtdRespostaConf, 4);
-
-    if TMyFaqClass.nQtdRespostaConf > 0 then
-    begin
-      ind := 0;
-      while not datam.qryFaqConf.Eof do
-      begin
-        TMyFaqClass.matrizRespostaConf[ind, 0] := datam.qryFaqConf.Fields[0].AsString;
-        TMyFaqClass.matrizRespostaConf[ind, 1] := datam.qryFaqConf.Fields[1].AsString;
-        TMyFaqClass.matrizRespostaConf[ind, 2] := datam.qryFaqConf.Fields[2].AsString;
-        TMyFaqClass.matrizRespostaConf[ind, 3] := datam.qryFaqConf.Fields[3].AsString;
-
-        Inc(ind);
-        datam.qryFaqConf.Next;
-      end;
-    end;
-    datam.qryFaqConf.Active := False;
   end; //if TMyFaqClass.bFaqAct then
 
   cboFAQFilter.Items.Clear;
@@ -2606,265 +1611,48 @@ begin
   try
     lstFAQFindSub.Repaint;
     lstFAQFindSub.Refresh;
-  except
-  end;
+  except end;
   panFAQSub.Visible := False;
   //FAQ
 
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 12');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 12');
 
   //Conferencia
-  if TMyInfoLogin.bConferencia then
-  begin
-    datam.qryConferencia.Active := False;
-    datam.qryConferencia.SQL.Clear;
-    datam.qryConferencia.SQL.Add('select id, descricao, tipo ');//tipo N: externo ou S: interno
-    datam.qryConferencia.SQL.Add('from easy_pabx_serv_ramal_conferencia_conf ');
-    datam.qryConferencia.SQL.Add('where active = ' + QuotedStr('Y'));
-    datam.qryConferencia.SQL.Add('and easy_call_operacao_conf_id = ' + TMyInfoLogin.sIDOperacao);
-    datam.qryConferencia.Active := True;
+  Agente.Processo.Conferencia;
 
-    TMyConfCallClass.nQtdConfCall := datam.qryConferencia.RecordCount;
-    SetLength(TMyConfCallClass.matrizConfCall, TMyConfCallClass.nQtdConfCall, 3);
-
-    if TMyConfCallClass.nQtdConfCall > 0 then
-    begin
-      cmdConferencia.Enabled := True;
-      cmdExecConf.Enabled := False;
-      cmdCreateConf.Enabled := False;
-      cmdDestroyConf.Enabled := False;
-
-      ind := 0;
-      while not datam.qryConferencia.Eof do
-      begin
-        TMyConfCallClass.matrizConfCall[ind, 0] := datam.qryConferencia.Fields[0].AsString;
-        TMyConfCallClass.matrizConfCall[ind, 1] := datam.qryConferencia.Fields[1].AsString;
-        TMyConfCallClass.matrizConfCall[ind, 2] := datam.qryConferencia.Fields[2].AsString;
-
-        if TMyConfCallClass.matrizConfCall[ind, 2] = 'S' then
-        begin
-          //easy_callcenter_agente_conferencia_has_supervisor
-          //Numeros internos
-          datam.qryConferenciaTipo.Active := False;
-          datam.qryConferenciaTipo.SQL.Clear;
-          datam.qryConferenciaTipo.SQL.Add('select s.id, u.descricao, u.id ');
-          datam.qryConferenciaTipo.SQL.Add('from easy_pabx_serv_ramal_conferencia_has_supervisor s ');
-          datam.qryConferenciaTipo.SQL.Add('left join easy_work_colaborador_conf u on s.easy_work_colaborador_conf_id = u.id ');
-          datam.qryConferenciaTipo.SQL.Add('where s.active = ' + QuotedStr('Y'));
-          datam.qryConferenciaTipo.SQL.Add('and easy_pabx_serv_ramal_conferencia_conf_id = ' + TMyConfCallClass.matrizConfCall[ind, 0]);
-          datam.qryConferenciaTipo.Active := True;
-
-          TMyConfCallClass.nQtdIntConfCall := datam.qryConferenciaTipo.RecordCount;
-          SetLength(TMyConfCallClass.matrizIntConfCall, TMyConfCallClass.nQtdIntConfCall, 3);
-
-          if TMyConfCallClass.nQtdIntConfCall > 0 then
-          begin
-            indSub := 0;
-            while not datam.qryConferenciaTipo.Eof do
-            begin
-              TMyConfCallClass.matrizIntConfCall[indSub, 0] := datam.qryConferenciaTipo.Fields[0].AsString;
-              TMyConfCallClass.matrizIntConfCall[indSub, 1] := datam.qryConferenciaTipo.Fields[1].AsString;
-              TMyConfCallClass.matrizIntConfCall[indSub, 2] := datam.qryConferenciaTipo.Fields[2].AsString;
-
-              Inc(indSub);
-              datam.qryConferenciaTipo.Next;
-            end;
-          end;
-        end;
-
-        if TMyConfCallClass.matrizConfCall[ind, 2] = 'N' then
-        begin
-          //easy_callcenter_agente_conferencia_has_numeros
-          //Numeros externos
-          datam.qryConferenciaTipo.Active := False;
-          datam.qryConferenciaTipo.SQL.Clear;
-          datam.qryConferenciaTipo.SQL.Add('select c.id, c.descricao, c.telefone, c.easy_pabx_serv_rota_inteligente_conf_id ');
-          datam.qryConferenciaTipo.SQL.Add('from easy_pabx_serv_ramal_conferencia_numeros_conf c ');
-          datam.qryConferenciaTipo.SQL.Add(' left join easy_pabx_serv_ramal_conferencia_has_numeros a on a.easy_pabx_serv_ramal_conferencia_numeros_conf_id = c.id ');
-          datam.qryConferenciaTipo.SQL.Add('where c.active = ' + QuotedStr('Y'));
-          datam.qryConferenciaTipo.SQL.Add('and a.active = ' + QuotedStr('Y'));
-          datam.qryConferenciaTipo.SQL.Add('and a.easy_pabx_serv_ramal_conferencia_conf_id = ' + TMyConfCallClass.matrizConfCall[ind, 0]);
-          datam.qryConferenciaTipo.Active := True;
-
-          TMyConfCallClass.nQtdExtConfCall := datam.qryConferenciaTipo.RecordCount;
-          SetLength(TMyConfCallClass.matrizExtConfCall, TMyConfCallClass.nQtdExtConfCall, 4);
-
-          if TMyConfCallClass.nQtdExtConfCall > 0 then
-          begin
-            indSub := 0;
-            while not datam.qryConferenciaTipo.Eof do
-            begin
-              TMyConfCallClass.matrizExtConfCall[indSub, 0] := datam.qryConferenciaTipo.Fields[0].AsString;
-              TMyConfCallClass.matrizExtConfCall[indSub, 1] := datam.qryConferenciaTipo.Fields[1].AsString;
-              TMyConfCallClass.matrizExtConfCall[indSub, 2] := datam.qryConferenciaTipo.Fields[2].AsString;
-              TMyConfCallClass.matrizExtConfCall[indSub, 3] := datam.qryConferenciaTipo.Fields[3].AsString;
-
-              Inc(indSub);
-              datam.qryConferenciaTipo.Next;
-            end;
-          end;
-        end;
-
-        Inc(ind);
-        datam.qryConferencia.Next;
-      end;
-
-      datam.qryConferenciaTipo.Active := False;
-    end; //if TMyConfCallClass.nQtdConfCall > 0 then
-
-    cboConfCallFilter.Items.Clear;
-    cboConfCallFilter.Items.Add('Interno');
-    cboConfCallFilter.Items.Add('Externo');
-
-    txtConfCallFind.Enabled := False;
-    txtConfCallFind.Text := '';
-
-    lstConfCallFind.Items.Clear;
-    lstConfCallFind.Visible := False;
-    try
-      lstConfCallFind.Repaint;
-      lstConfCallFind.Refresh;
-    except
-    end;
-  end; //if TMyInfoLogin.bConferencia then
-  //Conferencia
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 13');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 13');
 
   //Centro de Custo
-  if TMyInfoLogin.bRotaInteligente = False then
-  begin
-    datam.qryCentroCusto.Active := False;
-    datam.qryCentroCusto.SQL.Clear;
-    datam.qryCentroCusto.SQL.Add('select ');
-    datam.qryCentroCusto.SQL.Add('r.id, ');
-    datam.qryCentroCusto.SQL.Add('r.descricao ');
-    datam.qryCentroCusto.SQL.Add('from ');
-    datam.qryCentroCusto.SQL.Add('easy_call_operacao_has_pabx_serv_rota_inteligente i ');
-    datam.qryCentroCusto.SQL.Add('left join easy_pabx_serv_rota_inteligente_conf r on i.easy_pabx_serv_rota_inteligente_conf_id = r.id ');
-    datam.qryCentroCusto.SQL.Add('where ');
-    datam.qryCentroCusto.SQL.Add('true ');
-    datam.qryCentroCusto.SQL.Add('and i.active = ' + QuotedStr('Y'));
-    datam.qryCentroCusto.SQL.Add('and r.active = ' + QuotedStr('Y'));
-    datam.qryCentroCusto.SQL.Add('and i.easy_call_operacao_conf_id = ' + TMyInfoLogin.sIDOperacao + ' ');
-    datam.qryCentroCusto.SQL.Add('order by r.descricao asc ');
-    datam.qryCentroCusto.Active := True;
+  Agente.Processo.CentroCusto;
 
-    vnumcentrocusto := datam.qryCentroCusto.RecordCount;
-    SetLength(matrizcentrocusto,2,vnumcentrocusto);
-
-    ind := 0;
-    while not datam.qryCentroCusto.eof do
-    begin
-      matrizcentrocusto[0,ind] := datam.qryCentroCusto.Fields[0].AsString;
-      matrizcentrocusto[1,ind] := datam.qryCentroCusto.Fields[1].AsString;
-
-      inc(ind);
-      datam.qryCentroCusto.Next;
-    end;
-
-    datam.qryCentroCusto.Active := False;
-  end
-  else//if TMyInfoLogin.bRotaInteligente = False then
-  begin
-    vnumcentrocusto := 1;
-    SetLength(matrizcentrocusto,2,vnumcentrocusto);
-
-    matrizcentrocusto[0,0] := IntToStr(TMyInfoLogin.nIdRotaInteligente);
-    matrizcentrocusto[1,0] := 'Default';
-  end;//if TMyInfoLogin.bRotaInteligente = False then
-  //Centro de Custo
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 14');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 14');
 
   if TAction(albrowser.Actions[4]).Enabled = True then
-  begin
-    datam.qryCarregaEMails.Active := False;
-    datam.qryCarregaEMails.SQL.Clear;
-    datam.qryCarregaEMails.SQL.Add('select ');
-    datam.qryCarregaEMails.SQL.Add('	h.id, ');
-    datam.qryCarregaEMails.SQL.Add('	h.data, ');
-    datam.qryCarregaEMails.SQL.Add('	h.hora, ');
-    datam.qryCarregaEMails.SQL.Add('	case ');
-    datam.qryCarregaEMails.SQL.Add('		when h.canal in (4, 5) then "Email" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.canal = 7 then "Facebook" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.canal = 8 then "Twitter" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.canal = 9 then "ReclameAqui" ');
-    datam.qryCarregaEMails.SQL.Add('		else "Outros" ');
-    datam.qryCarregaEMails.SQL.Add('	end as "Canal", ');
-    datam.qryCarregaEMails.SQL.Add('	case ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 0 then "Nao Lido" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 1 then "Lido" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 2 then "Lixeira" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 3 then "Span" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 4 then "Respondido" ');
-    datam.qryCarregaEMails.SQL.Add('		when h.queuestatus = 6 then "Encaminhado" ');
-    datam.qryCarregaEMails.SQL.Add('		else "Outros" ');
-    datam.qryCarregaEMails.SQL.Add('	end as "Status", ');
-    datam.qryCarregaEMails.SQL.Add('	h.cliente_nome, ');
-    datam.qryCarregaEMails.SQL.Add('	h.cliente_mail, ');
-    datam.qryCarregaEMails.SQL.Add('	f.descricao as "Assunto", ');
-    datam.qryCarregaEMails.SQL.Add('	"0" as "Anexo", ');
-    datam.qryCarregaEMails.SQL.Add('	"Texto" as "Mensagem" ');
-    datam.qryCarregaEMails.SQL.Add('from ');
-    datam.qryCarregaEMails.SQL.Add('easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist h ');
-    datam.qryCarregaEMails.SQL.Add('left join easy_pabx_serv_fila_universal_form_conf f on h.easy_pabx_serv_fila_universal_ctr_id = f.easy_pabx_serv_fila_universal_ctr_id ');
-    datam.qryCarregaEMails.SQL.Add('where ');
-    datam.qryCarregaEMails.SQL.Add('true ');
-    datam.qryCarregaEMails.SQL.Add('and h.canal in (4, 5) ');
-    datam.qryCarregaEMails.SQL.Add('and easy_work_colaborador_conf_id = ' + QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario));
-    datam.qryCarregaEMails.SQL.Add('and h.data >= DATE_ADD(NOW(), INTERVAL -10 DAY) ');
-    datam.qryCarregaEMails.Active := True;
+    Agente.SQL.CarregaEmails;
 
-    vnumemails := datam.qryCarregaEMails.RecordCount;
-    SetLength(matrizemails,vnumemails,10);
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 15');
 
-    ind := 0;
-    while not datam.qryCarregaEMails.Eof do
-    begin
-      matrizemails[ind,0] := datam.qryCarregaEMails.Fields[0].AsString;
-      matrizemails[ind,1] := datam.qryCarregaEMails.Fields[1].AsString;
-      matrizemails[ind,2] := datam.qryCarregaEMails.Fields[2].AsString;
-      matrizemails[ind,3] := datam.qryCarregaEMails.Fields[3].AsString;
-      matrizemails[ind,4] := datam.qryCarregaEMails.Fields[4].AsString;
-      matrizemails[ind,5] := datam.qryCarregaEMails.Fields[5].AsString;
-      matrizemails[ind,6] := datam.qryCarregaEMails.Fields[6].AsString;
-      matrizemails[ind,7] := datam.qryCarregaEMails.Fields[7].AsString;
-      matrizemails[ind,8] := datam.qryCarregaEMails.Fields[8].AsString;
-      matrizemails[ind,9] := datam.qryCarregaEMails.Fields[9].AsString;
-
-      CriaEMailDinamico(ind);
-
-      inc(ind);
-      datam.qryCarregaEMails.Next;
-    end;
-
-    datam.qryCarregaEMails.Active := False;
-  end;
-
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 15');
-
-  tabcliente.TabVisible := false;
-  tabagenda.TabVisible := false;
-  tabscript.TabVisible := false;
-  tabchat.TabVisible := false;
-  tabChatHist.TabVisible := False;
-  tabFAQ.TabVisible := False;
-  tabemail.TabVisible := false;
-  tabfax.TabVisible := false;
-  tabsms.TabVisible := false;
-  tabpesquisa.TabVisible := false;
-  tabajuda.TabVisible := false;
+  tabcliente.TabVisible     := false;
+  tabagenda.TabVisible      := false;
+  tabscript.TabVisible      := false;
+  tabchat.TabVisible        := false;
+  tabChatHist.TabVisible    := False;
+  tabFAQ.TabVisible         := False;
+  tabemail.TabVisible       := false;
+  tabfax.TabVisible         := false;
+  tabsms.TabVisible         := false;
+  tabpesquisa.TabVisible    := false;
+  tabajuda.TabVisible       := false;
   tabConferencia.TabVisible := False;
 
-  btnDesligar.Enabled  := False;
-  frameBar.Enabled     := False;
-  tbrNavegacao.Enabled := False;
+  btnDesligar.Enabled       := False;
+  frameBar.Enabled          := False;
+  tbrNavegacao.Enabled      := False;
 
-  timerstatuslinha.Enabled := False;
-  shpStatus.brush.Color := clred;
+  timerstatuslinha.Enabled  := False;
+  shpStatus.brush.Color     := clred;
 
-  frmPrincipal.LogCallStep('log_login_act', 'carregaoperacao :: Step 16');
+  LogCallStep('log_login_act', 'carregaoperacao :: Step 16');
 end;
 
 procedure TfrmPrincipal.CarregaTelasLinguagem;
@@ -3018,7 +1806,7 @@ LogCallStep('log_hangup_act', 'desliga-StepBegin');//Remover
         framebar.CloseItem(1,true);
         framebar.OpenItem(5,true);
 
-        for ind := 0 to vnumpausa-1 do
+        for ind := 0 to Agente.SQL.sVNumPausa-1 do
         begin
           if matrizpausa[0,ind] = '10002' then
           begin
@@ -3053,7 +1841,7 @@ LogCallStep('log_hangup_act', 'desliga-StepBegin');//Remover
         framebar.CloseItem(1,true);
         framebar.OpenItem(5,true);
 
-        for ind := 0 to vnumpausa-1 do
+        for ind := 0 to Agente.SQL.sVNumPausa-1 do
         begin
           if matrizpausa[0,ind] = '10002' then
           begin
@@ -3157,19 +1945,19 @@ begin
     begin
       datam.qryUpdateStatus.SQL.Add('(versao, acao, easy_call_operacao_conf_id, param1, param2, param3, easy_work_colaborador_conf_id) ');
       datam.qryUpdateStatus.SQL.Add('values (');
-      datam.qryUpdateStatus.SQL.Add(QuotedStr(VersaoExe) + ', ');
+      datam.qryUpdateStatus.SQL.Add(QuotedStr(Agente.VersaoExe) + ', ');
 
       datam.qryUpdateStatus.SQL.Add('1, ');
       datam.qryUpdateStatus.SQL.Add(TMyInfoLogin.sIDOperacao + ', ');
-      datam.qryUpdateStatus.SQL.Add(QuotedStr(frmLogin.TMyMachineInfo.sIP_Address) + ', ');
-      datam.qryUpdateStatus.SQL.Add(QuotedStr(frmLogin.TMyMachineInfo.sMac_Address) + ', ');
+      datam.qryUpdateStatus.SQL.Add(QuotedStr(TMyMachineInfo.sIP_Address) + ', ');
+      datam.qryUpdateStatus.SQL.Add(QuotedStr(TMyMachineInfo.sMac_Address) + ', ');
       datam.qryUpdateStatus.SQL.Add(QuotedStr(IntToStr(TMyInfoLogin.nTipo + 1)) + ', ');
     end
     else
     begin
       datam.qryUpdateStatus.SQL.Add('(versao, acao, easy_call_operacao_conf_id, param1, easy_work_colaborador_conf_id) ');
       datam.qryUpdateStatus.SQL.Add('values (');
-      datam.qryUpdateStatus.SQL.Add(QuotedStr(VersaoExe) + ', ');
+      datam.qryUpdateStatus.SQL.Add(QuotedStr(Agente.VersaoExe) + ', ');
 
       if Copy(numero, 1, 5) = 'AGE02' then
       begin
@@ -3208,7 +1996,7 @@ begin
             end;
     end;
 
-    datam.qryUpdateStatus.SQL.Add(QuotedStr(frmprincipal.TMyInfoLogin.sIDUsuario) + ') ');
+    datam.qryUpdateStatus.SQL.Add(QuotedStr(TMyInfoLogin.sIDUsuario) + ') ');
     datam.qryUpdateStatus.ExecSQL;
     datam.qryUpdateStatus.Active := False;
 
@@ -3303,7 +2091,6 @@ begin
   if frmLogin.vping = True then
   begin
     LogPing('PingStopped', icmpClientPing.Host);
-
     tmrIcmpPing.Enabled := False;
   end;
 
@@ -3336,7 +2123,7 @@ begin
     sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
 
     vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
-    sskinmanager1.SkinName:= varqini.readstring('Configuracoes','skin','WLM');
+    sskinmanager1.SkinName:= varqini.readstring('skin','skin','WLM');
     varqini.free;
 
     sskinmanager1.active := true;
@@ -3361,27 +2148,21 @@ end;
 procedure TfrmPrincipal.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-{  if frmPrincipal.Enabled then
-    if Key = VK_F1 then
-      if ((btnAjuda.Visible)and(actajuda.Visible)) then
-        btnAjuda.Click;}
+  if ((Key = VK_F1)and(tbrNavegacao.Enabled)) then
+    btnAjuda.Click;
 end;
 
 procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
 {
-  if not datam.qryLogin.Active then datam.qryLogin.Open;
-
-  Bolfone_registro_act     := datam.qryLogin.FieldByName('fone_registro_act').AsBoolean;
-  Strsec_fone_registro_tmp := datam.qryLogin.FieldByName('sec_fone_registro_tmp').AsString;
-
-  datam.qryLogin.Close;
+    bFone_registro_act     : Boolean;
+    sSec_fone_registro_tmp : String;
 
   //CarregaTelasLinguagem;
-  if Length(Trim(Strsec_fone_registro_tmp)) > 0 then
-    if StrToInt(Strsec_fone_registro_tmp) > 0 then
+  if Length(Trim(sSec_fone_registro_tmp)) > 0 then
+    if StrToInt(sSec_fone_registro_tmp) > 0 then
     begin
-      TMmRegProxy.Interval := StrToInt(Strsec_fone_registro_tmp)*1000;
+      TMmRegProxy.Interval := StrToInt(sSec_fone_registro_tmp)*1000;
       TMmRegProxy.Enabled  := True;
     end;
 }
@@ -3393,7 +2174,7 @@ begin
   tbrSeparator.Width := tbrTop.Width - (cmdMaximizar.Width * 5) - 3;
   tbrSeparator.Tag := tbrSeparator.Width;
 
-  stbStatusBar.Panels[4].Text := APP_FRM_MAIN_STATUS_BAR_VERSION[ID_LANG] + VersaoExe;
+  stbStatusBar.Panels[4].Text := APP_FRM_MAIN_STATUS_BAR_VERSION[ID_LANG] + Agente.VersaoExe;
   try
     stbStatusBar.Hint := 'SIP Version: ' + vax.GetVersionFile + ' / ' + vax.GetVersionSDK;
   except
@@ -3786,33 +2567,9 @@ var
 begin
   cmdChatHistoricoGerarPDF.Enabled := False;
 
-  datam.qryChatPesquisaHistMsg.Active := False;
-  datam.qryChatPesquisaHistMsg.SQL.Clear;
-  datam.qryChatPesquisaHistMsg.SQL.Add('select ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('date_format(d.cdata, "%d/%m/%Y") as Data, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('date_format(d.chora, "%H:%i:%s %p") as Hora, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('d.tipo as tipo, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('if(	d.tipo = "C", ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('c.nome, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('if( ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('(select u.descricao from easy_work_colaborador_conf u where id = d.easy_work_colaborador_conf_id) IS NULL, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('"Sistema", ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('(select u.descricao from easy_work_colaborador_conf u where id = d.easy_work_colaborador_conf_id) ');
-  datam.qryChatPesquisaHistMsg.SQL.Add(') ');
-  datam.qryChatPesquisaHistMsg.SQL.Add(') as nome, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('CAST(d.msg as char(255)) as mensagem, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('f.descricao, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('c.telefone, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('c.email, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('c.nome as nomecliente, ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('d.easy_work_colaborador_conf_id ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('from ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('easy_core_contatos_msg_hist d ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('left join easy_core_contatos_ctrl c on d.easy_core_contatos_ctrl_id = c.id or d.easy_core_contatos_ctrl_id = c.is_transferred ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf f on c.easy_pabx_serv_fila_universal_ctr_id = f.easy_pabx_serv_fila_universal_ctr_id ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('where ');
-  datam.qryChatPesquisaHistMsg.SQL.Add('c.id = ' + grdChatPesquisaHist.SelectedField.AsString);
-  datam.qryChatPesquisaHistMsg.Active := True;
+  datam.qryChatPesquisaHistMsg.Close;
+  datam.qryChatPesquisaHistMsg.ParamByName('ID').AsString := grdChatPesquisaHist.SelectedField.AsString;
+  datam.qryChatPesquisaHistMsg.Open;
 
   if datam.qryChatPesquisaHistMsg.RecordCount > 0 then
   begin
@@ -4354,74 +3111,16 @@ begin
   end;
 end;
 
-procedure TfrmPrincipal.LogCallStep(tipo: String; arg: String);
-var
-  tf_Arquivo: TextFile;
-  sLogText: String;
-  sNomeArquivo: String;
-  ano,mes,dia,hora,minuto,segundo,mili: word;
-begin
-  if vLogCallStep[0] = 'True' then
-  begin
-    if ((tipo = 'log_login_act'   ) and (vLogCallStep[4]  = 'True')) or
-       ((tipo = 'log_logout_act'  ) and (vLogCallStep[5]  = 'True')) or
-       ((tipo = 'log_pause_act'   ) and (vLogCallStep[6]  = 'True')) or
-       ((tipo = 'log_unpause_act' ) and (vLogCallStep[7]  = 'True')) or
-       ((tipo = 'log_answer_act'  ) and (vLogCallStep[8]  = 'True')) or
-       ((tipo = 'log_hangup_act'  ) and (vLogCallStep[9]  = 'True')) or
-       ((tipo = 'log_dnd_on_act'  ) and (vLogCallStep[10] = 'True')) or
-       ((tipo = 'log_dnd_off_act' ) and (vLogCallStep[11] = 'True')) or
-       ((tipo = 'log_registro_act') and (vLogCallStep[12] = 'True')) or
-       ((tipo = 'log_xfer_act'    ) and (vLogCallStep[13] = 'True')) or
-       ((tipo = 'log_sip_err'     ) and (vLogCallStep[14] = 'True')) then
-    begin
-      decodedate(now,ano,mes,dia);
-      decodetime(now,hora,minuto,segundo,mili);
-
-      sLogText := IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano) + ' ';
-      sLogText := sLogText + IntToStr(hora) + ':' + IntToStr(minuto) + ':' + IntToStr(segundo) + ' - ';
-      sLogText := sLogText + TMyInfoLogin.sIDOperacao + ' >> ';
-      sLogText := sLogText + tipo;
-      if Trim(arg) <> '' then
-        sLogText := sLogText + ' (' + arg + ')';
-
-      try
-        if not DirectoryExists(vLogCallStep[2]) then
-        begin
-          ForceDirectories(vLogCallStep[2]);
-        end;
-        sNomeArquivo := StringReplace(vLogCallStep[3],'${DATA}', IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano), [rfReplaceAll, rfIgnoreCase]);
-        AssignFile(tf_Arquivo, vLogCallStep[2] + '\' + sNomeArquivo);
-
-        if FileExists(vLogCallStep[2] + '\' + sNomeArquivo) then
-          Append(tf_Arquivo)
-        else
-          Rewrite(tf_Arquivo);
-
-        Writeln(tf_Arquivo, sLogText);
-      finally
-        CloseFile(tf_Arquivo);
-      end;
-    end;
-  end;
-end;
-
 procedure TfrmPrincipal.LogPing(sTipo: String; sMsg: String);
 var
   tf_Arquivo: TextFile;
   sLogText: String;
   sNomeArquivo: String;
-  ano,mes,dia,hora,minuto,segundo,mili: word;
   sDir: String;
 begin
   sDir := ExtractFilePath(Application.ExeName)+'log';
 
-  decodedate(now,ano,mes,dia);
-  decodetime(now,hora,minuto,segundo,mili);
-
-  sLogText := IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano) + ' ';
-  sLogText := sLogText + IntToStr(hora) + ':' + IntToStr(minuto) + ':' + IntToStr(segundo) + ' - ';
-  sLogText := sLogText + sTipo + ' >> ';
+  sLogText := TxtPadraoLog(sTipo);
 
   if Trim(sMsg) <> '' then
     sLogText := sLogText + '(' + sMsg + ')';
@@ -4431,7 +3130,8 @@ begin
     begin
       ForceDirectories(sDir);
     end;
-    sNomeArquivo := 'ICMP_Ping.log';
+    sNomeArquivo := '_CMD_Ping_'+ FormatDateTime('yyyy_MM_dd',now)+'.log';
+
     AssignFile(tf_Arquivo, sDir + '\' + sNomeArquivo);
 
     if FileExists(sDir + '\' + sNomeArquivo) then
@@ -4824,7 +3524,7 @@ var
   temp : string;
 begin
   temp := '';
-  for ind := 0 to vnumsites-1 do
+  for ind := 0 to Agente.SQL.vnumsites -1 do
   begin
     if matrizurl[1,ind] = tipo then
     begin
@@ -4907,7 +3607,7 @@ var
   ind, vpausaid: integer;
 begin
   vpausaid := 0;
-  for ind := 0 to vnumpausa-1 do
+  for ind := 0 to Agente.SQL.sVNumPausa-1 do
   begin
     if matrizpausa[1,ind] = tipo then
     begin
@@ -5306,8 +4006,8 @@ begin
   if TMyConfCallClass.bInConfCall = True then
     DesmontaConferencia(1);
 
-  if (frmPrincipal.TMyVaxIncomingCallParam.bAutoAnswer = False) and
-     (frmPrincipal.TMyVaxIncomingCallParam.bIncomingCall = True) then
+  if (TMyVaxIncomingCallParam.bAutoAnswer = False) and
+     (TMyVaxIncomingCallParam.bIncomingCall = True) then
     AtivaFlashWindow(False);
 
   try
@@ -5322,13 +4022,9 @@ procedure TfrmPrincipal.tempo_fila(vcallid: string);
 var
   vtempo: integer;
 begin
-  datam.qryTempoFila.Active := False;
-  datam.qryTempoFila.SQL.Clear;
-  datam.qryTempoFila.SQL.Add('select time_to_sec(espera) ');
-  datam.qryTempoFila.SQL.Add('from easy_dash_pabx_serv_fila_de_atendimento ');
-  datam.qryTempoFila.SQL.Add('where uniqueid = ' + QuotedStr(vcallid));
-  datam.qryTempoFila.SQL.Add('and easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-  datam.qryTempoFila.Active := True;
+  datam.qryTempoFila.Close;
+  datam.qryTempoFila.ParamByName('VcallId').AsString := vcallid;
+  datam.qryTempoFila.Open;
 
   if datam.qryTempoFila.Fields[0].AsString <> '' then
   begin
@@ -5477,6 +4173,14 @@ begin
   try
     icmpClientPing.Ping;
     Application.ProcessMessages;
+
+    LogPing('CMD_Ping',
+           ' From:'+icmpClientPing.ReplyStatus.FromIpAddress +
+           ', Bytes:' + IntToStr(icmpClientPing.ReplyStatus.BytesReceived) +
+           ', Time:' + IntToStr(icmpClientPing.ReplyStatus.MsRoundTripTime) +
+           ', TTL:' + IntToStr(icmpClientPing.ReplyStatus.TimeToLive) +
+           ', Msg:' + icmpClientPing.ReplyStatus.Msg );
+
   except
     LogPing('PingError', 'Error at Ping function to IP ' + icmpClientPing.Host);
   end;
@@ -5610,14 +4314,14 @@ begin
   tmpTelefone := '';
 
   {var sTempTel: String;
-  if frmprincipal.TMyAppStatus.sNumero[1] = '0' then
+  if TMyAppStatus.sNumero[1] = '0' then
   begin
-    sTempTel := frmprincipal.TMyAppStatus.sNumero;
+    sTempTel := TMyAppStatus.sNumero;
     Delete(sTempTel, 1, 1);
     tmpTelefone := '%' + sTempTel;
   end
   else}
-  tmpTelefone := frmPrincipal.TMyAppStatus.sNumero;
+  tmpTelefone := TMyAppStatus.sNumero;
 
   tmpTranscricao := '';
   try
@@ -5628,17 +4332,17 @@ begin
 
   tmpGravacaoVideoAct := 'N';
   tmpGravacaoVideoPath := '';
-  if (frmPrincipal.TMyCaptureScreen.bCapture) and
-     (frmPrincipal.TMyCaptureScreen.bCapturing) and
-     (frmPrincipal.TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
+  if (TMyCaptureScreen.bCapture) and
+     (TMyCaptureScreen.bCapturing) and
+     (TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
   begin
     tmpGravacaoVideoAct := 'Y';
-    tmpGravacaoVideoPath := frmPrincipal.TMyCaptureScreen.sCaptureStorageFile +
-                            IntToStr(frmPrincipal.TMyCaptureScreen.nSplitStep) +
-                            frmPrincipal.TMyCaptureScreen.sCaptureFileFormat;
+    tmpGravacaoVideoPath := TMyCaptureScreen.sCaptureStorageFile +
+                            IntToStr(TMyCaptureScreen.nSplitStep) +
+                            TMyCaptureScreen.sCaptureFileFormat;
   end;
 
-  if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
+  if (TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
   begin
     frmPrincipal.ClassificaChamadaAtiva(
                                         TMyAppStatus.nCallQuality,
@@ -5649,29 +4353,29 @@ begin
                                         tmpAgendamento_tipo,
                                         tmpAgendamento_data,
                                         tmpAgendamento_hora,
-                                        TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                        TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                        TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                        TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                        TimeToStr(TMyPausa.tTempoPausa),
+                                        TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                        IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                         'N',
                                         'Y',
                                         'TIMEOUT',
                                         TMyAppStatus.sSipDialStatus,
-                                        IfThen(frmPrincipal.TMyPausa.bPausado, '1', '0'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                        frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                        IfThen(TMyPausa.bPausado, '1', '0'),
+                                        IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                        IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                        TMyInfoLogin.sIDSupervisor,
                                         '',
                                         tmpEasy_callcenter_classif_chamada_conf_id,
                                         tmpEasy_callcenter_classif_sub_chamada_conf_id,
                                         TMyAppStatus.sSipDialID,
                                         tmpTelefone
     );
-  end//if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then
+  end//if (TMyAppStatus.sTipoChamada = 'Ativo') then
   else
-    if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
+    if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
     begin
       frmPrincipal.ClassificaChamadaReceptiva(
                                           TMyAppStatus.nCallQuality,
@@ -5682,36 +4386,36 @@ begin
                                           tmpAgendamento_tipo,
                                           tmpAgendamento_data,
                                           tmpAgendamento_hora,
-                                          TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                          TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                          TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                          TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                          TimeToStr(TMyPausa.tTempoPausa),
+                                          TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                          IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                           'N',
                                           'Y',
                                           'TIMEOUT',
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                          frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                          IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                          IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                          TMyInfoLogin.sIDSupervisor,
                                           '',
                                           tmpEasy_callcenter_classif_chamada_conf_id,
                                           tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                          frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                          TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
+                                          TMyVaxIncomingCallParam.sCampo[1],
+                                          TMyVaxIncomingCallParam.sCampo[2],
+                                          TMyVaxIncomingCallParam.sCampo[3],
+                                          TMyVaxIncomingCallParam.sCampo[4],
+                                          TMyVaxIncomingCallParam.sCampo[5],
+                                          TMyVaxIncomingCallParam.sCampo[6],
+                                          TMyVaxIncomingCallParam.sCampo[7],
+                                          TMyVaxIncomingCallParam.sCampo[8],
+                                          TMyVaxIncomingCallParam.sCampo[9],
+                                          TMyVaxIncomingCallParam.sCampo[10]
       );
-    end//if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then
+    end//if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then
     else
-      if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
+      if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
       begin
         frmPrincipal.ClassificaChamadaReceptiva(
                                             TMyAppStatus.nCallQuality,
@@ -5722,37 +4426,37 @@ begin
                                             tmpAgendamento_tipo,
                                             tmpAgendamento_data,
                                             tmpAgendamento_hora,
-                                            TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                            TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                            TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                            TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                            TimeToStr(TMyPausa.tTempoPausa),
+                                            TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                            IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                             'N',
                                             'Y',
                                             'TIMEOUT',
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                            frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                            IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                            IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                            TMyInfoLogin.sIDSupervisor,
                                             TMyVaxIncomingCallParam.sFila,
                                             tmpEasy_callcenter_classif_chamada_conf_id,
                                             tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                            TMyVaxIncomingCallParam.sTipoOperacao,
+                                            TMyVaxIncomingCallParam.sCampo[1],
+                                            TMyVaxIncomingCallParam.sCampo[2],
+                                            TMyVaxIncomingCallParam.sCampo[3],
+                                            TMyVaxIncomingCallParam.sCampo[4],
+                                            TMyVaxIncomingCallParam.sCampo[5],
+                                            TMyVaxIncomingCallParam.sCampo[6],
+                                            TMyVaxIncomingCallParam.sCampo[7],
+                                            TMyVaxIncomingCallParam.sCampo[8],
+                                            TMyVaxIncomingCallParam.sCampo[9],
+                                            TMyVaxIncomingCallParam.sCampo[10]
         );
       end;
 
-  frmprincipal.TMyClassificacao.bClassificou := True;
-  frmprincipal.TMyXFer.bXFerExec := False;
+  TMyClassificacao.bClassificou := True;
+  TMyXFer.bXFerExec := False;
   frmprincipal.memTranscricao.Lines.Clear;
   ClearImgCallQuality(False);
 
@@ -5787,13 +4491,8 @@ begin
   if TMyAppStatus.bLogado = false then
     Exit;
 
-  datam.qryVerificaLoginAtivo.Active := False;
-  datam.qryVerificaLoginAtivo.SQL.Clear;
-  datam.qryVerificaLoginAtivo.SQL.Add('select deslogado ');
-  datam.qryVerificaLoginAtivo.SQL.Add('from easy_dash_pabx_serv_fila_de_atendimento ');
-  datam.qryVerificaLoginAtivo.SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-  datam.qryVerificaLoginAtivo.ExecSQL;
-  datam.qryVerificaLoginAtivo.Active := True;
+  datam.qryVerificaLoginAtivo.Close;
+  datam.qryVerificaLoginAtivo.Open;
 
   if datam.qryVerificaLoginAtivo.RecordCount > 0 then
   begin
@@ -6518,17 +5217,6 @@ begin
   sNewText := sTexto;
   for nFor := 1 to MAX_CONVERT_CHARS do
     sNewText := StringReplace(sNewText, ConvertCharItems[nFor].FE, ConvertCharItems[nFor].DB, [rfReplaceAll]);
-  Result := sNewText;
-end;
-
-function TfrmPrincipal.ConvertCharToFE(sTexto: String): String;
-var
-  nFor: Integer;
-  sNewText: String;
-begin
-  sNewText := sTexto;
-  for nFor := 1 to MAX_CONVERT_CHARS do
-    sNewText := StringReplace(sNewText, ConvertCharItems[nFor].DB, ConvertCharItems[nFor].FE, [rfReplaceAll]);
   Result := sNewText;
 end;
 
@@ -7309,11 +5997,11 @@ begin
         if matrizchatsala[nFor, 0] = IntToStr(CHAT_STATUS_FREE) then
         begin
           datam.conChatQueue.Disconnect;
-          datam.conChatQueue.HostName := frmLogin.TMyConfigInfo.sDatabaseIP;
-          datam.conChatQueue.Database := frmLogin.TMyConfigInfo.sDatabaseName;
-          datam.conChatQueue.User     := frmLogin.TMyConfigInfo.sDatabaseUser;
-          datam.conChatQueue.Password := frmLogin.TMyConfigInfo.sDatabasePass;
-          datam.conChatQueue.Port := frmLogin.TMyConfigInfo.nDatabasePort;
+          datam.conChatQueue.HostName := TMyConfigInfo.sDatabaseIP;
+          datam.conChatQueue.Database := TMyConfigInfo.sDatabaseName;
+          datam.conChatQueue.User     := TMyConfigInfo.sDatabaseUser;
+          datam.conChatQueue.Password := TMyConfigInfo.sDatabasePass;
+          datam.conChatQueue.Port := TMyConfigInfo.nDatabasePort;
           datam.conChatQueue.Connect;
 
           datam.qryChatQueue.Active := False;
@@ -7497,14 +6185,14 @@ procedure TfrmPrincipal.tmrChatReadTimer(Sender: TObject);
 var
   nFor: Integer;
   nCountMsg: Integer;
-  sUpdateId: String;
+//  sUpdateId: String;
   sMensagem: String;
   sHoraMensagem: String;
   sTipoMensagem: String;
   sNomeMensagem: String;
   sIDUsuarioMensagem: String;
-  nHasChatXFer: Integer;
-  nIdChatXFer: Integer;
+//  nHasChatXFer: Integer;
+//  nIdChatXFer: Integer;
 begin
   for nFor := 0 to nChatDinamicosCriados do
   begin
@@ -7515,12 +6203,10 @@ begin
         tmrChatRead[nFor].Enabled := False;
 
         nHasChatXFer := 0;
-        nIdChatXFer := 0;
-        qryChatRead[nFor].Active := False;
-        qryChatRead[nFor].SQL.Clear;
-        qryChatRead[nFor].SQL.Add('select transfered_act, transfered_id ');
-        qryChatRead[nFor].SQL.Add('from easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist where id = ' + matrizchatsala[nFor, 1]);
-        qryChatRead[nFor].Active := True;
+        nIdChatXFer  := 0;
+
+        Agente.SQL.ChatRead01(nFor);
+
         if qryChatRead[nFor].RecordCount > 0 then
         begin
           if qryChatRead[nFor].Fields[0].AsString = 'True' then
@@ -7532,20 +6218,7 @@ begin
           end;
         end;
 
-        qryChatRead[nFor].Active := False;
-        qryChatRead[nFor].SQL.Clear;
-        qryChatRead[nFor].SQL.Add('select d.id, d.msg, date_format(d.chora, "%H:%i:%s %p"), d.tipo, ');
-        qryChatRead[nFor].SQL.Add('u.descricao, u.id ');
-        qryChatRead[nFor].SQL.Add('from easy_core_contatos_ctrl c ');
-        qryChatRead[nFor].SQL.Add('left join easy_core_contatos_msg_hist d on c.id = d.easy_core_contatos_ctrl_id ');
-        qryChatRead[nFor].SQL.Add('left join easy_work_colaborador_conf u on d.easy_work_colaborador_conf_id = u.id ');
-        qryChatRead[nFor].SQL.Add('where d.active = ' + QuotedStr('Y') + ' and ');
-        if nHasChatXFer = 1 then
-          qryChatRead[nFor].SQL.Add('d.easy_core_contatos_ctrl_id IN (' + matrizchatsala[nFor, 1] +
-                                    ',' + IntToStr(nIdChatXFer) + ')')
-        else
-          qryChatRead[nFor].SQL.Add('d.easy_core_contatos_ctrl_id = ' + matrizchatsala[nFor, 1]);
-        qryChatRead[nFor].Active := True;
+        Agente.SQL.ChatRead02(nFor);
 
         if (matrizchatsala[nFor, 0] = IntToStr(CHAT_STATUS_FREE)) or (matrizchatsala[nFor, 0] = IntToStr(CHAT_STATUS_ENDING)) then
           Exit;
@@ -7653,12 +6326,7 @@ begin
             qryChatRead[nFor].Next;
           end;//while not qryChatRead[nFor].Eof do
 
-          qryChatRead[nFor].Active := False;
-          qryChatRead[nFor].SQL.Clear;
-          qryChatRead[nFor].SQL.Add('update easy_core_contatos_msg_hist set ');
-          qryChatRead[nFor].SQL.Add('active = ' + QuotedStr('N'));
-          qryChatRead[nFor].SQL.Add('where id in (' + sUpdateId + ')');
-          qryChatRead[nFor].ExecSQL;
+          Agente.SQL.ChatRead03(nFor);
 
           try
              if chkChatRolagem.Checked then
@@ -7675,14 +6343,7 @@ begin
             begin
               vchatverificaclientefechou[nFor] := 0;
 
-              qryChatRead[nFor].Active := False;
-              qryChatRead[nFor].SQL.Clear;
-              qryChatRead[nFor].SQL.Add('select id ');
-              qryChatRead[nFor].SQL.Add('from easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist ');
-              qryChatRead[nFor].SQL.Add('where ');
-              qryChatRead[nFor].SQL.Add('desconexao = ' + QuotedStr('C') + ' ');
-              qryChatRead[nFor].SQL.Add('and id = ' + (matrizchatsala[nFor, 1]));
-              qryChatRead[nFor].Active := True;
+              Agente.SQL.ChatRead04(nFor);
 
               if qryChatRead[nFor].RecordCount > 0 then
               begin
@@ -7922,11 +6583,11 @@ begin
   cboChatClassificaSub.ItemIndex := -1;
   cboChatClassificaSub.Text := APP_FRM_MAIN_CHAT_SELECT_SUB_CLASS[ID_LANG];
 
-  for nFor := 0 to vnumchatclassifica-1 do
+  for nFor := 0 to Agente.SQL.vnumchatclassifica-1 do
   begin
     if matrizchatclassifica[1, nFor] = cboChatClassifica.Text then
     begin
-      for nForSub := 0 to vnumchatclassificasub-1 do
+      for nForSub := 0 to Agente.SQL.vnumchatclassificasub-1 do
       begin
         if matrizchatclassifica[0, nFor] = matrizchatclassificasub[2, nForSub] then
         begin
@@ -7942,11 +6603,11 @@ var
   nFor: Integer;
   nForGrupo: Integer;
 begin
-  for nFor := 0 to vnumchatresp-1 do
+  for nFor := 0 to Agente.SQL.vnumchatresp-1 do
   begin
     if matrizchatresposta[1, nFor] = cboChatGroup.Text then
     begin
-      for nForGrupo := 0 to vnumchatrespgrupo-1 do
+      for nForGrupo := 0 to Agente.SQL.vnumchatrespgrupo-1 do
       begin
         if (matrizchatrespostagrupo[1, nForGrupo] = cboChatDefaultMsg.Text) and
            (matrizchatresposta[0, nFor] = matrizchatrespostagrupo[3, nForGrupo]) then
@@ -7972,11 +6633,11 @@ begin
   cboChatDefaultMsg.ItemIndex := -1;
   cboChatDefaultMsg.Text := APP_FRM_MAIN_CHAT_SELECT_ANSWER[ID_LANG];
 
-  for nFor := 0 to vnumchatresp-1 do
+  for nFor := 0 to Agente.SQL.vnumchatresp-1 do
   begin
     if matrizchatresposta[1, nFor] = cboChatGroup.Text then
     begin
-      for nForGrupo := 0 to vnumchatrespgrupo-1 do
+      for nForGrupo := 0 to Agente.SQL.vnumchatrespgrupo-1 do
       begin
         if matrizchatresposta[0, nFor] = matrizchatrespostagrupo[3, nForGrupo] then
         begin
@@ -8132,6 +6793,13 @@ begin
      (txtChatHistoricoData.Date = 0) then
      Exit;
 
+  Agente.SQL.ChatHistoricoNome      := TxtChatHistoricoNome.Text;
+  Agente.SQL.ChatHistoricoTelefone  := TxtChatHistoricoTelefone.Text;
+  Agente.SQL.ChatHistoricoProtocolo := TxtChatHistoricoProtocolo.Text;
+  Agente.SQL.ChatHistoricoEMail     := TxtChatHistoricoEmail.Text;
+  Agente.SQL.ChatHistoricoSala      := TxtChatHistoricoSala.Text;
+  Agente.SQL.ChatHistoricoData      := TxtChatHistoricoData.Date;
+
   datam.qryChatPesquisaHist.Active := False;
   datam.qryChatPesquisaHist.SQL.Clear;
   datam.qryChatPesquisaHist.SQL.Add('select ');
@@ -8157,43 +6825,29 @@ begin
   if Trim(txtChatHistoricoTelefone.Text) <> '' then
   begin
     sTemp := 'h.telefone like ' + QuotedStr('%' + txtChatHistoricoTelefone.Text + '%');
-    if sCamposPesquisa = '' then
-      sCamposPesquisa := sTemp
-    else
-      sCamposPesquisa := sCamposPesquisa + ' and ' + sTemp;
+    sCamposPesquisa := IfThen( sCamposPesquisa = '', sCamposPesquisa := sTemp, sCamposPesquisa + ' and ' + sTemp);
   end;
   if Trim(txtChatHistoricoProtocolo.Text) <> '' then
   begin
     sTemp := 'h.id = ' + txtChatHistoricoProtocolo.Text + ' ';
-    if sCamposPesquisa = '' then
-      sCamposPesquisa := sTemp
-    else
-      sCamposPesquisa := sCamposPesquisa + ' and ' + sTemp;
+    sCamposPesquisa := IfThen( sCamposPesquisa = '', sCamposPesquisa := sTemp, sCamposPesquisa + ' and ' + sTemp);
   end;
   if Trim(txtChatHistoricoEMail.Text) <> '' then
   begin
     sTemp := 'h.cliente_mail like ' + QuotedStr('%' + txtChatHistoricoEMail.Text + '%');
-    if sCamposPesquisa = '' then
-      sCamposPesquisa := sTemp
-    else
-      sCamposPesquisa := sCamposPesquisa + ' and ' + sTemp;
+    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
   end;
   if Trim(txtChatHistoricoSala.Text) <> '' then
   begin
     sTemp := 'c.descricao like ' + QuotedStr('%' + txtChatHistoricoSala.Text + '%');
-    if sCamposPesquisa = '' then
-      sCamposPesquisa := sTemp
-    else
-      sCamposPesquisa := sCamposPesquisa + ' and ' + sTemp;
+    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
   end;
   if txtChatHistoricoData.Date <> 0 then
   begin
     sTemp := 'date(h.datahora) = ' + QuotedStr(formatdatetime('yyyy-mm-dd', txtChatHistoricoData.date));
-    if sCamposPesquisa = '' then
-      sCamposPesquisa := sTemp
-    else
-      sCamposPesquisa := sCamposPesquisa + ' and ' + sTemp;
+    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
   end;
+
   datam.qryChatPesquisaHist.SQL.Add(sCamposPesquisa);
   datam.qryChatPesquisaHist.SQL.Add(' order by Protocolo desc');
 
@@ -8493,8 +7147,8 @@ begin
   cboChatClassifica.ItemIndex := -1;
   cboChatClassifica.Text := APP_FRM_MAIN_CHAT_SELECT_CLASS[ID_LANG];
 
-  vnumchatclassifica := qryChatDesconecta[nSalaChat].RecordCount;
-  SetLength(matrizchatclassifica, 2, vnumchatclassifica);
+  Agente.SQL.vnumchatclassifica := qryChatDesconecta[nSalaChat].RecordCount;
+  SetLength(matrizchatclassifica, 2, Agente.SQL.vnumchatclassifica);
   ind := 0;
   while not qryChatDesconecta[nSalaChat].Eof do
   begin
@@ -8526,8 +7180,8 @@ begin
   cboChatClassificaSub.ItemIndex := -1;
   cboChatClassificaSub.Text := APP_FRM_MAIN_CHAT_SELECT_SUB_CLASS[ID_LANG];
 
-  vnumchatclassificasub := qryChatDesconecta[nSalaChat].RecordCount;
-  SetLength(matrizchatclassificasub, 3, vnumchatclassificasub);
+  Agente.SQL.vnumchatclassificasub := qryChatDesconecta[nSalaChat].RecordCount;
+  SetLength(matrizchatclassificasub, 3, Agente.SQL.vnumchatclassificasub);
   ind := 0;
   while not qryChatDesconecta[nSalaChat].Eof do
   begin
@@ -8549,7 +7203,7 @@ var
 begin
   memChatHistory[nSalaChat].Lines.Clear;
 
-  if frmprincipal.TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG] then
+  if TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG] then
     lblChatCabecalho[nSalaChat].Caption := APP_FRM_MAIN_CHAT_STATUS_PAUSE[ID_LANG]
   else
     lblChatCabecalho[nSalaChat].Caption := APP_FRM_MAIN_CHAT_AVAILABLE[ID_LANG];
@@ -8964,13 +7618,16 @@ begin
 
   TMyAtxferCallClass.bInAtxferCall := False;
   try
-    TfrmXFer(framebar.items[1].frame).btnXFer.Enabled := True;
-    TfrmXFer(framebar.items[1].frame).cboXFer.Enabled := True;
+    if Assigned(framebar.items[1].frame) then
+    begin
+      TfrmXFer(framebar.items[1].frame).btnXFer.Enabled := True;
+      TfrmXFer(framebar.items[1].frame).cboXFer.Enabled := True;
 
-    if TfrmXFer(framebar.items[1].frame).tabxfer.TabIndex = 2 then
-      TfrmXFer(framebar.items[1].frame).btnXFer.Caption := APP_FRM_DIALPAD_DIAL[ID_LANG];
+      if TfrmXFer(framebar.items[1].frame).tabxfer.TabIndex = 2 then
+        TfrmXFer(framebar.items[1].frame).btnXFer.Caption := APP_FRM_DIALPAD_DIAL[ID_LANG];
 
-    TfrmXFer(framebar.items[1].frame).cboXFer.ItemIndex := -1;
+      TfrmXFer(framebar.items[1].frame).cboXFer.ItemIndex := -1;
+    end;
   except
   end;
 end;
@@ -9080,11 +7737,11 @@ begin
     TMyVaxIncomingCallParam.sFila         := processacallername(TMyVaxIncomingCallParam.displayname, 6);
     TMyVaxIncomingCallParam.sFilaDSC      := processacallername(TMyVaxIncomingCallParam.displayname, 7);
     TMyVaxIncomingCallParam.sProtocolo    := processacallername(TMyVaxIncomingCallParam.displayname, 8);
-    for nFor := 0 to frmprincipal.vnumloja-1 do
+    for nFor := 0 to Agente.SQL.vnumloja -1 do
     begin
-      if processacallername(TMyVaxIncomingCallParam.displayname, 9) = frmprincipal.matrizloja[0, nFor] then
+      if processacallername(TMyVaxIncomingCallParam.displayname, 9) = matrizloja[0, nFor] then
       begin
-        TMyVaxIncomingCallParam.sNomeLoja := frmprincipal.matrizloja[1, nFor];
+        TMyVaxIncomingCallParam.sNomeLoja := matrizloja[1, nFor];
         break;
       end;
     end;
@@ -9365,6 +8022,37 @@ begin
   end;
 end;
 
+procedure TfrmPrincipal.TmReconectTimer(Sender: TObject);
+begin
+  try
+    if not Assigned(datam) then
+      Exit;
+
+    GerarLogTmReconnect('PingStarted >>'+TMyConfigInfo.sDatabaseIP);
+    if not datam.con_connect.Ping then
+    begin
+      GerarLogTmReconnect('PingRestart');
+      datam.con_connect.Reconnect;
+
+      GerarLogTmReconnect('Conection ?');
+      if not datam.con_connect.Ping then
+        datam.con_connect.Connect;
+
+      if datam.con_connect.Connected then
+        GerarLogTmReconnect('Active')
+      else
+        GerarLogTmReconnect('No Active');
+    end else
+      GerarLogTmReconnect('Result ok');
+  Except
+  on E : Exception do
+    begin
+      GerarLogTmReconnect(E.ClassName+' .. '+'Result Error'+#13+'Description: '+E.Message);
+    end;
+  end;
+
+end;
+
 procedure TfrmPrincipal.TMmRegProxyTimer(Sender: TObject);
 begin
   RunTMmRegProxy(Sender);
@@ -9383,11 +8071,11 @@ begin
       sFileFormat     := TMyCaptureScreen.sCaptureFileFormat;
       sDstDir         := TMyCaptureScreen.sCaptureStorageDst;
 
-      sDBHostname := frmLogin.TMyConfigInfo.sDatabaseIP;
-      sDBDatabase := frmLogin.TMyConfigInfo.sDatabaseName;
-      sDBUser     := frmLogin.TMyConfigInfo.sDatabaseUser;
-      sDBPassword := frmLogin.TMyConfigInfo.sDatabasePass;
-      nDBPort     := frmLogin.TMyConfigInfo.nDatabasePort;
+      sDBHostname := TMyConfigInfo.sDatabaseIP;
+      sDBDatabase := TMyConfigInfo.sDatabaseName;
+      sDBUser     := TMyConfigInfo.sDatabaseUser;
+      sDBPassword := TMyConfigInfo.sDatabasePass;
+      nDBPort     := TMyConfigInfo.nDatabasePort;
 
       FreeOnTerminate := True;
       Priority        := tpLowest;
@@ -9755,14 +8443,14 @@ begin
   tmpTelefone := '';
 
   {var sTempTel: String;
-  if frmprincipal.TMyAppStatus.sNumero[1] = '0' then
+  if TMyAppStatus.sNumero[1] = '0' then
   begin
-    sTempTel := frmprincipal.TMyAppStatus.sNumero;
+    sTempTel := TMyAppStatus.sNumero;
     Delete(sTempTel, 1, 1);
     tmpTelefone := '%' + sTempTel;
   end
   else}
-  tmpTelefone := frmPrincipal.TMyAppStatus.sNumero;
+  tmpTelefone := TMyAppStatus.sNumero;
 
   tmpTranscricao := '';
   try
@@ -9773,17 +8461,17 @@ begin
 
   tmpGravacaoVideoAct := 'N';
   tmpGravacaoVideoPath := '';
-  if (frmPrincipal.TMyCaptureScreen.bCapture) and
-     (frmPrincipal.TMyCaptureScreen.bCapturing) and
-     (frmPrincipal.TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
+  if (TMyCaptureScreen.bCapture) and
+     (TMyCaptureScreen.bCapturing) and
+     (TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
   begin
     tmpGravacaoVideoAct := 'Y';
-    tmpGravacaoVideoPath := frmPrincipal.TMyCaptureScreen.sCaptureStorageFile +
-                            IntToStr(frmPrincipal.TMyCaptureScreen.nSplitStep) +
-                            frmPrincipal.TMyCaptureScreen.sCaptureFileFormat;
+    tmpGravacaoVideoPath := TMyCaptureScreen.sCaptureStorageFile +
+                            IntToStr(TMyCaptureScreen.nSplitStep) +
+                            TMyCaptureScreen.sCaptureFileFormat;
   end;
 
-  if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
+  if (TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
   begin
     frmPrincipal.ClassificaChamadaAtiva(
                                         TMyAppStatus.nCallQuality,
@@ -9794,29 +8482,29 @@ begin
                                         tmpAgendamento_tipo,
                                         tmpAgendamento_data,
                                         tmpAgendamento_hora,
-                                        TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                        TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                        TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                        TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                        TimeToStr(TMyPausa.tTempoPausa),
+                                        TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                        IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                         'N',
                                         'Y',
                                         'AUTO',
                                         TMyAppStatus.sSipDialStatus,
-                                        IfThen(frmPrincipal.TMyPausa.bPausado, '1', '0'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                        frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                        IfThen(TMyPausa.bPausado, '1', '0'),
+                                        IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                        IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                        TMyInfoLogin.sIDSupervisor,
                                         '',
                                         tmpEasy_callcenter_classif_chamada_conf_id,
                                         tmpEasy_callcenter_classif_sub_chamada_conf_id,
                                         TMyAppStatus.sSipDialID,
                                         tmpTelefone
     );
-  end//if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then
+  end//if (TMyAppStatus.sTipoChamada = 'Ativo') then
   else
-    if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
+    if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
     begin
       frmPrincipal.ClassificaChamadaReceptiva(
                                           TMyAppStatus.nCallQuality,
@@ -9827,36 +8515,36 @@ begin
                                           tmpAgendamento_tipo,
                                           tmpAgendamento_data,
                                           tmpAgendamento_hora,
-                                          TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                          TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                          TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                          TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                          TimeToStr(TMyPausa.tTempoPausa),
+                                          TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                          IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                           'N',
                                           'Y',
                                           'AUTO',
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                          frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                          IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                          IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                          TMyInfoLogin.sIDSupervisor,
                                           '',
                                           tmpEasy_callcenter_classif_chamada_conf_id,
                                           tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                          frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                          TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
+                                          TMyVaxIncomingCallParam.sCampo[1],
+                                          TMyVaxIncomingCallParam.sCampo[2],
+                                          TMyVaxIncomingCallParam.sCampo[3],
+                                          TMyVaxIncomingCallParam.sCampo[4],
+                                          TMyVaxIncomingCallParam.sCampo[5],
+                                          TMyVaxIncomingCallParam.sCampo[6],
+                                          TMyVaxIncomingCallParam.sCampo[7],
+                                          TMyVaxIncomingCallParam.sCampo[8],
+                                          TMyVaxIncomingCallParam.sCampo[9],
+                                          TMyVaxIncomingCallParam.sCampo[10]
       );
-    end//if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then
+    end//if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then
     else
-      if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
+      if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
       begin
         frmPrincipal.ClassificaChamadaReceptiva(
                                             TMyAppStatus.nCallQuality,
@@ -9867,43 +8555,43 @@ begin
                                             tmpAgendamento_tipo,
                                             tmpAgendamento_data,
                                             tmpAgendamento_hora,
-                                            TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                            TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                            TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                            TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                            TimeToStr(TMyPausa.tTempoPausa),
+                                            TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                            IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                             'N',
                                             'Y',
                                             'AUTO',
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                            frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                            IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                            IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                            TMyInfoLogin.sIDSupervisor,
                                             TMyVaxIncomingCallParam.sFila,
                                             tmpEasy_callcenter_classif_chamada_conf_id,
                                             tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                            TMyVaxIncomingCallParam.sTipoOperacao,
+                                            TMyVaxIncomingCallParam.sCampo[1],
+                                            TMyVaxIncomingCallParam.sCampo[2],
+                                            TMyVaxIncomingCallParam.sCampo[3],
+                                            TMyVaxIncomingCallParam.sCampo[4],
+                                            TMyVaxIncomingCallParam.sCampo[5],
+                                            TMyVaxIncomingCallParam.sCampo[6],
+                                            TMyVaxIncomingCallParam.sCampo[7],
+                                            TMyVaxIncomingCallParam.sCampo[8],
+                                            TMyVaxIncomingCallParam.sCampo[9],
+                                            TMyVaxIncomingCallParam.sCampo[10]
         );
       end;
 
-  frmprincipal.TMyClassificacao.bClassificou := True;
-  frmprincipal.TMyXFer.bXFerExec := False;
+  TMyClassificacao.bClassificou := True;
+  TMyXFer.bXFerExec := False;
   frmprincipal.memTranscricao.Lines.Clear;
   ClearImgCallQuality(False);
 
-  frmPrincipal.LogCallStep('log_dnd_off_act', 'ClassificaChamadaAuto');
+  LogCallStep('log_dnd_off_act', 'ClassificaChamadaAuto');
 
-  if frmprincipal.TMyClassificacao.bAutoAgendouPausa then
+  if TMyClassificacao.bAutoAgendouPausa then
   begin
     if TMyInfoLogin.nTipo = 1 then
       if nChatDinamicosCriados >= 0 then
@@ -9925,16 +8613,16 @@ begin
     sTextPausa := TMyClassificacao.sAutoAgendouPausaTipo;
     frmprincipal.pausar(sTextPausa);
 
-    for nFor := 0 to frmprincipal.vnumpausa-1 do
+    for nFor := 0 to Agente.SQL.sVNumPausa-1 do
     begin
-      if frmprincipal.matrizpausa[1,nFor] = sTextPausa then
+      if matrizpausa[1,nFor] = sTextPausa then
       begin
-        if frmprincipal.matrizpausa[17, nFor] = 'True' then
+        if matrizpausa[17, nFor] = 'True' then
         begin
           frmPrincipal.Visible := False;
           frmDesbloquear.CarregaTelasLinguagem;
           frmDesbloquear.Caption := frmPrincipal.lbstatus.Caption;
-          frmDesbloquear.idPausa := frmprincipal.matrizpausa[0, nFor];
+          frmDesbloquear.idPausa := matrizpausa[0, nFor];
           if frmDesbloquear.ShowModal = mrOk then
           begin
             frmPrincipal.Visible := True;
@@ -9947,10 +8635,10 @@ begin
     end;
 
     frmprincipal.tmrVerificaTrocaPausa.Enabled := False;
-    frmprincipal.TMyPausa.bTrocandoPausa := False;
+    TMyPausa.bTrocandoPausa := False;
 
-    frmPrincipal.TMyClassificacao.bAutoAgendouPausa := False;
-    frmPrincipal.TMyClassificacao.sAutoAgendouPausaTipo := '';
+    TMyClassificacao.bAutoAgendouPausa := False;
+    TMyClassificacao.sAutoAgendouPausaTipo := '';
   end
   else
     vax.DisableDonotDisturb;
@@ -10454,7 +9142,7 @@ begin
     tmpEasy_webchat_classificacao_conf_id := '';
     tmpEasy_webchat_classificacao_sub_conf_id := '';
 
-    for nFor := 0 to vnumchatclassifica-1 do
+    for nFor := 0 to Agente.SQL.vnumchatclassifica-1 do
     begin
       if matrizchatclassifica[1, nFor] = cboChatClassifica.Text then
       begin
@@ -10463,7 +9151,7 @@ begin
       end;
     end;
 
-    for nFor := 0 to vnumchatclassificasub-1 do
+    for nFor := 0 to Agente.SQL.vnumchatclassificasub-1 do
     begin
       if matrizchatclassificasub[1, nFor] = cboChatClassificaSub.Text then
       begin
@@ -10651,12 +9339,12 @@ var
 begin
   AtivaFlashWindow(False);
 
-  for nFor := 0 to vnumemails-1 do
+  for nFor := 0 to Agente.SQL.vnumemails -1 do
   begin
     panEMailDinamico[nFor].BorderStyle := bsNone;
   end;
 
-  for nFor := 0 to vnumemails-1 do
+  for nFor := 0 to Agente.SQL.vnumemails-1 do
   begin
     if (TsLabel(Sender).Tag = nFor) or (TsPanel(Sender).Tag = nFor) or (TImage(Sender).Tag = nFor) then
     begin
@@ -10765,8 +9453,8 @@ begin
   lblEMailReadDataHora.Caption := APP_FRM_MAIN_EMAIL_READ_DATAHORA[ID_LANG] + ':';
   lblEMailReadPara.Caption := APP_FRM_MAIN_EMAIL_SEND_PARA[ID_LANG] + ':';
 
-  sTextoStatusBar := IntToStr(vnumemails);
-  if vnumemails = 1 then
+  sTextoStatusBar := IntToStr(Agente.SQL.vnumemails);
+  if Agente.SQL.vnumemails = 1 then
     sTextoStatusBar := sTextoStatusBar + APP_FRM_MAIN_EMAIL_TOTAL[ID_LANG]
   else
     sTextoStatusBar := sTextoStatusBar + APP_FRM_MAIN_EMAIL_TOTAIS[ID_LANG];
@@ -10863,7 +9551,7 @@ begin
   StrClassName := Sender.ClassName;
 
   Result := True;
-  if Bolfone_registro_act then
+  if TMyInfoLogin.bFone_registro_act then
   begin
     nSIPExpire := FncLeINI(Agente.PathArqConf,'SIP','SIPExpire');
     nSIPExpire := IfThen((Length(Trim(nSIPExpire)) <= 0), '0', nSIPExpire);

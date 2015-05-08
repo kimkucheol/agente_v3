@@ -1,0 +1,3 @@
+5-5-2015 14:2:59 - PingStarted >> (127.0.0.1)
+5-5-2015 14:3:4 - CMD_Ping >> ( From:127.0.0.1, Bytes:32, Time:0, TTL:128, Msg:Echo)
+5-5-2015 14:3:5 - PingStopped >> (127.0.0.1)

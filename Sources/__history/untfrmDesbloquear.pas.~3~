@@ -1,0 +1,204 @@
+unit untfrmDesbloquear;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, sEdit, sButton,
+  Vcl.ExtCtrls, sLabel, sPanel, sSkinManager, RotinasGerais;
+
+type
+  TfrmDesbloquear = class(TForm)
+    sPanel1: TsPanel;
+    lblLogin: TsLabel;
+    lblSenha: TsLabel;
+    Image1: TImage;
+    cmdUnlock: TsButton;
+    txtLogin: TsEdit;
+    txtSenha: TsEdit;
+    sSkinManager1: TsSkinManager;
+    cmdCancel: TsButton;
+    procedure cmdUnlockClick(Sender: TObject);
+    procedure cmdCancelClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
+    procedure txtSenhaKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    idPausa: String;
+
+    procedure CarregaTelasLinguagem;
+    procedure CarregaTelasLinguagemSup;
+  end;
+
+var
+  frmDesbloquear: TfrmDesbloquear;
+
+implementation
+
+uses untPrincipal, untdm, unttranslate, untlogin, untFuncoes, untLibrary;
+
+{$R *.dfm}
+
+{$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
+
+procedure TfrmDesbloquear.CarregaTelasLinguagem;
+begin
+  lblLogin.Caption := APP_FRM_UNLOCK_LOGIN[ID_LANG];
+  lblSenha.Caption := APP_FRM_UNLOCK_PASS[ID_LANG];
+
+  cmdUnlock.Caption := APP_FRM_UNLOCK_UNLOCK[ID_LANG];
+  cmdCancel.Caption := APP_FRM_UNLOCK_CANCEL[ID_LANG];
+
+  txtLogin.Text := '';
+  txtSenha.Text := '';
+
+  try
+    txtLogin.SetFocus;
+  except
+  end;
+end;
+
+procedure TfrmDesbloquear.CarregaTelasLinguagemSup;
+begin
+  lblLogin.Caption := APP_FRM_UNLOCK_SUP_LOGIN[ID_LANG];
+  lblSenha.Caption := APP_FRM_UNLOCK_SUP_PASS[ID_LANG];
+
+  cmdUnlock.Caption := APP_FRM_UNLOCK_SUP_UNLOCK[ID_LANG];
+  cmdCancel.Caption := APP_FRM_UNLOCK_SUP_CANCEL[ID_LANG];
+
+  txtLogin.Text := '';
+  txtSenha.Text := '';
+
+  try
+    txtLogin.SetFocus;
+  except
+  end;
+end;
+
+procedure TfrmDesbloquear.cmdCancelClick(Sender: TObject);
+begin
+  if cmdUnlock.Caption = APP_FRM_UNLOCK_UNLOCK[ID_LANG] then
+  begin
+    if application.MessageBox(PChar(APP_MB_ASK_CANCEL_UNLOCK[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), mb_yesno+mb_iconquestion) = idyes then
+    begin
+      CarregaTelasLinguagemSup;
+      frmDesbloquear.Caption := PChar(GetStringResource(rcCaptionPrincipal));
+
+      ModalResult := mrCancel;
+    end
+    else
+    begin
+      txtLogin.Text := '';
+      txtSenha.Text := '';
+
+      ModalResult := mrNone;
+    end;
+  end
+  else
+  begin
+    frmDesbloquear.CarregaTelasLinguagem;
+    frmDesbloquear.Caption := frmPrincipal.lbstatus.Caption;
+  end;
+end;
+
+procedure TfrmDesbloquear.cmdUnlockClick(Sender: TObject);
+var
+  idSup: String;
+begin
+  if cmdUnlock.Caption = APP_FRM_UNLOCK_UNLOCK[ID_LANG] then
+  begin
+    if (txtLogin.Text = frmLogin.txtLogin.text) and (txtSenha.Text = frmLogin.txtSenha.Text) then
+    begin
+      ModalResult := mrOk;
+    end
+    else
+    begin
+      Application.MessageBox(PChar(APP_MB_ERR_INVALID_LOGIN_UNLOCK[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+      frmDesbloquear.CarregaTelasLinguagem;
+    end;
+  end
+  else
+  begin
+    Screen.Cursor := crSQLWait;
+
+    datam.qryLoginSup.Active := False;
+    datam.qryLoginSup.SQL.Clear;
+    datam.qryLoginSup.SQL.Add('SELECT u.login, u.senha, u.id ');
+    datam.qryLoginSup.SQL.Add('FROM easy_sist_usuario_login_conf u ');
+    datam.qryLoginSup.SQL.Add('left join easy_sist_usuario_perfil_conf p on u.easy_sist_usuario_perfil_conf_id = p.id ');
+    datam.qryLoginSup.SQL.Add('WHERE p.tipo not in (2) ');
+    datam.qryLoginSup.SQL.Add('and u.login = ' + QuotedStr(txtLogin.Text));
+    datam.qryLoginSup.SQL.Add('and u.senha = ' + QuotedStr(txtSenha.Text));
+    datam.qryLoginSup.SQL.Add('and u.active = ' + QuotedStr('Y'));
+    datam.qryLoginSup.Active := True;
+
+    Screen.Cursor := crDefault;
+    if datam.qryLoginSup.RecordCount > 0 then
+    begin
+      idSup := datam.qryLoginSup.FieldByName('id').AsString;
+
+      datam.qryLoginSup.Active := False;
+      datam.qryLoginSup.SQL.Clear;
+      datam.qryLoginSup.SQL.Add('insert into easy_rept_call_agente_unlock_hist (');
+      datam.qryLoginSup.SQL.Add('data, hora, ');
+      datam.qryLoginSup.SQL.Add('easy_call_operacao_pausa_conf_id, ');
+      datam.qryLoginSup.SQL.Add('easy_work_colaborador_conf_id, ');
+      datam.qryLoginSup.SQL.Add('supervisor_id ');
+      datam.qryLoginSup.SQL.Add(') values (');
+      datam.qryLoginSup.SQL.Add('curdate(), curtime(), ');
+      datam.qryLoginSup.SQL.Add(idPausa + ',');
+      datam.qryLoginSup.SQL.Add(TMyInfoLogin.sIDUsuario + ',');
+      datam.qryLoginSup.SQL.Add(idSup + ')');
+      datam.qryLoginSup.ExecSQL;
+      datam.qryLoginSup.Active := False;
+
+      frmPrincipal.actlogoffExecute(Nil);
+      frmPrincipal.TMyAppStatus.bPodeFechar := True;
+      frmPrincipal.Close;
+    end
+    else
+    begin
+      datam.qryLoginSup.Active := False;
+
+      Application.MessageBox(PChar(APP_MB_ERR_INVALID_LOGIN[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+      frmDesbloquear.CarregaTelasLinguagem;
+      frmDesbloquear.Caption := frmPrincipal.lbstatus.Caption;
+    end;
+  end;
+end;
+
+procedure TfrmDesbloquear.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  if ModalResult = mrOk then
+    CanClose := True
+  else
+    CanClose := False;
+end;
+
+procedure TfrmDesbloquear.FormCreate(Sender: TObject);
+begin
+  ModalResult := mrNone;
+end;
+
+procedure TfrmDesbloquear.FormShow(Sender: TObject);
+begin
+  try
+    txtLogin.SetFocus;
+  except
+  end;
+end;
+
+procedure TfrmDesbloquear.txtSenhaKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    cmdUnlockClick(Self);
+  end;
+end;
+
+end.

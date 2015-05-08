@@ -28,7 +28,7 @@ var
   frmProgressBar: TfrmProgressBar;
 
 implementation
-uses untdm, untprincipal, unttranslate, untlogin;
+uses untdm, untprincipal, unttranslate, untlogin, untLibrary;
 {$R *.dfm}
 
 procedure TfrmProgressBar.FormShow(Sender: TObject);
@@ -44,7 +44,7 @@ end;
 
 procedure TfrmProgressBar.tmrProgressBarTimer(Sender: TObject);
 begin
-  if frmPrincipal.TMyCaptureScreen.nThreadsRunning > 0 then
+  if TMyCaptureScreen.nThreadsRunning > 0 then
   begin
     if barProgressBar.Position >= 100 then
       barProgressBar.Position := 0;

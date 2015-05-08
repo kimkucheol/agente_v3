@@ -47,7 +47,7 @@ implementation
 
 {$R *.dfm}
 
-uses untPrincipal, untdm, unttranslate, untfrmdialpad;
+uses untPrincipal, untdm, unttranslate, untfrmdialpad, untFuncoes, untLibrary;
 
 { Tfrmclassifica }
 
@@ -81,88 +81,88 @@ begin
   tmpEasy_callcenter_classif_chamada_conf_id := '';
   tmpEasy_callcenter_classif_sub_chamada_conf_id := '';
 
-  if frmprincipal.TMyClassificacao.bClassificou = True then
+  if TMyClassificacao.bClassificou = True then
   begin
     frmprincipal.mensagem(APP_MB_WAR_ALREADY_CLASSIFIED[ID_LANG]);
 
-    if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
+    if (TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
     begin
-      frmPrincipal.LogCallStep('log_hangup_act', 'sTipoChamada :: Ativo');
-    end//if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then
+      LogCallStep('log_hangup_act', 'sTipoChamada :: Ativo');
+    end//if (TMyAppStatus.sTipoChamada = 'Ativo') then
     else
-      if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
+      if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
       begin
-        frmPrincipal.LogCallStep('log_hangup_act', 'sTipoChamada :: Receptivo - DDR');
-      end//if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then
+        LogCallStep('log_hangup_act', 'sTipoChamada :: Receptivo - DDR');
+      end//if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then
       else
-        if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
+        if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
         begin
-          frmPrincipal.LogCallStep('log_hangup_act', 'sTipoChamada :: Receptivo - Fila');
+          LogCallStep('log_hangup_act', 'sTipoChamada :: Receptivo - Fila');
         end;
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'ClassificaChamadaAtiva(');
-    frmPrincipal.LogCallStep('log_hangup_act', IntToStr(frmPrincipal.TMyAppStatus.nCallQuality));
-    frmPrincipal.LogCallStep('log_hangup_act', tmpTranscricao);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpGravacaoVideoAct);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpGravacaoVideoPath);
-    frmPrincipal.LogCallStep('log_hangup_act', memObs.Text);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpAgendamento_tipo);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpAgendamento_data);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpAgendamento_hora);
-    frmPrincipal.LogCallStep('log_hangup_act', TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada));
-    frmPrincipal.LogCallStep('log_hangup_act', TimeToStr(frmPrincipal.TMyPausa.tTempoPausa));
-    frmPrincipal.LogCallStep('log_hangup_act', TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(chkGravacao.Checked, 'Y', 'N'));
-    frmPrincipal.LogCallStep('log_hangup_act', 'N');
-    frmPrincipal.LogCallStep('log_hangup_act', '');
-    frmPrincipal.LogCallStep('log_hangup_act', frmPrincipal.TMyAppStatus.sSipDialStatus);
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyPausa.bPausado, '1', '0'));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'));
-    frmPrincipal.LogCallStep('log_hangup_act', IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''));
-    frmPrincipal.LogCallStep('log_hangup_act', frmPrincipal.TMyInfoLogin.sIDSupervisor);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpEasy_pabx_fila_ctr_id);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpEasy_callcenter_classif_chamada_conf_id);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpEasy_callcenter_classif_sub_chamada_conf_id);
-    frmPrincipal.LogCallStep('log_hangup_act', frmPrincipal.TMyAppStatus.sSipDialID);
-    frmPrincipal.LogCallStep('log_hangup_act', tmpTelefone);
-    frmPrincipal.LogCallStep('log_hangup_act', ')');
+    LogCallStep('log_hangup_act', 'ClassificaChamadaAtiva(');
+    LogCallStep('log_hangup_act', IntToStr(TMyAppStatus.nCallQuality));
+    LogCallStep('log_hangup_act', tmpTranscricao);
+    LogCallStep('log_hangup_act', tmpGravacaoVideoAct);
+    LogCallStep('log_hangup_act', tmpGravacaoVideoPath);
+    LogCallStep('log_hangup_act', memObs.Text);
+    LogCallStep('log_hangup_act', tmpAgendamento_tipo);
+    LogCallStep('log_hangup_act', tmpAgendamento_data);
+    LogCallStep('log_hangup_act', tmpAgendamento_hora);
+    LogCallStep('log_hangup_act', TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada));
+    LogCallStep('log_hangup_act', TimeToStr(TMyPausa.tTempoPausa));
+    LogCallStep('log_hangup_act', TimeToStr(TMyAppStatus.tTempoHoldTotal));
+    LogCallStep('log_hangup_act', IfThen(TMyXFer.bXFerExec, 'Y', 'N'));
+    LogCallStep('log_hangup_act', IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''));
+    LogCallStep('log_hangup_act', IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''));
+    LogCallStep('log_hangup_act', IfThen(chkGravacao.Checked, 'Y', 'N'));
+    LogCallStep('log_hangup_act', 'N');
+    LogCallStep('log_hangup_act', '');
+    LogCallStep('log_hangup_act', TMyAppStatus.sSipDialStatus);
+    LogCallStep('log_hangup_act', IfThen(TMyPausa.bPausado, '1', '0'));
+    LogCallStep('log_hangup_act', IfThen(TMyCoaching.bCoaching, 'Y', 'N'));
+    LogCallStep('log_hangup_act', IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''));
+    LogCallStep('log_hangup_act', TMyInfoLogin.sIDSupervisor);
+    LogCallStep('log_hangup_act', tmpEasy_pabx_fila_ctr_id);
+    LogCallStep('log_hangup_act', tmpEasy_callcenter_classif_chamada_conf_id);
+    LogCallStep('log_hangup_act', tmpEasy_callcenter_classif_sub_chamada_conf_id);
+    LogCallStep('log_hangup_act', TMyAppStatus.sSipDialID);
+    LogCallStep('log_hangup_act', tmpTelefone);
+    LogCallStep('log_hangup_act', ')');
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'bClassificou: ' + BoolToStr(frmprincipal.TMyClassificacao.bClassificou));
-    frmPrincipal.LogCallStep('log_hangup_act', 'bXFerExec: ' + BoolToStr(frmprincipal.TMyXFer.bXFerExec));
-    frmPrincipal.LogCallStep('log_hangup_act', 'tmrPausaPos: ' + BoolToStr(frmprincipal.tmrPausaPos.Enabled));
-    frmPrincipal.LogCallStep('log_hangup_act', 'tmrLastClassAuto: ' + BoolToStr(frmprincipal.tmrLastClassAuto.Enabled));
-    frmPrincipal.LogCallStep('log_hangup_act', 'bClassificando: ' + BoolToStr(frmprincipal.TMyClassificacao.bClassificando));
-    frmPrincipal.LogCallStep('log_hangup_act', 'bAtendido: ' + BoolToStr(frmprincipal.TMyAppStatus.bAtendido));
+    LogCallStep('log_hangup_act', 'bClassificou: ' + BoolToStr(TMyClassificacao.bClassificou));
+    LogCallStep('log_hangup_act', 'bXFerExec: ' + BoolToStr(TMyXFer.bXFerExec));
+    LogCallStep('log_hangup_act', 'tmrPausaPos: ' + BoolToStr(frmprincipal.tmrPausaPos.Enabled));
+    LogCallStep('log_hangup_act', 'tmrLastClassAuto: ' + BoolToStr(frmprincipal.tmrLastClassAuto.Enabled));
+    LogCallStep('log_hangup_act', 'bClassificando: ' + BoolToStr(TMyClassificacao.bClassificando));
+    LogCallStep('log_hangup_act', 'bAtendido: ' + BoolToStr(TMyAppStatus.bAtendido));
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var1: ' + BoolToStr(frmPrincipal.TMyVaxIncomingCallParam.bAutoAnswer));
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var2: ' + BoolToStr(frmPrincipal.TMyVaxIncomingCallParam.bIncomingCall));
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var3: ' + frmPrincipal.TMyVaxIncomingCallParam.CallId);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var4: ' + frmPrincipal.TMyVaxIncomingCallParam.DisplayName);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var5: ' + frmPrincipal.TMyVaxIncomingCallParam.UserName);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var6: ' + frmPrincipal.TMyVaxIncomingCallParam.FromURI);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var7: ' + frmPrincipal.TMyVaxIncomingCallParam.ToURI);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var1: ' + BoolToStr(TMyVaxIncomingCallParam.bAutoAnswer));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var2: ' + BoolToStr(TMyVaxIncomingCallParam.bIncomingCall));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var3: ' + TMyVaxIncomingCallParam.CallId);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var4: ' + TMyVaxIncomingCallParam.DisplayName);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var5: ' + TMyVaxIncomingCallParam.UserName);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var6: ' + TMyVaxIncomingCallParam.FromURI);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var7: ' + TMyVaxIncomingCallParam.ToURI);
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var8: ' + frmPrincipal.TMyVaxIncomingCallParam.sProtocolo);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var9: ' + frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var10: ' + frmPrincipal.TMyVaxIncomingCallParam.sTipoLigacao);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var11: ' + frmPrincipal.TMyVaxIncomingCallParam.sUniqueID);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var12: ' + frmPrincipal.TMyVaxIncomingCallParam.sFila);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var13: ' + frmPrincipal.TMyVaxIncomingCallParam.sFilaDSC);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var14: ' + frmPrincipal.TMyVaxIncomingCallParam.sCodTipo);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var15: ' + frmPrincipal.TMyVaxIncomingCallParam.sNomeLoja);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var8: ' + TMyVaxIncomingCallParam.sProtocolo);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var9: ' + TMyVaxIncomingCallParam.sTipoOperacao);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var10: ' + TMyVaxIncomingCallParam.sTipoLigacao);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var11: ' + TMyVaxIncomingCallParam.sUniqueID);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var12: ' + TMyVaxIncomingCallParam.sFila);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var13: ' + TMyVaxIncomingCallParam.sFilaDSC);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var14: ' + TMyVaxIncomingCallParam.sCodTipo);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var15: ' + TMyVaxIncomingCallParam.sNomeLoja);
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var16: ' + BoolToStr(frmPrincipal.TMyVaxIncomingCallParam.bSetAudioFromDB));
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var17: ' + IntToStr(frmPrincipal.TMyVaxIncomingCallParam.SetSpkVolume));
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var18: ' + IntToStr(frmPrincipal.TMyVaxIncomingCallParam.SetMicVolume));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var16: ' + BoolToStr(TMyVaxIncomingCallParam.bSetAudioFromDB));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var17: ' + IntToStr(TMyVaxIncomingCallParam.SetSpkVolume));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var18: ' + IntToStr(TMyVaxIncomingCallParam.SetMicVolume));
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var19: ' + frmPrincipal.TMyVaxIncomingCallParam.sRingFile);
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var20: ' + IntToStr(frmPrincipal.TMyVaxIncomingCallParam.nTotalDevices));
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var21: ' + IntToStr(frmPrincipal.TMyVaxIncomingCallParam.nCurrentDevice));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var19: ' + TMyVaxIncomingCallParam.sRingFile);
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var20: ' + IntToStr(TMyVaxIncomingCallParam.nTotalDevices));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var21: ' + IntToStr(TMyVaxIncomingCallParam.nCurrentDevice));
 
-    frmPrincipal.LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var22: ' + BoolToStr(frmPrincipal.TMyVaxIncomingCallParam.bRecord));
+    LogCallStep('log_hangup_act', 'TMyVaxIncomingCallParam.var22: ' + BoolToStr(TMyVaxIncomingCallParam.bRecord));
 
     Exit;
   end;
@@ -178,34 +178,34 @@ begin
   end
   else
   begin
-    //if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then
+    //if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then
     //begin
     //end
     //else//Receptivo sem fila ou Ativo
     begin
-      for nForFila := 0 to frmPrincipal.vnumfila-1 do
+      for nForFila := 0 to Agente.SQL.vnumfila-1 do
       begin
-        if (frmPrincipal.matriz_fila[1, nForFila] = cboFila.Text) then
+        if (matriz_fila[1, nForFila] = cboFila.Text) then
         begin
-          tmpEasy_pabx_fila_ctr_id := frmPrincipal.matriz_fila[0, nForFila];
+          tmpEasy_pabx_fila_ctr_id := matriz_fila[0, nForFila];
 
-          for nForClas := 0 to frmPrincipal.vnumclass_fila-1 do
+          for nForClas := 0 to Agente.SQL.vnumclass_fila-1 do
           begin
-            if frmPrincipal.matrizclassifica_fila[2,nForClas] = frmPrincipal.matriz_fila[0,nForFila] then
+            if matrizclassifica_fila[2,nForClas] = matriz_fila[0,nForFila] then
             begin
-              if frmPrincipal.matrizclassifica_fila[1, nForClas] = cboClassifica.Text then
+              if matrizclassifica_fila[1, nForClas] = cboClassifica.Text then
               begin
-                tmpEasy_callcenter_classif_chamada_conf_id := frmPrincipal.matrizclassifica_fila[0, nForClas];
+                tmpEasy_callcenter_classif_chamada_conf_id := matrizclassifica_fila[0, nForClas];
 
-                for nForAgd := 0 to frmprincipal.vnumclasssub_fila-1 do
+                for nForAgd := 0 to Agente.SQL.vnumclasssub_fila -1 do
                 begin
-                  if frmPrincipal.matrizclassifica_fila[0, nForClas] = frmPrincipal.matrizclassificasub_fila[2, nForAgd] then
+                  if matrizclassifica_fila[0, nForClas] = matrizclassificasub_fila[2, nForAgd] then
                   begin
-                    if (frmprincipal.matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
+                    if (matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
                     begin
-                      tmpEasy_callcenter_classif_sub_chamada_conf_id := frmPrincipal.matrizclassificasub_fila[0, nForAgd];
+                      tmpEasy_callcenter_classif_sub_chamada_conf_id := matrizclassificasub_fila[0, nForAgd];
 
-                      if frmprincipal.matrizclassificasub_fila[3, nForAgd] = 'False' then
+                      if matrizclassificasub_fila[3, nForAgd] = 'False' then
                       begin
                         bFinalizadora := False;
 
@@ -217,7 +217,7 @@ begin
                           temp := temp + APP_FRM_CLASSIFICATION_MB_SCHED_TIME[ID_LANG];
                       end;
 
-                      if frmprincipal.matrizclassificasub_fila[5, nForAgd] = 'True' then
+                      if matrizclassificasub_fila[5, nForAgd] = 'True' then
                         bRedial := True;
 
                       Break;
@@ -240,15 +240,15 @@ begin
 
   if bFinalizadora = False then
   begin
-    if FormatDateTime('yyyy-mm-dd', dteAgenda.Date) < frmprincipal.TMyInfoLogin.sDataLogin then
+    if FormatDateTime('yyyy-mm-dd', dteAgenda.Date) < TMyInfoLogin.sDataLogin then
     begin
       frmprincipal.mensagem(APP_MB_WAR_PLEASE_FILL_CORRECT[ID_LANG]);
       Exit;
     end;
 
-    if FormatDateTime('yyyy-mm-dd', dteAgenda.Date) = frmprincipal.TMyInfoLogin.sDataLogin then
+    if FormatDateTime('yyyy-mm-dd', dteAgenda.Date) = TMyInfoLogin.sDataLogin then
     begin
-      if (hraAgenda.Text <= frmprincipal.TMyInfoLogin.sHoraLogin) or (hraAgenda.Text <= FormatDateTime('hh:nn', Now)) then
+      if (hraAgenda.Text <= TMyInfoLogin.sHoraLogin) or (hraAgenda.Text <= FormatDateTime('hh:nn', Now)) then
       begin
         frmprincipal.mensagem(APP_MB_WAR_PLEASE_FILL_CORRECT[ID_LANG]);
         Exit;
@@ -256,9 +256,9 @@ begin
     end;
   end;
 
-  if frmPrincipal.TMyInfoLogin.bQualidadeChamada then
-    if frmprincipal.TMyAppStatus.bAtendido then
-      if frmPrincipal.TMyAppStatus.nCallQuality = 0 then
+  if TMyInfoLogin.bQualidadeChamada then
+    if TMyAppStatus.bAtendido then
+      if TMyAppStatus.nCallQuality = 0 then
       begin
         frmprincipal.mensagem(APP_MB_WAR_PLEASE_FILL_QUALITY[ID_LANG]);
         frmprincipal.actclientesExecute(self);
@@ -272,9 +272,9 @@ begin
 
   {for nForAgd := 0 to frmprincipal.vnumclasssub_fila-1 do
   begin
-    if (frmprincipal.matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
+    if (matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
     begin
-      if frmprincipal.matrizclassificasub_fila[3, nForAgd] = 'False' then}
+      if matrizclassificasub_fila[3, nForAgd] = 'False' then}
       if bFinalizadora = False then
       begin
         tmpAgendamento_tipo := copy(rdgAgenda.Items.Strings[rdgAgenda.ItemIndex], 1, 1);
@@ -285,42 +285,42 @@ begin
     end;
   end;}
 
-  {for nForCsf := 0 to frmprincipal.vnumfila-1 do
+  {for nForCsf := 0 to Agente.SQL.vnumfila-1 do
   begin
-    if (frmprincipal.matriz_fila[1,nForCsf] = cboFila.Text) then
+    if (matriz_fila[1,nForCsf] = cboFila.Text) then
     begin
-        tmpEasy_pabx_fila_ctr_id := frmPrincipal.matriz_fila[0, nForCsf];
+        tmpEasy_pabx_fila_ctr_id := matriz_fila[0, nForCsf];
         Break;
     end;
   end;
 
-  for nForCsf := 0 to frmprincipal.vnumclass_fila-1 do
+  for nForCsf := 0 to Agente.SQL.vnumclass_fila-1 do
   begin
-    if (frmprincipal.matrizclassifica_fila[1,nForCsf] = cboClassifica.Text) then
+    if (matrizclassifica_fila[1,nForCsf] = cboClassifica.Text) then
     begin
-        tmpEasy_callcenter_classif_chamada_conf_id := frmPrincipal.matrizclassifica_fila[0, nForCsf];
+        tmpEasy_callcenter_classif_chamada_conf_id := matrizclassifica_fila[0, nForCsf];
         Break;
     end;
   end;
 
   for nForCsfS := 0 to frmprincipal.vnumclasssub_fila-1 do
   begin
-    if (frmprincipal.matrizclassificasub_fila[1,nForCsfS] = cboSubClassifica.Text) then
+    if (matrizclassificasub_fila[1,nForCsfS] = cboSubClassifica.Text) then
     begin
-        tmpEasy_callcenter_classif_sub_chamada_conf_id := frmPrincipal.matrizclassificasub_fila[0, nForCsfS];
+        tmpEasy_callcenter_classif_sub_chamada_conf_id := matrizclassificasub_fila[0, nForCsfS];
         Break;
     end;
   end;}
 
   {var sTempTel: String;
-  if frmprincipal.TMyAppStatus.sNumero[1] = '0' then
+  if TMyAppStatus.sNumero[1] = '0' then
   begin
-    sTempTel := frmprincipal.TMyAppStatus.sNumero;
+    sTempTel := TMyAppStatus.sNumero;
     Delete(sTempTel, 1, 1);
     tmpTelefone := '%' + sTempTel;
   end
   else}
-  tmpTelefone := frmPrincipal.TMyAppStatus.sNumero;
+  tmpTelefone := TMyAppStatus.sNumero;
 
   tmpTranscricao := '';
   try
@@ -331,20 +331,20 @@ begin
 
   tmpGravacaoVideoAct := 'N';
   tmpGravacaoVideoPath := '';
-  if (frmPrincipal.TMyCaptureScreen.bCapture) and
-     (frmPrincipal.TMyCaptureScreen.bCapturing) and
-     (frmPrincipal.TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
+  if (TMyCaptureScreen.bCapture) and
+     (TMyCaptureScreen.bCapturing) and
+     (TMyCaptureScreen.nCaptureMode = CAPTURE_MODE_PHONE) then
   begin
     tmpGravacaoVideoAct := 'Y';
-    tmpGravacaoVideoPath := frmPrincipal.TMyCaptureScreen.sCaptureStorageFile +
-                            IntToStr(frmPrincipal.TMyCaptureScreen.nSplitStep) +
-                            frmPrincipal.TMyCaptureScreen.sCaptureFileFormat;
+    tmpGravacaoVideoPath := TMyCaptureScreen.sCaptureStorageFile +
+                            IntToStr(TMyCaptureScreen.nSplitStep) +
+                            TMyCaptureScreen.sCaptureFileFormat;
   end;
 
-  if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
+  if (TMyAppStatus.sTipoChamada = 'Ativo') then//Chamada Ativa
   begin
     frmPrincipal.ClassificaChamadaAtiva(
-                                        frmPrincipal.TMyAppStatus.nCallQuality,
+                                        TMyAppStatus.nCallQuality,
                                         tmpTranscricao,
                                         tmpGravacaoVideoAct,
                                         tmpGravacaoVideoPath,
@@ -352,32 +352,32 @@ begin
                                         tmpAgendamento_tipo,
                                         tmpAgendamento_data,
                                         tmpAgendamento_hora,
-                                        TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                        TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                        TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                        IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                        TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                        TimeToStr(TMyPausa.tTempoPausa),
+                                        TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                        IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                        IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                         IfThen(chkGravacao.Checked, 'Y', 'N'),
                                         'N',
                                         '',
-                                        frmPrincipal.TMyAppStatus.sSipDialStatus,
-                                        IfThen(frmPrincipal.TMyPausa.bPausado, '1', '0'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                        IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                        frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                        TMyAppStatus.sSipDialStatus,
+                                        IfThen(TMyPausa.bPausado, '1', '0'),
+                                        IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                        IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                        TMyInfoLogin.sIDSupervisor,
                                         tmpEasy_pabx_fila_ctr_id,
                                         tmpEasy_callcenter_classif_chamada_conf_id,
                                         tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                        frmPrincipal.TMyAppStatus.sSipDialID,
+                                        TMyAppStatus.sSipDialID,
                                         tmpTelefone
     );
-  end//if (frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') then
+  end//if (TMyAppStatus.sTipoChamada = 'Ativo') then
   else
-    if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
+    if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then//Chamada Receptiva DDR
     begin
       frmPrincipal.ClassificaChamadaReceptiva(
-                                          frmPrincipal.TMyAppStatus.nCallQuality,
+                                          TMyAppStatus.nCallQuality,
                                           tmpTranscricao,
                                           tmpGravacaoVideoAct,
                                           tmpGravacaoVideoPath,
@@ -385,39 +385,39 @@ begin
                                           tmpAgendamento_tipo,
                                           tmpAgendamento_data,
                                           tmpAgendamento_hora,
-                                          TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                          TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                          TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                          IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                          TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                          TimeToStr(TMyPausa.tTempoPausa),
+                                          TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                          IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                          IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                           IfThen(chkGravacao.Checked, 'Y', 'N'),
                                           'N',
                                           '',
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                          IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                          frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                          IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                          IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                          TMyInfoLogin.sIDSupervisor,
                                           tmpEasy_pabx_fila_ctr_id,
                                           tmpEasy_callcenter_classif_chamada_conf_id,
                                           tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                          frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                          frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                          TMyVaxIncomingCallParam.sTipoOperacao,//Old -> '4',
+                                          TMyVaxIncomingCallParam.sCampo[1],
+                                          TMyVaxIncomingCallParam.sCampo[2],
+                                          TMyVaxIncomingCallParam.sCampo[3],
+                                          TMyVaxIncomingCallParam.sCampo[4],
+                                          TMyVaxIncomingCallParam.sCampo[5],
+                                          TMyVaxIncomingCallParam.sCampo[6],
+                                          TMyVaxIncomingCallParam.sCampo[7],
+                                          TMyVaxIncomingCallParam.sCampo[8],
+                                          TMyVaxIncomingCallParam.sCampo[9],
+                                          TMyVaxIncomingCallParam.sCampo[10]
       );
-    end//if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = '')) then
+    end//if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = '')) then
     else
-      if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
+      if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then//Chamada Receptiva Fila
       begin
         frmPrincipal.ClassificaChamadaReceptiva(
-                                            frmPrincipal.TMyAppStatus.nCallQuality,
+                                            TMyAppStatus.nCallQuality,
                                             tmpTranscricao,
                                             tmpGravacaoVideoAct,
                                             tmpGravacaoVideoPath,
@@ -425,57 +425,57 @@ begin
                                             tmpAgendamento_tipo,
                                             tmpAgendamento_data,
                                             tmpAgendamento_hora,
-                                            TimeToStr(frmPrincipal.TMyAppStatus.dtvFimChamada - frmprincipal.TMyAppStatus.dtvInicioChamada),
-                                            TimeToStr(frmPrincipal.TMyPausa.tTempoPausa),
-                                            TimeToStr(frmPrincipal.TMyAppStatus.tTempoHoldTotal),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerTipo, ''),
-                                            IfThen(frmPrincipal.TMyXFer.bXFerExec, frmPrincipal.TMyXFer.sXFerDest, ''),
+                                            TimeToStr(TMyAppStatus.dtvFimChamada - TMyAppStatus.dtvInicioChamada),
+                                            TimeToStr(TMyPausa.tTempoPausa),
+                                            TimeToStr(TMyAppStatus.tTempoHoldTotal),
+                                            IfThen(TMyXFer.bXFerExec, 'Y', 'N'),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerTipo, ''),
+                                            IfThen(TMyXFer.bXFerExec, TMyXFer.sXFerDest, ''),
                                             IfThen(chkGravacao.Checked, 'Y', 'N'),
                                             'N',
                                             '',
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, 'Y', 'N'),
-                                            IfThen(frmPrincipal.TMyCoaching.bCoaching, frmPrincipal.TMyCoaching.sIdCoaching, ''),
-                                            frmPrincipal.TMyInfoLogin.sIDSupervisor,
+                                            IfThen(TMyCoaching.bCoaching, 'Y', 'N'),
+                                            IfThen(TMyCoaching.bCoaching, TMyCoaching.sIdCoaching, ''),
+                                            TMyInfoLogin.sIDSupervisor,
                                             tmpEasy_pabx_fila_ctr_id,
                                             tmpEasy_callcenter_classif_chamada_conf_id,
                                             tmpEasy_callcenter_classif_sub_chamada_conf_id,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sTipoOperacao,
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[1],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[2],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[3],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[4],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[5],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[6],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[7],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[8],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[9],
-                                            frmPrincipal.TMyVaxIncomingCallParam.sCampo[10]
+                                            TMyVaxIncomingCallParam.sTipoOperacao,
+                                            TMyVaxIncomingCallParam.sCampo[1],
+                                            TMyVaxIncomingCallParam.sCampo[2],
+                                            TMyVaxIncomingCallParam.sCampo[3],
+                                            TMyVaxIncomingCallParam.sCampo[4],
+                                            TMyVaxIncomingCallParam.sCampo[5],
+                                            TMyVaxIncomingCallParam.sCampo[6],
+                                            TMyVaxIncomingCallParam.sCampo[7],
+                                            TMyVaxIncomingCallParam.sCampo[8],
+                                            TMyVaxIncomingCallParam.sCampo[9],
+                                            TMyVaxIncomingCallParam.sCampo[10]
         );
       end;
 
-  frmprincipal.TMyClassificacao.bClassificou := True;
-  frmprincipal.TMyXFer.bXFerExec := False;
+  TMyClassificacao.bClassificou := True;
+  TMyXFer.bXFerExec := False;
   frmprincipal.memTranscricao.Lines.Clear;
   frmprincipal.ClearImgCallQuality(False);
   frmprincipal.tmrPausaPos.Enabled := False;
   frmprincipal.tmrLastClassAuto.Enabled := False;
-  frmprincipal.TMyClassificacao.bClassificando := False;
+  TMyClassificacao.bClassificando := False;
 
-  if frmprincipal.TMyAppStatus.bAtendido = False then
+  if TMyAppStatus.bAtendido = False then
   begin
     if chkLogoff.Checked then
     begin
       frmPrincipal.actlogoffExecute(Nil);
-      frmPrincipal.TMyAppStatus.bPodeFechar := True;
+      TMyAppStatus.bPodeFechar := True;
       frmPrincipal.Close;
       Exit;
     end;
 
     if bRedial then
     begin
-      frmPrincipal.TMyPausa.bLastCallRedial := True;
-      frmPrincipal.TMyPausa.bAtivoPausa := True; //Permite discar mesmo estando em pausa pos atendimento...
+      TMyPausa.bLastCallRedial := True;
+      TMyPausa.bAtivoPausa := True; //Permite discar mesmo estando em pausa pos atendimento...
 
       with frmPrincipal do
       begin
@@ -517,12 +517,12 @@ begin
         Tfrmdialpad(frmPrincipal.framebar.items[0].frame).cboAtivo.Text := tmpTelefone
       else
       begin
-        if Trim(frmPrincipal.TMyVaxIncomingCallParam.sUniqueID) = '' then
+        if Trim(TMyVaxIncomingCallParam.sUniqueID) = '' then
           Tfrmdialpad(frmPrincipal.framebar.items[0].frame).cboAtivo.Text := '00000000000' +
                                                                              '0' +
                                                                              tmpTelefone
         else
-          Tfrmdialpad(frmPrincipal.framebar.items[0].frame).cboAtivo.Text := frmPrincipal.TMyVaxIncomingCallParam.sUniqueID +
+          Tfrmdialpad(frmPrincipal.framebar.items[0].frame).cboAtivo.Text := TMyVaxIncomingCallParam.sUniqueID +
                                                                              '0' +
                                                                              tmpTelefone;
       end;
@@ -532,29 +532,29 @@ begin
     begin
       if chkPausar.Checked then
       begin
-        for nForInd := 0 to frmprincipal.vnumpausa-1 do
+        for nForInd := 0 to Agente.SQL.sVNumPausa-1 do
         begin
-          if frmprincipal.matrizpausa[0,nForInd] = '10002' then//if frmprincipal.matrizpausa[1,nForInd] = APP_PAUSE_TYPE_AFTER_HU[ID_LANG] then
+          if matrizpausa[0,nForInd] = '10002' then//if matrizpausa[1,nForInd] = APP_PAUSE_TYPE_AFTER_HU[ID_LANG] then
           begin
-            if frmprincipal.matrizparametros[2] = 'True' then
+            if matrizparametros[2] = 'True' then
             begin
               frmprincipal.tmrVerificaTrocaPausa.Enabled := False;
-              frmprincipal.tmrVerificaTrocaPausa.Interval := StrToInt(frmprincipal.matrizparametros[3])*1000;
+              frmprincipal.tmrVerificaTrocaPausa.Interval := StrToInt(matrizparametros[3])*1000;
               frmprincipal.tmrVerificaTrocaPausa.Enabled := True;
             end;
           end;
         end;
 
-        frmprincipal.TMyPausa.bTrocandoPausa := True;
-        frmprincipal.TMyAppStatus.sTipoEvento := APP_EVENT_TYPE_CHANGEPAUSE[ID_LANG];
+        TMyPausa.bTrocandoPausa := True;
+        TMyAppStatus.sTipoEvento := APP_EVENT_TYPE_CHANGEPAUSE[ID_LANG];
         frmprincipal.framebar.OpenItem(2,true);
       end
       else
       begin
-        if frmPrincipal.TMyPausa.bLastCallRedial then
+        if TMyPausa.bLastCallRedial then
         begin
-          frmPrincipal.TMyPausa.bLastCallRedial := False;
-          frmPrincipal.TMyPausa.bDiscouPausa := False; //Reseta variavel de controle!
+          TMyPausa.bLastCallRedial := False;
+          TMyPausa.bDiscouPausa := False; //Reseta variavel de controle!
         end;
 
         frmprincipal.despausapos;
@@ -567,33 +567,33 @@ begin
     frmprincipal.gravaarq('err0', 'Verificar, nao executou despausapos');
   end;
 
-  frmPrincipal.TMyAppStatus.dtvInicioChamada := Now;
-  frmPrincipal.TMyAppStatus.dtvFimChamada := Now;
-  frmPrincipal.TMyAppStatus.sSipDialID := '0';
+  TMyAppStatus.dtvInicioChamada := Now;
+  TMyAppStatus.dtvFimChamada := Now;
+  TMyAppStatus.sSipDialID := '0';
 end;
 
 procedure Tfrmclassifica.CarregaClassificacao;
 var
   ind: integer;
 begin
-  frmprincipal.TMyClassificacao.bClassificando := True;
+  TMyClassificacao.bClassificando := True;
 
   cboFila.Items.Clear;
 
-  if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Ativo') or
-      ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) = ''))) then//Chamada Receptiva DDR
+  if ((TMyAppStatus.sTipoChamada = 'Ativo') or
+      ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) = ''))) then//Chamada Receptiva DDR
   begin
-    for ind := 0 to frmprincipal.vnumfila-1 do
-      cboFila.Items.Add(frmprincipal.matriz_fila[1,ind]);
+    for ind := 0 to Agente.SQL.vnumfila-1 do
+      cboFila.Items.Add(matriz_fila[1,ind]);
 
     cboFila.Enabled := True;
   end
   else
   begin//Chamada Receptiva Fila
-    for ind := 0 to frmprincipal.vnumfila-1 do
-      if frmPrincipal.matriz_fila[0,ind] = frmPrincipal.TMyVaxIncomingCallParam.sFila then
+    for ind := 0 to Agente.SQL.vnumfila-1 do
+      if matriz_fila[0,ind] = TMyVaxIncomingCallParam.sFila then
       begin
-        cboFila.Items.Add(frmPrincipal.matriz_fila[1,ind]);
+        cboFila.Items.Add(matriz_fila[1,ind]);
         cboFila.ItemIndex := 0;
         cboFila.Enabled := False;
         cboFilaChange(Self);
@@ -647,15 +647,15 @@ begin
   cboSubClassifica.ItemIndex := -1;
   cboSubClassifica.Text := APP_FRM_CLASSIFICATION_SELECTSUBCLASS[ID_LANG];
 
-  for nFor := 0 to frmPrincipal.vnumclass_fila-1 do
+  for nFor := 0 to Agente.SQL.vnumclass_fila-1 do
   begin
-    if frmPrincipal.matrizclassifica_fila[1, nFor] = cboClassifica.Text then
+    if matrizclassifica_fila[1, nFor] = cboClassifica.Text then
     begin
-      for nForSub := 0 to frmPrincipal.vnumclasssub_fila-1 do
+      for nForSub := 0 to Agente.SQL.vnumclasssub_fila-1 do
       begin
-        if frmPrincipal.matrizclassifica_fila[0, nFor] = frmPrincipal.matrizclassificasub_fila[2, nForSub] then
+        if matrizclassifica_fila[0, nFor] = matrizclassificasub_fila[2, nForSub] then
         begin
-          cboSubClassifica.Items.Add(frmPrincipal.matrizclassificasub_fila[1, nForSub]);
+          cboSubClassifica.Items.Add(matrizclassificasub_fila[1, nForSub]);
         end;
       end;
       break;
@@ -682,13 +682,13 @@ begin
 
   if (cboFila.ItemIndex >= 0) then
   begin
-    for nForFila := 0 to frmPrincipal.vnumfila-1 do
+    for nForFila := 0 to Agente.SQL.vnumfila-1 do
     begin
-      if (frmPrincipal.matriz_fila[1,nForFila] = cboFila.Text) then
+      if (matriz_fila[1,nForFila] = cboFila.Text) then
       begin
-        for ind := 0 to frmprincipal.vnumclass_fila-1 do
-          if frmPrincipal.matrizclassifica_fila[2,ind] = frmPrincipal.matriz_fila[0,nForFila] then
-            cboClassifica.Items.Add(frmPrincipal.matrizclassifica_fila[1,ind]);
+        for ind := 0 to Agente.SQL.vnumclass_fila-1 do
+          if matrizclassifica_fila[2,ind] = matriz_fila[0,nForFila] then
+            cboClassifica.Items.Add(matrizclassifica_fila[1,ind]);
       end;
     end;
   end;
@@ -698,7 +698,7 @@ begin
     grpClassificacao.Enabled := True;
   end;
 
-  if frmprincipal.TMyPausa.bDiscouPausa then
+  if TMyPausa.bDiscouPausa then
     chkPausar.Enabled := False
   else
     chkPausar.Enabled := True
@@ -710,26 +710,26 @@ var
   nForClas: Integer;
   nForAgd: Integer;
 begin
-  //if ((frmprincipal.TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(frmprincipal.TMyVaxIncomingCallParam.sFila) <> '')) then
+  //if ((TMyAppStatus.sTipoChamada = 'Receptivo') and (Trim(TMyVaxIncomingCallParam.sFila) <> '')) then
   //begin
 
-  for nForFila := 0 to frmPrincipal.vnumfila-1 do
+  for nForFila := 0 to Agente.SQL.vnumfila-1 do
   begin
-    if (frmPrincipal.matriz_fila[1, nForFila] = cboFila.Text) then
+    if (matriz_fila[1, nForFila] = cboFila.Text) then
     begin
-      for nForClas := 0 to frmPrincipal.vnumclass_fila-1 do
+      for nForClas := 0 to Agente.SQL.vnumclass_fila-1 do
       begin
-        if frmPrincipal.matrizclassifica_fila[2,nForClas] = frmPrincipal.matriz_fila[0,nForFila] then
+        if matrizclassifica_fila[2,nForClas] = matriz_fila[0,nForFila] then
         begin
-          if frmPrincipal.matrizclassifica_fila[1, nForClas] = cboClassifica.Text then
+          if matrizclassifica_fila[1, nForClas] = cboClassifica.Text then
           begin
-            for nForAgd := 0 to frmprincipal.vnumclasssub_fila-1 do
+            for nForAgd := 0 to Agente.SQL.vnumclasssub_fila-1 do
             begin
-              if frmPrincipal.matrizclassifica_fila[0, nForClas] = frmPrincipal.matrizclassificasub_fila[2, nForAgd] then
+              if matrizclassifica_fila[0, nForClas] = matrizclassificasub_fila[2, nForAgd] then
               begin
-                if (frmprincipal.matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
+                if (matrizclassificasub_fila[1, nForAgd] = cboSubClassifica.Text) then
                 begin
-                  if frmprincipal.matrizclassificasub_fila[3, nForAgd] = 'True' then
+                  if matrizclassificasub_fila[3, nForAgd] = 'True' then
                   begin
                     pnlAgenda.Enabled := False;
                     dteAgenda.Date := 0;
@@ -739,7 +739,7 @@ begin
                   else
                   begin
                     pnlAgenda.Enabled := True;
-                    dteAgenda.Date := StrToDateFmt('dd-mm-yyyy', frmprincipal.matrizclassificasub_fila[4, nForAgd]);
+                    dteAgenda.Date := StrToDateFmt('dd-mm-yyyy', matrizclassificasub_fila[4, nForAgd]);
                     hraAgenda.Text := FormatDateTime('hh:nn', IncHour(Now, 1));
                   end;
                   break;

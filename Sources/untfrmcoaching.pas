@@ -25,7 +25,7 @@ var
 
 implementation
 
-uses untPrincipal, unttranslate, untdm;
+uses untPrincipal, unttranslate, untdm, untFuncoes, untLibrary;
 
 {$R *.dfm}
 
@@ -36,19 +36,19 @@ var
   ind: Integer;
 begin
   cboCoaching.Items.Clear;
-  for ind := 0 to frmPrincipal.vnumcoaching-1 do
-    cboCoaching.Items.Add(frmPrincipal.matrizcoaching[1,ind]);
+  for ind := 0 to Agente.SQL.vnumcoaching-1 do
+    cboCoaching.Items.Add(matrizcoaching[1,ind]);
 
-  if frmPrincipal.TMyCoaching.bCoaching then
+  if TMyCoaching.bCoaching then
   begin
-    cboCoaching.ItemIndex := frmPrincipal.TMyCoaching.nCboCoachingIndex;
+    cboCoaching.ItemIndex := TMyCoaching.nCboCoachingIndex;
     cboCoaching.Enabled := False;
   end;
 end;
 
 procedure TfrmCoaching.CarregaTelasLinguagem;
 begin
-  if frmPrincipal.TMyCoaching.bCoaching then
+  if TMyCoaching.bCoaching then
     cmdCoaching.Caption := APP_FRM_COACHING_STOP[ID_LANG]
   else
     cmdCoaching.Caption := APP_FRM_COACHING_START[ID_LANG];
@@ -67,47 +67,47 @@ begin
   datam.qryUpdateCoaching.Active := False;
   datam.qryUpdateCoaching.SQL.Clear;
 
-  for nFor := 0 to frmprincipal.vnumcoaching-1 do
-    if frmprincipal.matrizcoaching[1,nFor] = cboCoaching.Text then
-      frmPrincipal.TMyCoaching.sIdCoaching := frmprincipal.matrizcoaching[0,nFor];
+  for nFor := 0 to Agente.SQL.vnumcoaching-1 do
+    if matrizcoaching[1,nFor] = cboCoaching.Text then
+      TMyCoaching.sIdCoaching := matrizcoaching[0,nFor];
 
   if cmdCoaching.Caption = APP_FRM_COACHING_START[ID_LANG] then
   begin
     cmdCoaching.Caption := APP_FRM_COACHING_STOP[ID_LANG];
     cboCoaching.Enabled := False;
-    frmPrincipal.TMyCoaching.bCoaching := True;
+    TMyCoaching.bCoaching := True;
     frmPrincipal.shpCoaching.Brush.Color := clLime;
 
     datam.qryUpdateCoaching.SQL.Add('insert into easy_rept_call_coaching_hist ');
     datam.qryUpdateCoaching.SQL.Add('(coaching, easy_work_colaborador_conf_id, coaching_id, easy_call_operacao_conf_id, easy_call_empresa_conf_id, supervisor_id) ');
     datam.qryUpdateCoaching.SQL.Add('values ');
     datam.qryUpdateCoaching.SQL.Add('(now(), ');
-    datam.qryUpdateCoaching.SQL.Add(QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario) + ', ');
-    datam.qryUpdateCoaching.SQL.Add(frmPrincipal.TMyCoaching.sIdCoaching + ', ');
-    datam.qryUpdateCoaching.SQL.Add(frmPrincipal.TMyInfoLogin.sIDOperacao + ', ');
-    datam.qryUpdateCoaching.SQL.Add(frmPrincipal.TMyInfoLogin.sIDEmpresa + ', ');
-    datam.qryUpdateCoaching.SQL.Add(frmPrincipal.TMyInfoLogin.sIDSupervisor + ')');
+    datam.qryUpdateCoaching.SQL.Add(QuotedStr(TMyInfoLogin.sIDUsuario) + ', ');
+    datam.qryUpdateCoaching.SQL.Add(TMyCoaching.sIdCoaching + ', ');
+    datam.qryUpdateCoaching.SQL.Add(TMyInfoLogin.sIDOperacao + ', ');
+    datam.qryUpdateCoaching.SQL.Add(TMyInfoLogin.sIDEmpresa + ', ');
+    datam.qryUpdateCoaching.SQL.Add(TMyInfoLogin.sIDSupervisor + ')');
   end
   else
   begin
     cmdCoaching.Caption := APP_FRM_COACHING_START[ID_LANG];
     cboCoaching.ItemIndex := -1;
     cboCoaching.Enabled := True;
-    frmPrincipal.TMyCoaching.bCoaching := False;
+    TMyCoaching.bCoaching := False;
     frmPrincipal.shpCoaching.Brush.Color := clSilver;
 
     datam.qryUpdateCoaching.SQL.Add('update easy_rept_call_coaching_hist ');
     datam.qryUpdateCoaching.SQL.Add('set controle = 1, uncoaching = now(), duracao = timediff(now(), coaching) ');
     datam.qryUpdateCoaching.SQL.Add('where ');
-    datam.qryUpdateCoaching.SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(frmPrincipal.TMyInfoLogin.sIDUsuario) + ' and ');
-    datam.qryUpdateCoaching.SQL.Add('coaching_id = ' + frmPrincipal.TMyCoaching.sIdCoaching + ' and ');
+    datam.qryUpdateCoaching.SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario) + ' and ');
+    datam.qryUpdateCoaching.SQL.Add('coaching_id = ' + TMyCoaching.sIdCoaching + ' and ');
     datam.qryUpdateCoaching.SQL.Add('controle = 0');
   end;
 
   datam.qryUpdateCoaching.ExecSQL;
   datam.qryUpdateCoaching.Active := False;
 
-  frmPrincipal.TMyCoaching.nCboCoachingIndex := cboCoaching.ItemIndex;
+  TMyCoaching.nCboCoachingIndex := cboCoaching.ItemIndex;
 end;
 
 end.

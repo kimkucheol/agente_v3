@@ -76,7 +76,7 @@ implementation
 
 {$R *.dfm}
 
-uses untPrincipal, unttranslate, untfrmRingPopup, untfrmConfAudio;
+uses untPrincipal, unttranslate, untfrmRingPopup, untfrmConfAudio, untFuncoes, untLibrary;
 
 procedure TfrmDialPad.btnLigaClick(Sender: TObject);
 var
@@ -86,13 +86,13 @@ var
 begin
   if btnLiga.Caption = APP_FRM_DIALPAD_PICKUP[ID_LANG] then
   begin
-    if (frmPrincipal.TMyVaxIncomingCallParam.bAutoAnswer = False) and
-       (frmPrincipal.TMyVaxIncomingCallParam.bIncomingCall = True) then
+    if (TMyVaxIncomingCallParam.bAutoAnswer = False) and
+       (TMyVaxIncomingCallParam.bIncomingCall = True) then
     begin
       frmPrincipal.AtivaFlashWindow(False);
       frmPrincipal.AtendeChamada;
 
-      frmPrincipal.TMyVaxIncomingCallParam.nTotalDevices := 0;
+      TMyVaxIncomingCallParam.nTotalDevices := 0;
       frmPrincipal.tmrAudioRing.Enabled := False;
       try
         frmPrincipal.wavAudioRing.Notify := False;
@@ -112,16 +112,16 @@ begin
 
     try
       for nFor := 9 downto 1 do
-        frmPrincipal.matrizdialednums[nFor] := frmPrincipal.matrizdialednums[nFor - 1];
-      frmPrincipal.matrizdialednums[0] := cboAtivo.Text;
+        matrizdialednums[nFor] := matrizdialednums[nFor - 1];
+      matrizdialednums[0] := cboAtivo.Text;
     except
     end;
 
     try
       cboAtivo.Clear;
       for nFor := 0 to 9 do
-        cboAtivo.Items.Add(frmPrincipal.matrizdialednums[nFor]);
-      cboAtivo.Text := frmPrincipal.matrizdialednums[0];
+        cboAtivo.Items.Add(matrizdialednums[nFor]);
+      cboAtivo.Text := matrizdialednums[0];
     except
     end;
 
@@ -130,20 +130,20 @@ begin
       if cboCentroCusto.ItemIndex = -1 then
         Exit;
 
-    if ((frmprincipal.TMyAppStatus.sTipoEvento <> APP_EVENT_TYPE_PAUSE[ID_LANG]) or (frmprincipal.TMyAppStatus.bAtendido = true)) or
-       ((frmprincipal.TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG]) and (frmprincipal.TMyPausa.bAtivoPausa = true)) then
+    if ((TMyAppStatus.sTipoEvento <> APP_EVENT_TYPE_PAUSE[ID_LANG]) or (TMyAppStatus.bAtendido = true)) or
+       ((TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG]) and (TMyPausa.bAtivoPausa = true)) then
     begin
       sCentroCustoTemp := '';
 
-      for nFor := 0 to frmprincipal.vnumcentrocusto-1 do
-        if (frmprincipal.matrizcentrocusto[1, nFor] = cboCentroCusto.Text) then
+      for nFor := 0 to Agente.SQL.vnumcentrocusto-1 do
+        if (matrizcentrocusto[1, nFor] = cboCentroCusto.Text) then
         begin
-          sCentroCustoTemp := frmprincipal.matrizcentrocusto[0, nFor];
+          sCentroCustoTemp := matrizcentrocusto[0, nFor];
           Break;
         end;
 
-      frmprincipal.ligar(sCentroCustoTemp+'0'+frmprincipal.TMyInfoLogin.sIDUsuario+'0'+cboAtivo.Text);
-      frmprincipal.TMyAppStatus.sNumero := cboAtivo.text;
+      frmprincipal.ligar(sCentroCustoTemp+'0'+TMyInfoLogin.sIDUsuario+'0'+cboAtivo.Text);
+      TMyAppStatus.sNumero := cboAtivo.text;
       try
         frmprincipal.framebar.SetFocus;
       except
@@ -153,13 +153,13 @@ begin
         end;
       end;
 
-      if (frmprincipal.TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG]) and (frmprincipal.TMyPausa.bAtivoPausa = true) then
+      if (TMyAppStatus.sTipoEvento = APP_EVENT_TYPE_PAUSE[ID_LANG]) and (TMyPausa.bAtivoPausa = true) then
       begin
-        frmprincipal.TMyPausa.bDiscouPausa := true;
+        TMyPausa.bDiscouPausa := true;
       end
       else
       begin
-        frmprincipal.TMyPausa.bDiscouPausa := false;
+        TMyPausa.bDiscouPausa := false;
       end;
     end
     else
@@ -257,13 +257,13 @@ begin
   if cboHold.Checked = true then
   begin
     frmprincipal.vax.HoldLine(0);
-    frmprincipal.TMyAppStatus.tTempoHoldIni := time;
+    TMyAppStatus.tTempoHoldIni := time;
   end
   else
   begin
     frmprincipal.vax.UnHoldLine(0);
-    frmprincipal.TMyAppStatus.tTempoHoldFim := time-frmprincipal.TMyAppStatus.tTempoHoldIni;
-    frmprincipal.TMyAppStatus.tTempoHoldTotal := frmprincipal.TMyAppStatus.tTempoHoldTotal + frmprincipal.TMyAppStatus.tTempoHoldFim;
+    TMyAppStatus.tTempoHoldFim := time-TMyAppStatus.tTempoHoldIni;
+    TMyAppStatus.tTempoHoldTotal := TMyAppStatus.tTempoHoldTotal + TMyAppStatus.tTempoHoldFim;
   end;
 
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
@@ -284,7 +284,7 @@ begin
   cboAtivo.Text := cboAtivo.Text + vnumdigito;
   frmprincipal.vax.DigitDTMF(0, vnumdigito);
 
-  if frmPrincipal.TMyConfCallClass.bInConfCall then
+  if TMyConfCallClass.bInConfCall then
     frmprincipal.vax.DigitDTMF(1, vnumdigito);
 end;
 
@@ -293,7 +293,7 @@ var
   nFor: Integer;
 begin
   btnLiga.Caption := APP_FRM_DIALPAD_DIAL[ID_LANG];
-  btnLiga.Enabled := frmPrincipal.TMyInfoLogin.bDialPad;
+  btnLiga.Enabled := TMyInfoLogin.bDialPad;
   lblNumero.Caption := APP_FRM_DIALPAD_NUMBER[ID_LANG];
   cboMudo.Caption := APP_FRM_DIALPAD_MUTE[ID_LANG];
   cboHold.Caption := APP_FRM_DIALPAD_HOLD[ID_LANG];
@@ -303,7 +303,7 @@ begin
   try
     cboAtivo.Clear;
     for nFor := 0 to 9 do
-      cboAtivo.Items.Add(frmPrincipal.matrizdialednums[nFor]);
+      cboAtivo.Items.Add(matrizdialednums[nFor]);
   except
   end;
 end;
@@ -314,20 +314,20 @@ var
 begin
   cboCentroCusto.Items.Clear;
 
-  if frmprincipal.TMyInfoLogin.bRotaInteligente then
+  if TMyInfoLogin.bRotaInteligente then
   begin
-    cboCentroCusto.Items.Add(frmprincipal.matrizcentrocusto[1,0]);
+    cboCentroCusto.Items.Add(matrizcentrocusto[1,0]);
     cboCentroCusto.Enabled := False;
     cboCentroCusto.ItemIndex := 0;
   end
   else
   begin
-    for ind := 0 to frmprincipal.vnumcentrocusto-1 do
+    for ind := 0 to Agente.SQL.vnumcentrocusto-1 do
     begin
-      cboCentroCusto.Items.Add(frmprincipal.matrizcentrocusto[1,ind]);
+      cboCentroCusto.Items.Add(matrizcentrocusto[1,ind]);
     end;
 
-    if frmprincipal.vnumcentrocusto = 1 then
+    if Agente.SQL.vnumcentrocusto = 1 then
     begin
       try
         cboCentroCusto.ItemIndex := 0;

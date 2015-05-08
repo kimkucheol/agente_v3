@@ -1,0 +1,16 @@
+select active,                    
+       descricao,                 
+       log_diretorio,             
+       log_nome,                  
+       log_login_act,             
+       log_logout_act,            
+       log_pause_act,             
+       log_unpause_act,           
+       log_answer_act,            
+       log_hangup_act,            
+       log_dnd_on_act,            
+       log_dnd_off_act,           
+       log_registro_act,          
+       log_xfer_act,              
+       log_sip_err                
+from easy_sist_software_log_conf  

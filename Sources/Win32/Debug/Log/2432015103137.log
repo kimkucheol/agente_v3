@@ -1,4 +1,0 @@
-C: EZSQLException >> SQL Error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'select 
-c1.id as codigo, 
-concat(c1.descricao," - ", c2.descricao) as fila 
-f' at line 16

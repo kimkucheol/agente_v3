@@ -41,7 +41,7 @@ begin
   end;
 
   vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
-  varqini.Writestring('Configuracoes','skin',cbskin.Text);
+  varqini.Writestring('skin','skin',cbskin.Text);
   varqini.free;
 end;
 
