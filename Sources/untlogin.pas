@@ -8,10 +8,9 @@ uses
   Vcl.StdCtrls, sEdit, sLabel, sButton, inifiles, Vcl.CustomizeDlg, MMSystem,
   Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip, StrUtils,
   Vcl.OleCtrls, Rtti, ShellApi, IdBaseComponent, IdComponent, IdRawBase,
-  IdRawClient, IdIcmpClient;
+  IdRawClient, IdIcmpClient, untFuncoes;
 
 type
-
   TfrmLogin = class(TForm)
     sPanel1: TsPanel;
     btnLogin: TsButton;
@@ -55,7 +54,7 @@ var
 
 implementation
 
-uses untdm, untprincipal, unttranslate, untChangePass, untFuncoes, untLibrary;
+uses untdm, untprincipal, unttranslate, untChangePass, untLibrary;
 
 {$R *.dfm}
 
@@ -63,28 +62,28 @@ uses untdm, untprincipal, unttranslate, untChangePass, untFuncoes, untLibrary;
 
 function LocalIP: ansistring;
 type
-   TaPInAddr = array [0..10] of PInAddr;
-   PaPInAddr = ^TaPInAddr;
+  TaPInAddr = array [0..10] of PInAddr;
+  PaPInAddr = ^TaPInAddr;
 var
-    phe: PHostEnt;
-    pptr: PaPInAddr;
-    Buffer: array [0..63] of Ansichar;
-    i: Integer;
-    GInitData: TWSADATA;
+  phe: PHostEnt;
+  pptr: PaPInAddr;
+  Buffer: array [0..63] of Ansichar;
+  i: Integer;
+  GInitData: TWSADATA;
 begin
-    WSAStartup($101, GInitData);
-    Result := '';
-    GetHostName(Buffer, SizeOf(Buffer));
-    phe :=GetHostByName(buffer);
-    if phe = nil then Exit;
-    pptr := PaPInAddr(Phe^.h_addr_list);
-    i := 0;
-    while pptr^[i] <> nil do
-    begin
-      result:=StrPas(inet_ntoa(pptr^[i]^));
-      Inc(i);
-    end;
-    WSACleanup;
+  WSAStartup($101, GInitData);
+  Result := '';
+  GetHostName(Buffer, SizeOf(Buffer));
+  phe :=GetHostByName(buffer);
+  if phe = nil then Exit;
+  pptr := PaPInAddr(Phe^.h_addr_list);
+  i := 0;
+  while pptr^[i] <> nil do
+  begin
+    result:=StrPas(inet_ntoa(pptr^[i]^));
+    Inc(i);
+  end;
+  WSACleanup;
 end;
 
 function GetAdapterInfo(Lana: AnsiChar): String;
@@ -176,15 +175,13 @@ begin
 
   try
     TMyMachineInfo.sIP_Address := String(LocalIP);
-  except
-  end;
+  except end;
 
   try
     TMyMachineInfo.sMac_Address := IfThen(Length(Trim(Agente.WinMAC_ADDRES01)) > 0,
                                           Agente.WinMAC_ADDRES01,
                                           Agente.WinMAC_ADDRES02);
-  except
-  end;
+  except end;
 
   conecta;
 
@@ -234,9 +231,12 @@ end;
 procedure TfrmLogin.btnLoginClick(Sender: TObject);
 var
   sCaptureMode: String;
+  IntVerificaLogin : Integer;
 //  Lst : TStringList;
 //  IntI : Integer;
 begin
+
+  Agente.SQL.CarregaOperLog;
 
   // Verificar se o dispositivo de audio existe
   if Agente.TotalAudio <= 0then
@@ -271,10 +271,11 @@ begin
     TMyInfoLogin.sLoginUser     := txtLogin.text;
     TMyInfoLogin.sLoginSenha    := txtSenha.Text;
 
-    if Agente.SQL.VerificaLogin then
+    IntVerificaLogin := Agente.SQL.FncVerificaLogin;
+    if IntVerificaLogin = 0 then
     begin
 
-      //FncFilaEquipe;
+
       TMyInfoLogin.sNome       := datam.qryLogin.fields[0].AsString;
       TMyInfoLogin.sPerfil     := datam.qryLogin.FieldByName('easy_sistema_usuario_perfil_conf_id').AsString;
       TMyInfoLogin.sUsuario    := datam.qryLogin.fields[1].AsString;
@@ -284,15 +285,56 @@ begin
       TMyInfoLogin.sSenha      := datam.qryLogin.fieldbyname('senha_ramal').AsString;
       TMyInfoLogin.sIPPABX     := datam.qryLogin.fieldbyname('proxy_ramal').AsString;
       TMyInfoLogin.sIDOperacao := datam.qryLogin.fields[5].asstring;
-
       TMyInfoLogin.bFone_registro_act := datam.qryLogin.FieldByName('fone_registro_act').AsBoolean;
       TMyInfoLogin.sSec_fone_registro_tmp := datam.qryLogin.FieldByName('sec_fone_registro_tmp').AsString;
       TMyInfoLogin.iEasy_work_equipe_conf_id := datam.qryLogin.FieldByName('equipe_id').AsInteger;
-      //frmprincipal.ersaovoperacao := datam.qryLogin.fields[7].asstring;
-      //frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
+      TMyInfoLogin.tHr_Entrada := datam.qryLogin.fieldbyname('horario_entrada').AsDateTime;
+      TMyInfoLogin.tHr_Saida   := datam.qryLogin.fieldbyname('horario_saida').AsDateTime;
 
       ID_LANG := (datam.qryLogin.Fields[11].AsInteger) - 1;
       TMyInfoLogin.sIDEmpresa := datam.qryLogin.Fields[12].AsString;
+
+      //frmprincipal.ersaovoperacao := datam.qryLogin.fields[7].asstring;
+      //frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
+
+{      if not FncFilaEquipe then
+        Exit;}
+
+      if not Agente.SQL.FncVerificaFila then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_QUEUES_RELATION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      if not Agente.SQL.FncVerificaClassUniv then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_CLASSIF_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      if not Agente.SQL.FncVerificaPausa then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_PAUSES_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      datam.QryOpen.Close;
+
+
+      if not Agente.EquipeHrTrab.fncTempoTrabalho then
+        Exit;
 
       TMyVaxIncomingCallParam.bAutoAnswer := datam.qryLogin.fieldbyname('atendimento_auto_act').AsBoolean;
 
@@ -309,15 +351,7 @@ begin
 
       if datam.qryLogin.FieldByName('qualidade_plogin_act').AsBoolean then
       begin
-        datam.qryAtualizaQualidade.Active := False;
-        datam.qryAtualizaQualidade.SQL.Clear;
-        datam.qryAtualizaQualidade.SQL.Add('update easy_work_colaborador_conf set ');
-        datam.qryAtualizaQualidade.SQL.Add('qualidade_plogin_act = ' + QuotedStr('N') + ', ');
-        datam.qryAtualizaQualidade.SQL.Add('qualidade_plogin = now() ');
-        datam.qryAtualizaQualidade.SQL.Add('where id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-        datam.qryAtualizaQualidade.ExecSQL;
-        datam.qryAtualizaQualidade.Active := False;
-
+        Agente.SQL.AtualizaQualidade;
         TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin2').AsString;
       end
       else
@@ -461,7 +495,23 @@ begin
       if vtentalogin < 3 then
       begin
         inc(vtentalogin);
-        application.MessageBox(PChar(APP_MB_ERR_INVALID_LOGIN[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+
+        // 1 : Usuario não encontrado
+        if IntVerificaLogin = 1 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_USER[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        // 2 : Colaborador não encontrado
+        if IntVerificaLogin = 2 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_LOGIN[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //3 : Operação não encontrado
+        if IntVerificaLogin = 3 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_DEVELOPER[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //4 : Usuario não Associado Empresa
+        if IntVerificaLogin = 4 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_OPERATION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //5 : Login invalido
+        if IntVerificaLogin = 5 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_COMPANY[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+
       end
       else
       begin

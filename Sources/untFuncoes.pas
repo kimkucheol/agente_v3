@@ -17,8 +17,8 @@ interface
 Uses
   Registry, IniFiles, SysUtils, Messages, Dialogs, Winapi.Windows, Classes, Forms,
   mmsystem, NB30, iphlpapi, IpTypes, Winsock, Winapi.DirectShow9, Winapi.ActiveX,
-  Vcl.StdCtrls, StrUtils, VAXSIPUSERAGENTOCXLib_TLB, Rtti, DateUtils,
-  untLibrary, untPrincipal, untdm;
+  Vcl.StdCtrls, StrUtils, VAXSIPUSERAGENTOCXLib_TLB, Rtti, DateUtils, ZDataSet,
+  untLibrary, untPrincipal, untdm, Vcl.ExtCtrls, Vcl.Graphics, Vcl.Controls;
 Var
   vLogCallStep: array of string;
 
@@ -45,6 +45,10 @@ Var
   function IsWindows64: Boolean;
   //Executa comando MSDOS
   procedure ExecComandoMSDOS;
+  //Executa comando MSDOS
+  procedure OpenSQL(Comando : String);
+
+
 
 {Agente.dll }
   procedure GetIPInfo(Stream :TMemoryStream); stdcall; external 'Agente.dll';
@@ -60,6 +64,10 @@ Var
   function GetFileDate(Arquivo: String): String;
 
   function TxtPadraoLog(Const sTipo : String='') : String;
+
+  procedure MSGAguarde(strTexto: String = ''; boolAguarde: Boolean = False);
+
+  function dbDate : TDateTime;
 
 implementation
 
@@ -342,42 +350,69 @@ begin
 
 end;
 
+//procedure LogCallStep(tipo: String; arg: String);
+//var
+//  tf_Arquivo: TextFile;
+//  sLogText: String;
+//  sNomeArquivo: String;
+//  ano,mes,dia,hora,minuto,segundo,mili: word;
+//
+//  {Sub}procedure PrcCriaArquivoLogStep;
+//  begin
+//    sLogText := TxtPadraoLog()+ tipo;
+//    if Trim(arg) <> '' then
+//      sLogText := sLogText + ' (' + arg + ')';
+//
+//    try
+//      if not DirectoryExists(vLogCallStep[2]) then
+//      begin
+//        ForceDirectories(vLogCallStep[2]);
+//      end;
+//
+//      sNomeArquivo := StringReplace(vLogCallStep[3],'${DATA}', IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano), [rfReplaceAll, rfIgnoreCase]);
+//      AssignFile(tf_Arquivo, vLogCallStep[2] + '\' + sNomeArquivo);
+//
+//      if FileExists(vLogCallStep[2] + '\' + sNomeArquivo) then
+//        Append(tf_Arquivo)
+//      else
+//        Rewrite(tf_Arquivo);
+//
+//      Writeln(tf_Arquivo, sLogText);
+//    finally
+//      CloseFile(tf_Arquivo);
+//    end;
+//
+//  end;
+//
+//begin
+//
+//  if vLogCallStep[0] = 'True' then
+//  begin
+//    if((tipo = 'log_login_act'   ) and (vLogCallStep[4]  = 'True')) or
+//      ((tipo = 'log_logout_act'  ) and (vLogCallStep[5]  = 'True')) or
+//      ((tipo = 'log_pause_act'   ) and (vLogCallStep[6]  = 'True')) or
+//      ((tipo = 'log_unpause_act' ) and (vLogCallStep[7]  = 'True')) or
+//      ((tipo = 'log_answer_act'  ) and (vLogCallStep[8]  = 'True')) or
+//      ((tipo = 'log_hangup_act'  ) and (vLogCallStep[9]  = 'True')) or
+//      ((tipo = 'log_dnd_on_act'  ) and (vLogCallStep[10] = 'True')) or
+//      ((tipo = 'log_dnd_off_act' ) and (vLogCallStep[11] = 'True')) or
+//      ((tipo = 'log_registro_act') and (vLogCallStep[12] = 'True')) or
+//      ((tipo = 'log_xfer_act'    ) and (vLogCallStep[13] = 'True')) or
+//      ((tipo = 'log_sip_err'     ) and (vLogCallStep[14] = 'True')) or
+//      ((tipo = 'log_sobre_act'   ) and (vLogCallStep[15] = 'True')) or
+//      ((tipo = 'log_func_act'    ) and (vLogCallStep[16] = 'True')) then
+//      PrcCriaArquivoLogStep;
+//  end;
+//
+//end;
+
 procedure LogCallStep(tipo: String; arg: String);
 var
   tf_Arquivo: TextFile;
   sLogText: String;
   sNomeArquivo: String;
   ano,mes,dia,hora,minuto,segundo,mili: word;
-
-  {Sub}procedure PrcCriaArquivoLogStep;
-  begin
-    sLogText := TxtPadraoLog()+ tipo;
-    if Trim(arg) <> '' then
-      sLogText := sLogText + ' (' + arg + ')';
-
-    try
-      if not DirectoryExists(vLogCallStep[2]) then
-      begin
-        ForceDirectories(vLogCallStep[2]);
-      end;
-
-      sNomeArquivo := StringReplace(vLogCallStep[3],'${DATA}', IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano), [rfReplaceAll, rfIgnoreCase]);
-      AssignFile(tf_Arquivo, vLogCallStep[2] + '\' + sNomeArquivo);
-
-      if FileExists(vLogCallStep[2] + '\' + sNomeArquivo) then
-        Append(tf_Arquivo)
-      else
-        Rewrite(tf_Arquivo);
-
-      Writeln(tf_Arquivo, sLogText);
-    finally
-      CloseFile(tf_Arquivo);
-    end;
-
-  end;
-
 begin
-
   if vLogCallStep[0] = 'True' then
   begin
     if((tipo = 'log_login_act'   ) and (vLogCallStep[4]  = 'True')) or
@@ -393,10 +428,38 @@ begin
       ((tipo = 'log_sip_err'     ) and (vLogCallStep[14] = 'True')) or
       ((tipo = 'log_sobre_act'   ) and (vLogCallStep[15] = 'True')) or
       ((tipo = 'log_func_act'    ) and (vLogCallStep[16] = 'True')) then
-      PrcCriaArquivoLogStep;
-  end;
+    begin
+      decodedate(now,ano,mes,dia);
+      decodetime(now,hora,minuto,segundo,mili);
 
+      sLogText := IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano) + ' ';
+      sLogText := sLogText + IntToStr(hora) + ':' + IntToStr(minuto) + ':' + IntToStr(segundo) + ' - ';
+      sLogText := sLogText + TMyInfoLogin.sIDOperacao + ' >> ';
+      sLogText := sLogText + tipo;
+      if Trim(arg) <> '' then
+        sLogText := sLogText + ' (' + arg + ')';
+
+      try
+        if not DirectoryExists(vLogCallStep[2]) then
+        begin
+          ForceDirectories(vLogCallStep[2]);
+        end;
+        sNomeArquivo := StringReplace(vLogCallStep[3],'${DATA}', IntToStr(dia) + '-' + IntToStr(mes) + '-' + IntToStr(ano), [rfReplaceAll, rfIgnoreCase]);
+        AssignFile(tf_Arquivo, vLogCallStep[2] + '\' + sNomeArquivo);
+
+        if FileExists(vLogCallStep[2] + '\' + sNomeArquivo) then
+          Append(tf_Arquivo)
+        else
+          Rewrite(tf_Arquivo);
+
+        Writeln(tf_Arquivo, sLogText);
+      finally
+        CloseFile(tf_Arquivo);
+      end;
+    end;
+  end;
 end;
+
 
 function ConvertCharToFE(sTexto: String): String;
 var
@@ -486,26 +549,34 @@ end;
 
 function TxtPadraoLog(Const sTipo : String='') : String;
 Var
-     sTxtPadrao : String;
-     sDay
-    ,sMonth
-    ,sYear     : String;
-     sHour
-    ,sSec
-    ,sMin      : String;
-     DtAt      : TDateTime;
+  sTxtPadrao               : String;
+  sDay ,sMonth ,sYear      : String;
+  sHour ,sSec ,sMin ,sMili : String;
+  DtAt                     : TDateTime;
+  wYear,wMonth,wDay        : Word;
+  wHour,wMin,wSec,wMili    : Word;
 begin
 
 //  decodedate(now,ano,mes,dia);
 //  decodetime(now,hora,minuto,segundo,mili);
 
-  DtAt      := Now;
+{  DtAt      := Now;
   sDay      := FloatToStr(DayOF(DtAt));
   sMonTh    := FloatToStr(MonthOF(DtAt));
   sYear     := FloatToStr(YearOF(DtAt));
   sHour     := FloatToStr(HourOF(DtAt));
   sMin      := FloatToStr(MinuteOF(DtAt));
-  sSec      := FloatToStr(SecondOf(DtAt));
+  sSec      := FloatToStr(SecondOf(DtAt));}
+
+  decodedate(now, wYear, wMonTh , wDay);
+  decodetime(now, wHour, wMin, wSec, wMili);
+
+  sDay      := FloatToStr(wDay);
+  sMonTh    := FloatToStr(wMonTh);
+  sYear     := FloatToStr(wYear);
+  sHour     := FloatToStr(wHour);
+  sMin      := FloatToStr(wMin);
+  sSec      := FloatToStr(wSec);
 
   sTxtPadrao := '';
   sTxtPadrao := sDay+'-'+sMonth+'-'+sYear+' ';
@@ -513,6 +584,124 @@ begin
   sTxtPadrao := sTxtPadrao + IfThen(Length(Trim(sTipo)) > 0, sTipo, TMyInfoLogin.sIDOperacao) + ' >> ';
   Result := sTxtPadrao;
 end;
+
+
+procedure MSGAguarde(strTexto: String = ''; boolAguarde: Boolean = False);
+var
+  formAguarde  : TForm;
+  bevelAguarde : TBevel;
+  lblTexto     : TLabel;
+  mmMemo       : TMemo;
+  formMSG      : TForm;
+begin
+  formAguarde := TForm.Create(nil);
+  formMSG     := formAguarde;
+
+  with formMSG do
+  begin
+    Width       := 220;
+    Height      := 50;
+    BorderStyle := bsNone;
+    Color       := clGradientInactiveCaption;
+    Position    := poDesktopCenter;
+
+    bevelAguarde := TBevel.Create(nil);
+    with bevelAguarde do
+    begin
+      Parent := formAguarde;
+      Align  := alClient;
+      Shape  := bsFrame;
+    end;
+    if strTexto = '' then
+    begin
+      lblTexto := TLabel.Create(nil);
+      with lblTexto do
+      begin
+        Caption    := 'Aguarde';
+        Font.Size  := 16;
+        Top        := 8;
+        Left       := 70;
+        Font.Style := [fsBold];
+        Font.Name  := 'Segoe UI';
+        Font.Color := clMaroon;
+        Parent     := formAguarde;
+      end;
+    end else
+    begin
+      mmMemo := TMemo.Create(nil);
+      with mmMemo do
+      begin
+        Text        := strTexto;
+        Align       := alClient;
+        Alignment   := taCenter;
+        BorderStyle := bsNone;
+        Color       := clGradientInactiveCaption;
+        Font.Size   := 8;
+        Font.Name   := 'Verdana';
+        Parent      := formAguarde;
+      end;
+    end;
+
+    Show;
+    Repaint;
+
+    if boolAguarde then
+      Sleep(10000);
+
+  end;
+
+end;
+
+function dbDate : TDateTime;
+  Var Zquery : TZQuery;
+begin
+  Zquery := TZQuery.Create(Nil);
+  Try
+    Zquery.Connection := datam.con_connect;
+    Zquery.SQL.Add('SELECT CURDATE() AS DTBD');
+    Zquery.Open;
+    Result := Zquery.Fields[0].AsDateTime;
+    Zquery.Close;
+  Finally
+    FreeAndNil(ZQuery);
+  End;
+
+
+  ///
+end;
+
+procedure OpenSQL(Comando : String);
+begin
+  with datam.QryOpen do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Add(Comando);
+    Open;
+  end;
+end;
+
+
+{procedure Button3Click(Sender: TObject);
+ var
+  f: TForm;
+begin
+  f := Dialogs.CreateMessageDialog('Nova Mensagem               ', dialogs.mtInformation, dialogs.mbYesNoCancel);
+
+  f.Color := clred;
+  f.Font.Name := 'verdana';
+  f.Font.Style := [fsBold,fsItalic];
+  f.Font.Size:=8;
+  f.Font.Color := clYellow;
+  if f.ShowModal = mryes then
+
+    close
+  else
+
+     Button3.Enabled:=false;
+end;}
+
+
 
 
 end.

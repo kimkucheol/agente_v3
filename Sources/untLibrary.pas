@@ -16,7 +16,7 @@ unit untLibrary;
 interface
   uses SysUtils, Forms, Windows, Classes, iphlpapi, IpTypes, Winsock, sPageControl, ZDataset,
        IdComponent, IdIPWatch, mmsystem, StrUtils, Menus, sComboBox, Vcl.ActnList, Dialogs,
-       Data.DB, Math;
+       Data.DB, Math, Vcl.Graphics, Winapi.Messages, Vcl.ExtCtrls, DateUtils;
 
 Type
 
@@ -88,6 +88,8 @@ Type
     sHoraLogin                : String;
     //Qualidade da Chamada
     bQualidadeChamada         : Boolean;
+    tHr_Entrada               : TTime;
+    tHr_Saida                 : TTime;
   end;
   TVaxIncomingCallParams = record
     bAutoAnswer: Boolean;
@@ -212,6 +214,39 @@ Type
   end;
 
 // Class
+  TEquipeTrabalha=Class
+  private
+    FHr_Saida: TTime;
+    FMsg: String;
+    FHr_Entrada: TTime;
+    FAvisaouNao: Boolean;
+    FCount: Integer;
+    FMsgAvisada: Boolean;
+    FNaoFazNada: Boolean;
+    FHr_MSG: TTime;
+    FVerificaReg: Boolean;
+    procedure SetAvisaouNao(const Value: Boolean);
+    procedure SetHr_Entrada(const Value: TTime);
+    procedure SetHr_Saida(const Value: TTime);
+    procedure SetMsg(const Value: String);
+    procedure SetCount(const Value: Integer);
+    procedure SetMsgAvisada(const Value: Boolean);
+    procedure SetNaoFazNada(const Value: Boolean);
+    procedure SetHr_MSG(const Value: TTime);
+    procedure SetVerificaReg(const Value: Boolean);
+  public
+    property Hr_Entrada : TTime read FHr_Entrada write SetHr_Entrada;
+    property Hr_Saida   : TTime read FHr_Saida write SetHr_Saida;
+    property Hr_MSG     : TTime read FHr_MSG write SetHr_MSG;
+    property AvisaouNao : Boolean read FAvisaouNao write SetAvisaouNao;
+    property Msg        : String read FMsg write SetMsg;
+    property Count      : Integer read FCount write SetCount;
+    property MsgAvisada : Boolean read FMsgAvisada write SetMsgAvisada;
+    property NaoFazNada : Boolean read FNaoFazNada write SetNaoFazNada;
+    property VerificaReg : Boolean read FVerificaReg write SetVerificaReg;
+
+    function fncTempoTrabalho(bCarregaObjetos : Boolean = True) : Boolean;
+  End;
   TProcesso = Class
   private
   public
@@ -304,13 +339,39 @@ Type
     procedure CentroCusto;
     procedure CarregaOperLog;
     procedure CarregaEmails;
+    procedure AtualizaQualidade;
 
     procedure ChatRead01(nFor : Integer);
     procedure ChatRead02(nFor : Integer);
     procedure ChatRead03(nFor : Integer);
     procedure ChatRead04(nFor : Integer);
 
-    function VerificaLogin : Boolean;
+    procedure ChatDesconecta01(nSalaChat : Integer);
+    procedure ChatDesconecta02(nSalaChat : Integer);
+    procedure ChatDesconecta03(nSalaChat : Integer);
+    procedure ChatDesconecta04(nSalaChat : Integer);
+
+    procedure ChatBlobGet01(nSalaChat : Integer);
+    procedure ChatBlobGet02(nSalaChat : Integer);
+
+    procedure ChatXFer01(nSalaChat : Integer);
+    procedure ChatXFer02(nSalaChat: Integer; sTag : String);
+
+    procedure ChatSup01(nSalaChat: Integer);
+
+    procedure ChatUpdateDash01;
+    procedure ChatUpdateDash02(nSalaChat: Integer);
+    procedure ChatUpdateDash03;
+
+    procedure UpdateStatus;
+
+    function FncVerificaLogin : Integer;
+    function FncVerificaFila : Boolean;
+    function FncVerificaClassUniv: Boolean;
+    function FncVerificaPausa: Boolean;
+
+    procedure ChatPesquisaHist;
+    procedure EnviaMSGChat(nSalaChat: Integer; sMensagem: String; sMsgTo: String);
 
     property sChatFilaIn : String  read FChatFilaIn write SetChatFilaIn;
     property sRespChatIn : String  read FsRespChatIn write SetsRespChatIn;
@@ -334,18 +395,18 @@ Type
     property vnumchatclassifica: Integer read Fvnumchatclassifica write Setvnumchatclassifica;
     property vnumchatclassificasub: Integer read Fvnumchatclassificasub write Setvnumchatclassificasub;
 
-    property ChatHistoricoEMail : String read FChatHistoricoEMail write SetChatHistoricoEMail;
-    property ChatHistoricoSala : String read FChatHistoricoSala write SetChatHistoricoSala;
-    property ChatHistoricoData : TDateTime read FChatHistoricoData write SetChatHistoricoData;
-
-    property ChatHistoricoNome : String read FChatHistoricoNome write SetChatHistoricoNome;
-    property ChatHistoricoTelefone : String read FChatHistoricoTelefone write SetChatHistoricoTelefone;
+    property ChatHistoricoEMail     : String read FChatHistoricoEMail write SetChatHistoricoEMail;
+    property ChatHistoricoSala      : String read FChatHistoricoSala write SetChatHistoricoSala;
+    property ChatHistoricoData      : TDateTime read FChatHistoricoData write SetChatHistoricoData;
+    property ChatHistoricoNome      : String read FChatHistoricoNome write SetChatHistoricoNome;
+    property ChatHistoricoTelefone  : String read FChatHistoricoTelefone write SetChatHistoricoTelefone;
     property ChatHistoricoProtocolo : String read FChatHistoricoProtocolo write SetChatHistoricoProtocolo;
 
   End;
   TAgente = Class
     SQL             : TSQL;
     Processo        : TProcesso;
+    EquipeHrTrab    : TEquipeTrabalha; //
   private
     function GetPathArqConf: string;
     function GetTotalAudio: Integer;
@@ -378,9 +439,12 @@ Type
     property WinIP           : string read GetWinIP;
     property VersaoExe       : string read GetVersaoExe;
 
-    Procedure InfLogConfPC;
+    procedure InfLogConfPC;
     function VerificaVersao : Boolean;
     function VerificaLogado : Boolean;
+    procedure AtivaFlashWindow(bAtiva: Boolean);
+
+    procedure RecebeBlobChat(nSalaChat : Integer);
   published
     constructor Create; overload;
     Destructor  Destroy; override;
@@ -415,6 +479,7 @@ Type
     procedure Setrecuperar_gravacao_act(const Value: char);
     procedure Setvcrm_atendimento_act(const Value: char);
     procedure Setxcrm_atendimento_act(const Value: char);
+
   public
     property id  : Integer read Fid write Setid;
     property active  : char read Factive write Setactive;
@@ -445,7 +510,8 @@ Type
     property cmd04: string read Getcmd04;
     property cmd05: string read Getcmd05;
   End;
-  TDevice=class(TPersistent) // Classe de Devices Agente.dll
+  TDevice=class(TPersistent)
+   // Classe de Devices Agente.dll
   private
     FIP   : WideString;
     FMask : WideString;
@@ -453,6 +519,10 @@ Type
     property IP  : WideString read FIP write FIP;
     property MASK: WideString read FMASK write FMASK;
   end;
+
+  procedure TmrMsgTimer(Sender: TObject);
+  procedure TmpEquipeHrTrabTimer(Sender: TObject);
+
 
   Const
     CnstNameArqConf = 'Config.INI';
@@ -479,6 +549,7 @@ Type
       UserFile                : array of TUserFila;
 
       qryChatRead: array[0..MAX_CHAT_ROOM] of TZQuery;
+      qryChatXFer: array[0..MAX_CHAT_ROOM] of TZQuery;
 
       //Arrays
       matrizpausa             : array of array of string;
@@ -506,9 +577,23 @@ Type
       matrizcentrocusto       : array of array of string;
       matrizdialednums        : array [0..9] of string;
       matrizemails            : array of array of string;
+      matrizchatsala          : array of array of string;
+
+      dtvChatTempoInativoAgenteIni : array[0..MAX_CHAT_ROOM] of TDateTime;
+      dtvChatTempoInativoClienteIni: array[0..MAX_CHAT_ROOM] of TDateTime;
+      dtvChatTempoPosAtendimento   : array[0..MAX_CHAT_ROOM] of TDateTime;
+
+
       nHasChatXFer            : Integer;
       nIdChatXFer             : Integer;
       sUpdateId               : String;
+      vChatClassificandoSala  : Integer;
+      vChatDesconexaoCliente  : Boolean;
+      sNumAge                 : String;
+      TmpEquipeHrTrab         : TTimer;
+      TmrMsg                  : TTimer;
+
+      procedure FormatTime(Hora : TTime; Var Hour, Min, Sec : Word );
 
 implementation
   uses untFuncoes, untdm, untPrincipal, untTranslate, RotinasGerais;
@@ -638,16 +723,99 @@ begin
 
 end;
 
+procedure TAgente.RecebeBlobChat(nSalaChat : Integer);
+var
+  sDirBlob: String;
+  nIdBlob: Integer;
+  sHoraBlob: String;
+  sMensagem: String;
+begin
+  Agente.SQL.ChatBlobGet01(nSalaChat);
+
+  if qryChatBlobGet[nSalaChat].RecordCount > 0 then
+  begin
+    try
+      sDirBlob  := TMyChat.sDirBlobReceived + matrizchatsala[nSalaChat, 1] + '\';
+      CreateDir(sDirBlob);
+      sDirBlob  := sDirBlob + qryChatBlobGet[nSalaChat].FieldByName('arquivo_nome').AsString;
+      nIdBlob   := qryChatBlobGet[nSalaChat].FieldByName('id').AsInteger;
+      sHoraBlob := qryChatBlobGet[nSalaChat].FieldByName('data').AsString;
+      TBlobField(qryChatBlobGet[nSalaChat].FieldByName('arquivo')).SaveToFile(sDirBlob);
+
+      Agente.SQL.ChatBlobGet02(nSalaChat);
+
+      sMensagem := APP_FRM_MAIN_CHAT_BLOB_RECEIVED_DIR[ID_LANG] + '"' + sDirBlob + '"';
+
+      memChatHistory[nSalaChat].SelStart := memChatHistory[nSalaChat].GetTextLen;
+      memChatHistory[nSalaChat].SelAttributes.Style := [fsBold];
+
+      AtivaFlashWindow(True);
+      if TMyChat.nChatAtivo <> nSalaChat then
+        imgChatCabecalho[nSalaChat].Visible := True;
+
+      memChatHistory[nSalaChat].SelAttributes.Color := clNavy;
+      memChatHistory[nSalaChat].SelText := #13#10 + '(' + sHoraBlob + ') ' + matrizchatsala[nSalaChat, 2] + APP_FRM_MAIN_CHAT_BLOB_RECEIVED[ID_LANG] + #13#10;
+      memChatHistory[nSalaChat].SelAttributes.Color := clNavy;
+
+      dtvChatTempoInativoClienteIni[nSalaChat] := Now;
+
+      memChatHistory[nSalaChat].SelAttributes.Style := [];
+      memChatHistory[nSalaChat].SelText := sMensagem + #13#10;
+
+      try
+         if frmPrincipal.chkChatRolagem.Checked then
+           SendMessage(memChatHistory[nSalaChat].Handle, WM_VSCROLL, SB_BOTTOM, 0);
+      except
+      end;
+    except
+    end;
+  end;
+  qryChatBlobGet[nSalaChat].Close;
+end;
+
+procedure TAgente.AtivaFlashWindow(bAtiva: Boolean);
+begin
+  if bAtiva = True then
+  begin
+    try
+      FlashWindow(Application.Handle, True);
+    Except end;
+    vFlashWindowActive := 2;
+  end else
+  begin
+    if vFlashWindowActive > 0 then
+    begin
+      try
+        if IsIconic(Application.Handle) then
+          Application.Restore;
+      except
+      end;
+
+      Try
+        SetForegroundWindow(Application.Handle);
+      Except
+        Try
+          BringWindowToTop(Application.Handle);
+        Except
+        End;
+      End;
+    end;
+    Dec(vFlashWindowActive);
+  end;
+end;
+
 constructor TAgente.Create;
 begin
   if Not Assigned(Self.SQL)      then Self.SQL      := TSQL.Create;
   if Not Assigned(Self.Processo) then Self.Processo := TProcesso.Create;
+  if Not Assigned(EquipeHrTrab)    then EquipeHrTrab := TEquipeTrabalha.Create;
 end;
 
 destructor TAgente.Destroy;
 begin
   if Assigned(Self.SQL)      then FreeAndNil(Self.SQL);
   if Assigned(Self.Processo) then FreeAndNil(Self.Processo);
+  if Assigned(EquipeHrTrab)    then FreeAndNil(EquipeHrTrab);
 
   inherited;
 end;
@@ -921,6 +1089,20 @@ begin
       Next;
     end;
 
+    Close;
+  end;
+
+end;
+
+procedure TSQL.AtualizaQualidade;
+begin
+
+  with datam.qryAtualizaQualidade do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+    BeforeOpen(TZQuery(datam.qryAtualizaQualidade));
+    ExecSQL;
     Close;
   end;
 
@@ -1301,13 +1483,14 @@ end;
 procedure TSQL.CarregaPausa;
 begin
 
+
   with datam.qr_carrega_pausa do
   begin
     if Active then Close;
     Open;
 
     Agente.SQL.sVNumPausa := RecordCount;
-    SetLength(matrizpausa,18,RecordCount);
+    SetLength(matrizpausa, 18, RecordCount);
 
     First;
     while not Eof do
@@ -1353,11 +1536,9 @@ begin
     First;
     while not Eof do
     begin
-
-      matrizurl[0, RecNo-1] := Fields[0].AsString;
-      matrizurl[1, RecNo-1] := Fields[1].AsString;
-      matrizurl[2, RecNo-1] := Fields[2].AsString;
-
+      matrizurl[0, Recno-1] := Fields[1].AsString;
+      matrizurl[1, Recno-1] := Fields[3].AsString;
+      matrizurl[2, Recno-1] := Fields[4].AsString;
 
       if Fields[1].AsString = 'True' then
       begin
@@ -1365,14 +1546,119 @@ begin
       end
       else
       begin
-        if (Recno-1 <> 0) and (Recno-1 <> 8) and (Recno-1 <> 10) then
-          TAction(albrowser.Actions[Recno-1]).Enabled := False;
+//        if (Recno-1 <> 0) and (Recno-1 <> 8) and (Recno-1 <> 10) then
+        TAction(albrowser.Actions[Recno-1]).Enabled := False;
 
         if Recno-1 = 0 then
           tabCliente.Tag := -1;
       end;
 
       Next;
+    end;
+
+    Close;
+  end;
+
+end;
+
+function TEquipeTrabalha.fncTempoTrabalho(bCarregaObjetos : Boolean = True) : Boolean;
+  var M : TMethod;
+      bHr_inicio  : Boolean;
+      bHr_Termino : Boolean;
+
+      tHrAtual    : TDateTime;
+      tHr_Entrada : TDateTime;
+      tHr_Saida   : TDateTime;
+
+      mHr         : Word;
+      mMm         : Word;
+      mSeg        : Word;
+begin
+  Result := True;
+
+  with datam.qryCarregaTimeEquipe do
+  begin
+    if Active then Close;
+    Active := True;
+
+    Agente.EquipeHrTrab.Count      := 0;
+    if Not IsEmpty then
+    begin
+      if ((FieldByName('Hr_Entrada').AsDateTime > 0)And(FieldByName('Hr_Saida').AsDateTime > 0)) Then
+      begin
+        Agente.EquipeHrTrab.Hr_Entrada := FieldByName('Hr_Entrada').AsDateTime;
+        Agente.EquipeHrTrab.Hr_Saida   := FieldByName('Hr_Saida').AsDateTime;
+        Agente.EquipeHrTrab.Hr_MSG     := FieldByName('Hr_Calc_MSG').AsDateTime;
+        Agente.EquipeHrTrab.AvisaouNao := FieldByName('AvisaouNao').AsBoolean;
+        Agente.EquipeHrTrab.Msg        := FieldByName('Msg').AsString;
+        Agente.EquipeHrTrab.Count      := Agente.EquipeHrTrab.Count+1;
+      end;
+    end;
+
+
+//    Agente.EquipeHrTrab.Hr_Entrada := StrToTime('14:11:00');
+//    Agente.EquipeHrTrab.Hr_MSG     := StrToTime('16:41:10');
+//    Agente.EquipeHrTrab.Hr_Saida   := StrToTime('16:42:15');
+//
+//    Agente.EquipeHrTrab.AvisaouNao := True;
+//    Agente.EquipeHrTrab.Msg        := 'Encerrará o processo em ....'+TimeToStr(Agente.EquipeHrTrab.Hr_Saida);
+//    Agente.EquipeHrTrab.Count      := 1;
+
+    if bCarregaObjetos then
+      if ((Agente.EquipeHrTrab.Hr_Entrada > 0)and(Agente.EquipeHrTrab.Hr_Saida > 0)) then
+      begin
+
+        tHrAtual := Now;
+
+        tHr_Entrada := 0;
+        tHr_Saida   := 0;
+
+        FormatTime(Agente.EquipeHrTrab.Hr_Entrada, mHr, mMm, mSeg);
+        tHr_Entrada := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+
+        FormatTime(Agente.EquipeHrTrab.Hr_Saida, mHr, mMm, mSeg);
+        tHr_Saida   := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+
+        bHr_inicio  := Boolean(IfThen(tHrAtual >= tHr_Entrada, 1, 0)); // Sera Verdadeiro se Hr Atual >= Hr de Entrada
+        bHr_Termino := Boolean(IfThen(tHrAtual <= tHr_Saida  , 1, 0));   // Sera Verdadeiro se Hr Atual <= Hr de Saida
+
+        if (bHr_inicio=false)xor(bHr_Termino=false) then
+        begin
+          Result := False;
+          Agente.EquipeHrTrab.NaoFazNada := True;
+
+          if Assigned(frmPrincipal.Vax) then frmPrincipal.Vax.UnInitialize();
+          MessageDlg('Somente é permitido no(s) horário(s) da(s) '+FormatDateTime('HH:MM:SS', tHr_Entrada)+' '+
+                     'até a(s) '+FormatDateTime('HH:MM:SS', tHr_Saida) ,mtError,[mbOk],0);
+          Application.Terminate;
+          Exit;
+        end;
+      end;
+
+
+
+    if Agente.EquipeHrTrab.Count > 0 then
+    begin
+
+      if bCarregaObjetos then
+      begin
+        TmpEquipeHrTrab := TTimer.Create(Nil);
+        TmrMsg          := TTimer.Create(Nil);
+
+        TmpEquipeHrTrab.Enabled := False;
+        TmrMsg.Enabled          := False;
+
+        M.Data      := nil;
+        M.Code      := @TmpEquipeHrTrabTimer;
+        TmpEquipeHrTrab.OnTimer := TNotifyEvent(M);
+
+        M.Data      := nil;
+        M.Code      := @TmrMsgTimer;
+        TmrMSG.OnTimer := TNotifyEvent(M);
+      end;
+
+      TmpEquipeHrTrab.Interval := 1000;
+      TmpEquipeHrTrab.Enabled  := True;
     end;
 
     Close;
@@ -1535,6 +1821,162 @@ begin
 
 end;
 
+procedure TSQL.ChatBlobGet01(nSalaChat: Integer);
+begin
+  with qryChatBlobGet[nSalaChat] do
+  begin
+    Close;
+    BeforeOpen                          := datam.qryChatBlobGet01BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'IdSala', ptInputOutput);
+    ParamByName('IdSala').AsString      := matrizchatsala[nSalaChat, 1];
+    Open;
+  end;
+end;
+
+procedure TSQL.ChatBlobGet02(nSalaChat: Integer);
+Var nIdBlob : Integer;
+begin
+  with qryChatBlobGet[nSalaChat] do
+  begin
+
+    Close;
+    BeforeOpen                          := datam.qryChatBlobGet02BeforeOpen;
+    nIdBlob                             := FieldByName('id').AsInteger;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'IdBlob', ptInputOutput);
+    ParamByName('IdBlob').AsString      := IntToStr(nIdBlob);
+
+    BeforeOpen(TZQuery(qryChatBlobGet[nSalaChat]));
+    ExecSQL;
+    Close;
+  end;
+end;
+
+procedure TSQL.ChatDesconecta01(nSalaChat: Integer);
+begin
+
+  with qryChatDesconecta[nSalaChat] do
+  begin
+    Close;
+    BeforeOpen                            := datam.qryChatDesconecta01BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'sSalaAct', ptInputOutput);
+    Params.CreateParam(ftString, 'sSala_ctr_id', ptInputOutput);
+
+    ParamByName('IdSala').AsString        := 'sala' + IntToStr(nSalaChat+1) + '_act' ;
+    ParamByName('sSala_ctr_id').AsString  := 'sala' + IntToStr(nSalaChat+1) + '_ctr_id' ;
+
+    BeforeOpen(TZQuery(qryChatDesconecta[nSalaChat]));
+    ExecSQL;
+  end;
+
+end;
+
+procedure TSQL.ChatDesconecta02(nSalaChat: Integer);
+begin
+
+  with frmPrincipal do
+  begin
+    with qryChatDesconecta[nSalaChat] do
+    begin
+      Close;
+      BeforeOpen                            := datam.qryChatDesconecta02BeforeOpen;
+      Params.Clear;
+      Open;
+
+      cboChatClassifica.Items.Clear;
+      cboChatClassifica.ItemIndex := -1;
+      cboChatClassifica.Text := APP_FRM_MAIN_CHAT_SELECT_CLASS[ID_LANG];
+
+      Agente.SQL.vnumchatclassifica := RecordCount;
+      SetLength(matrizchatclassifica, 2, RecordCount);
+
+      while not Eof do
+      begin
+        matrizchatclassifica[0, RecNo-1] := Fields[0].AsString;
+        matrizchatclassifica[1, RecNo-1] := Fields[1].AsString;
+
+        cboChatClassifica.Items.Add(matrizchatclassifica[1, RecNo-1]);
+        Next;
+      end; //while not qryChatDesconecta[nSalaChat].Eof do
+      Close;
+    end;
+  end;
+
+end;
+
+procedure TSQL.ChatDesconecta03(nSalaChat: Integer);
+begin
+
+  with frmPrincipal do
+  begin
+    with qryChatDesconecta[nSalaChat] do
+    begin
+      Close;
+      BeforeOpen                            := datam.qryChatDesconecta03BeforeOpen;
+      Params.Clear;
+      Open;
+
+      cboChatClassificaSub.Items.Clear;
+      cboChatClassificaSub.ItemIndex := -1;
+      cboChatClassificaSub.Text := APP_FRM_MAIN_CHAT_SELECT_SUB_CLASS[ID_LANG];
+
+      Agente.SQL.vnumchatclassificasub := RecordCount;
+      SetLength(matrizchatclassificasub, 3, RecordCount);
+
+      while not Eof do
+      begin
+        matrizchatclassificasub[0, RecNo-1] := Fields[0].AsString;
+        matrizchatclassificasub[1, RecNo-1] := Fields[1].AsString;
+        matrizchatclassificasub[2, RecNo-1] := Fields[2].AsString;
+
+        Next;
+      end; //while not qryChatDesconecta[nSalaChat].Eof do
+      Close;
+    end;
+  end;
+
+end;
+
+procedure TSQL.ChatDesconecta04(nSalaChat: Integer);
+begin
+  with qryChatDesconecta[nSalaChat] do
+  begin
+    Close;
+    BeforeOpen                            := datam.qryChatDesconecta04BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'Tipo', ptInputOutput);
+    Params.CreateParam(ftString, 'TempoPosAtendimento', ptInputOutput);
+    Params.CreateParam(ftString, 'ChatClasObs', ptInputOutput);
+    Params.CreateParam(ftString, 'IdChatSala', ptInputOutput);
+
+    ParamByName('Tipo').AsString                := IntToStr(vChatClassificandoTipo);
+    ParamByName('TempoPosAtendimento').AsString := TimeToStr(Now - dtvChatTempoPosAtendimento[nSalaChat]);
+    ParamByName('ChatClasObs').AsString         := frmPrincipal.memChatClassificaObs.Text;
+    ParamByName('IdChatSala').AsString          := matrizchatsala[nSalaChat, 1];
+
+    BeforeOpen(TZQuery(qryChatDesconecta[nSalaChat]));
+    ExecSQL;
+  end;
+
+end;
+
+procedure TSQL.ChatPesquisaHist;
+begin
+
+  with datam.qryChatPesquisaHist do
+  begin
+    if Active then Close;
+    Open;
+  end;
+
+end;
+
 procedure TSQL.ChatRead01(nFor : Integer);
 begin
 
@@ -1582,6 +2024,8 @@ begin
     Params.Clear;
     Params.CreateParam(ftString, 'IdSala', ptInputOutput);
     ParamByName('IdSala').AsString         := sUpdateId;
+
+    BeforeOpen(TZQuery(qryChatRead[nFor]));
     ExecSQL;
   end;
 
@@ -1600,6 +2044,132 @@ begin
     ParamByName('IdSala').AsString         := sUpdateId;
     Open;
   end;
+
+end;
+
+procedure TSQL.ChatSup01(nSalaChat: Integer);
+begin
+  with qryChatSup[nSalaChat] do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+    BeforeOpen                             := datam.qryChatSup01BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'SalaSupACT', ptInputOutput);
+    ParamByName('SalaSupACT').AsString   := 'sala' + IntToStr(nSalaChat+1) + '_sup_act';
+
+    BeforeOpen(TZQuery(qryChatSup[nSalaChat]));
+    ExecSQL;
+    Close;
+  end;
+end;
+
+procedure TSQL.ChatUpdateDash01;
+begin
+
+  with datam.qryChatUpdateDash do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+
+    BeforeOpen  := datam.qryChatUpdateDash01BeforeOpen;
+
+    BeforeOpen(TZQuery(datam.qryChatUpdateDash));
+    ExecSQL;
+    Close;
+  end;
+
+
+end;
+
+procedure TSQL.ChatUpdateDash02(nSalaChat: Integer);
+begin
+
+  with datam.qryChatUpdateDash do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+
+    BeforeOpen  := datam.qryChatUpdateDash02BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'sSala_ctr_id', ptInputOutput);
+    ParamByName('sSala_ctr_id').AsString    := matrizchatsala[nSalaChat, 1];
+
+    BeforeOpen(datam.qryChatUpdateDash);
+    ExecSQL;
+    Close;
+  end;
+end;
+
+procedure TSQL.ChatUpdateDash03;
+begin
+
+  with datam.qryChatUpdateDash do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+
+    BeforeOpen  := datam.qryChatUpdateDash03BeforeOpen;
+
+    BeforeOpen(datam.qryChatUpdateDash);
+    ExecSQL;
+    Close;
+  end;
+
+end;
+
+procedure TSQL.ChatXFer01(nSalaChat: Integer);
+begin
+  with qryChatXFer[nSalaChat] do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+    BeforeOpen                             := datam.qryChatXFer01BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'IdSala', ptInputOutput);
+    ParamByName('IdSala').AsString         := matrizchatsala[nSalaChat, 1];
+
+    BeforeOpen(qryChatXFer[nSalaChat]);
+    ExecSQL;
+    Close;
+  end;
+end;
+
+procedure TSQL.ChatXFer02(nSalaChat: Integer; sTag : String);
+begin
+
+  with qryChatXFer[nSalaChat] do
+  begin
+    // Verifica se esta ativo e fecha se sim
+    If Active then Close;
+    BeforeOpen                             := datam.qryChatXFer02BeforeOpen;
+
+    Params.Clear;
+    Params.CreateParam(ftString, 'ClienteNome', ptInputOutput);
+    Params.CreateParam(ftString, 'ClienteEmail', ptInputOutput);
+    Params.CreateParam(ftString, 'Telefone', ptInputOutput);
+    Params.CreateParam(ftString, 'WebURL', ptInputOutput);
+    Params.CreateParam(ftString, 'Tag', ptInputOutput);
+    Params.CreateParam(ftString, 'Transfered_id', ptInputOutput);
+    Params.CreateParam(ftString, 'EasyChatMotorConfID', ptInputOutput);
+
+
+    ParamByName('ClienteNome').AsString          := matrizchatsala[nSalaChat, 2];
+    ParamByName('ClienteEmail').AsString         := matrizchatsala[nSalaChat, 3];
+    ParamByName('Telefone').AsString             := matrizchatsala[nSalaChat, 4];
+    ParamByName('WebURL').AsString               := matrizchatsala[nSalaChat, 5];
+    ParamByName('Tag').AsString                  := sTag;
+    ParamByName('Transfered_id').AsString        := matrizchatsala[nSalaChat, 1];
+    ParamByName('EasyChatMotorConfID').AsString  := matrizchatsala[nSalaChat, 8];
+
+    BeforeOpen(qryChatXFer[nSalaChat]);
+    ExecSQL;
+    Close;
+  end;
+
 
 end;
 
@@ -1697,6 +2267,45 @@ begin
     end;
 
     Close;
+  end;
+
+end;
+
+procedure TSQL.EnviaMSGChat(nSalaChat: Integer; sMensagem, sMsgTo: String);
+begin
+
+  with qryChatWrite[nSalaChat] do
+  begin
+
+    if nSalaChat <> -1 then
+    begin
+      if (matrizchatsala[nSalaChat, 0] <> IntToStr(CHAT_STATUS_FREE)) and (matrizchatsala[nSalaChat, 0] <> IntToStr(CHAT_STATUS_ENDING)) then
+      begin
+
+        if Active then Close;
+
+        Params.Clear;
+        Params.CreateParam(ftString, 'Tipo', ptInputOutput);
+        Params.CreateParam(ftString, 'MsgAutoACT', ptInputOutput);
+        Params.CreateParam(ftString, 'Msg', ptInputOutput);
+        Params.CreateParam(ftString, 'ColaboradorConfId', ptInputOutput);
+        Params.CreateParam(ftString, 'ContatosCtrlId', ptInputOutput);
+        Params.CreateParam(ftString, 'Waittime_Ag', ptInputOutput);
+        Params.CreateParam(ftString, 'WaitTime_Cl', ptInputOutput);
+
+        ParamByName('Tipo').AsString              := sMsgTo;
+        ParamByName('MsgAutoACT').AsString        := 'N';
+        ParamByName('Msg').AsString               := sMensagem;
+        ParamByName('ColaboradorConfId').AsString := TMyInfoLogin.sIDUsuario;
+        ParamByName('ContatosCtrlId').AsString    := matrizchatsala[nSalaChat, 1];
+        ParamByName('Waittime_Ag').AsString       := TimeToStr(Now - dtvChatTempoInativoAgenteIni[nSalaChat]);
+        ParamByName('WaitTime_Cl').AsString       := TimeToStr(Now - dtvChatTempoInativoClienteIni[nSalaChat]);
+
+        BeforeOpen(qryChatWrite[nSalaChat]);
+        ExecSQL;
+        Close;
+      end;
+    end;
   end;
 
 end;
@@ -1837,16 +2446,124 @@ begin
   Fvnumxfervirtual := Value;
 end;
 
-function TSQL.VerificaLogin: Boolean;
+procedure TSQL.UpdateStatus;
+begin
+
+  with datam.qryUpdateStatus do
+  begin
+    if Active then Close;
+
+    if( (Copy(sNumAge, 1, 5) = 'AGE02')OR
+        (Copy(sNumAge, 1, 5) = 'AGE04')) then
+      frmPrincipal.tmrSendAGE0X.Enabled := False;
+
+    if( (Copy(sNumAge, 1, 5) = 'AGE03')OR
+        (Copy(sNumAge, 1, 5) = 'AGE05')) then
+      frmPrincipal.tmrSendAGE0X.Enabled := True;
+
+    BeforeOpen(TZQuery(datam.qryUpdateStatus));
+    ExecSQL;
+
+    Close;
+  end;
+
+end;
+
+function TSQL.FncVerificaFila: Boolean;
 begin
 
   Result := False;
+  with datam.QryOpen do
+  begin
+    BeforeOpen                       := datam.OpenSQLVerFilaBeforeOpen;
+
+    if Active then Close;
+    Open;
+
+    if Not IsEmpty then
+      Result := Boolean(IfThen(FieldByName('Existe').AsInteger > 0, 1, 0 ));
+
+    Close;
+  end;
+
+end;
+
+function TSQL.FncVerificaClassUniv: Boolean;
+begin
+
+  Result := False;
+  with datam.QryOpen do
+  begin
+    BeforeOpen                       := datam.OpenSQLVerClassUnivBeforeOpen;
+
+    if Active then Close;
+    Open;
+
+    if Not IsEmpty then
+      Result := Boolean(IfThen(FieldByName('Existe').AsInteger > 0, 1, 0 ));
+
+    Close;
+  end;
+
+end;
+
+function TSQL.FncVerificaPausa: Boolean;
+begin
+
+  Result := False;
+  with datam.QryOpen do
+  begin
+    BeforeOpen                       := datam.OpenSQLVerPausaBeforeOpen;
+
+    if Active then Close;
+    Open;
+
+    if Not IsEmpty then
+      Result := Boolean(IfThen(FieldByName('Existe').AsInteger > 0, 1, 0 ));
+
+    Close;
+  end;
+
+end;
+
+
+
+function TSQL.FncVerificaLogin: Integer;
+begin
+
+  Result := 0;  // Verdadeiro
   with datam.qryLogin do
   begin
     if Active then Close;
     Open;
 
-    Result := Boolean(IfThen(datam.qryLogin.RecordCount > 0, 1, 0 ));
+// Casos de Usu ('O' significa que é verdadeiro)
+
+    // 1 : Usuario não encontrado :: APP_MB_ERR_INVALID_USER
+    if Result = 0 then
+      Result := IfThen(datam.qryLogin.RecordCount <= 0, 1, 0 ); // Se não encontrou nenhum usuario
+    if Result = 0 then
+      Result := IfThen(datam.qryLogin.FieldByName('Usuario_act').AsString <> 'Y', 1, 0); // Se não encontrou usuario
+
+    // 2 : UsuarioLogin Invalido :: APP_MB_ERR_INVALID_LOGIN
+    if Result = 0 then
+      Result := IfThen(Length(datam.qryLogin.FieldByName('Senha').AsString)<=0, 2, 0); // Se a senha estiver em branco
+    if Result = 0 then
+      Result := IfThen(TMyInfoLogin.sLoginSenha <> datam.qryLogin.FieldByName('Senha').AsString, 2, 0); // Se as senhas não batem
+
+    // 3 : Colaborador :: APP_MB_ERR_INVALID_DEVELOPER
+    if Result = 0 then
+      Result := IfThen(datam.qryLogin.FieldByName('Colaborador_act').AsString <> 'Y', 3, 0); // Se o colaborador não estiver configurado
+
+    // 4 : Operação :: APP_MB_ERR_INVALID_OPERATION
+    if Result = 0 then
+      Result := IfThen(datam.qryLogin.FieldByName('Operacao_act').AsString <> 'Y', 4, 0); //  // Se a operação não estiver configurado
+
+
+    // 5 : Usuario Associado Empresa :: APP_MB_ERR_INVALID_COMPANY
+    if Result = 0 then
+      Result := IfThen(datam.qryLogin.FieldByName('UserEmp_act').AsString <> 'Y', 5, 0); // Se o usuario não estiver associado
+
   end;
 
 end;
@@ -1889,26 +2606,36 @@ begin
     if Active then Close;
     Open;
 
-    if RecordCount > 0 then
+    if not IsEmpty then
     begin
-      if Fields[1].AsString <> Agente.VersaoExe then
+      if RecordCount > 0 then
       begin
-        case datam.qrySistemaVersao.Fields[2].AsInteger of
-          0:
-          begin
-            if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
-              application.MessageBox(PChar(APP_MB_WAR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
-          end;
-          1:
-          begin
-            datam.qrySistemaVersao.Active := False;
-            if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
-              application.MessageBox(PChar(APP_MB_ERR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
-            Result := False;
-            Exit;
+        if Fields[1].AsString <> Agente.VersaoExe then
+        begin
+          case datam.qrySistemaVersao.Fields[2].AsInteger of
+            0:
+            begin
+              if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
+                application.MessageBox(PChar(APP_MB_WAR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+            end;
+            1:
+            begin
+              datam.qrySistemaVersao.Active := False;
+              if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
+                application.MessageBox(PChar(APP_MB_ERR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+              Result := False;
+              Exit;
+            end;
           end;
         end;
       end;
+    end else
+    begin
+      datam.qrySistemaVersao.Active := False;
+      if TMyMachineInfo.sComputer_Name <> 'DSD-W7-MAC' then
+        application.MessageBox(PChar(APP_MB_ERR_INVALID_VERSION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+      Result := False;
+      Exit;
     end;
     datam.qrySistemaVersao.Active := False;
     Result := True;
@@ -2105,6 +2832,187 @@ begin
     except end;
   end;
 end;
+
+{ TEquipeTrabalha }
+
+procedure TEquipeTrabalha.SetAvisaouNao(const Value: Boolean);
+begin
+  FAvisaouNao := Value;
+end;
+
+procedure TEquipeTrabalha.SetCount(const Value: Integer);
+begin
+  FCount := Value;
+end;
+
+procedure TEquipeTrabalha.SetHr_Entrada(const Value: TTime);
+begin
+  FHr_Entrada := Value;
+end;
+
+procedure TEquipeTrabalha.SetHr_MSG(const Value: TTime);
+begin
+  FHr_MSG := Value;
+end;
+
+procedure TEquipeTrabalha.SetHr_Saida(const Value: TTime);
+begin
+  FHr_Saida := Value;
+end;
+
+procedure TEquipeTrabalha.SetMsg(const Value: String);
+begin
+  FMsg := Value;
+end;
+
+procedure TEquipeTrabalha.SetMsgAvisada(const Value: Boolean);
+begin
+  FMsgAvisada := Value;
+end;
+
+
+procedure TEquipeTrabalha.SetNaoFazNada(const Value: Boolean);
+begin
+  FNaoFazNada := Value;
+end;
+
+procedure TEquipeTrabalha.SetVerificaReg(const Value: Boolean);
+begin
+  FVerificaReg := Value;
+end;
+
+procedure TmpEquipeHrTrabTimer(Sender: TObject);
+  Var bProcessando : Boolean;
+       tHrAtual    : TDateTime;
+       tHr_Entrada : TDateTime;
+       tHr_Saida   : TDateTime;
+       tHr_Msg     : TDateTime;
+       bHr_inicio  : Boolean;
+       bHr_Termino : Boolean;
+       bHr_MSG     : Boolean;
+       mHr         : Word;
+       mMm         : Word;
+       mSeg        : Word;
+
+
+  {Sub}procedure prcAlimentaVariaveis;
+  begin
+    with frmPrincipal do
+    begin
+        tHrAtual := Now;
+
+      tHr_Entrada := 0;
+      tHr_Saida   := 0;
+
+      FormatTime(Agente.EquipeHrTrab.Hr_Entrada, mHr, mMm, mSeg);
+      tHr_Entrada := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+
+      FormatTime(Agente.EquipeHrTrab.Hr_Saida, mHr, mMm, mSeg);
+      tHr_Saida   := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+
+      FormatTime(Agente.EquipeHrTrab.Hr_MSG, mHr, mMm, mSeg);
+      tHr_Msg     := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+
+      // "0" False/"1" True
+      bHr_inicio  := Boolean(IfThen(tHrAtual >= tHr_Entrada, 1, 0)); // Sera Verdadeiro se Hr Atual >= Hr de Entrada
+      bHr_Termino := Boolean(IfThen(tHrAtual <= tHr_Saida  , 1, 0));   // Sera Verdadeiro se Hr Atual <= Hr de Saida
+      bHr_MSG     := False;
+
+      if Length(Trim(Agente.EquipeHrTrab.Msg)) > 0 then  // Realmente existe alguma MSG
+        if tHrAtual >= tHr_Msg then // Temos que avisar ao usuario ? Se a Hora Atual >= Hr da Mensagem
+          if Agente.EquipeHrTrab.AvisaouNao then // foi configurado para avisar ao usuario ?
+            if Not Agente.EquipeHrTrab.MsgAvisada then // Se ja foi avisada não avisar mais
+              bHr_MSG := True;
+    end;
+  end;
+
+begin
+  TmpEquipeHrTrab.Enabled := False;
+  Agente.EquipeHrTrab.NaoFazNada := False;
+
+  // Verificar novamente se as informações não foram mudadas
+    // Se as Hrs De/Ate não estão no prazo ou
+    // Se as Hr da mensagem esta no prazo e se ainda não foi apresentada
+  prcAlimentaVariaveis;
+  // Verificar no ultimo minuto se os registros não foram mudados e se a Hr Atual realmente
+  // não esta entre a  Hr de Inicio ea Hr de Saida.
+  if (bHr_inicio=false)xor(bHr_Termino=false) then // Se a Hr Atual entre as Hr de Inicio e Hr de Saida não estiver entre elas
+    if not Agente.EquipeHrTrab.VerificaReg then // Nesse momento se true, ja foi "re-verificado" o registro
+    begin
+      Agente.EquipeHrTrab.fncTempoTrabalho(False);
+      Agente.EquipeHrTrab.VerificaReg := True;
+      Agente.EquipeHrTrab.MsgAvisada  := False; // Para poder avisar novamente se configurado
+      prcAlimentaVariaveis;
+    end;
+
+  // Se estiver fora dos intervalos de Entrada e Saida, fechar a aplicação
+  if (bHr_inicio=false)xor(bHr_Termino=false) then
+  begin
+    Agente.EquipeHrTrab.NaoFazNada := True;
+
+    frmPrincipal.tbrNavegacao.Enabled      := False;
+    frmPrincipal.pgcBrowser.Visible        := False;
+
+    if not frmPrincipal.tmrDuracao.enabled then
+    begin
+      if Assigned(frmPrincipal.Vax) then frmPrincipal.Vax.UnInitialize()
+    end
+    else
+    begin
+      frmPrincipal.lblDescTempoPausa.Caption := 'Seu tempo de atendimento foi esgotado!'+#13+'Após o atendimento o agente será fechado';
+      frmPrincipal.lblDescTempoPausa.Color   := clYellow;
+      frmPrincipal.pnrestricao.Color         := clYellow;
+      frmPrincipal.pnrestricao.visible       := true;
+      frmPrincipal.pnstatus.Visible          := false;
+    end;
+
+    MessageDlg('Somente é permitido no(s) horário(s) da(s) '+FormatDateTime('HH:MM:SS', tHr_Entrada)+' '+
+               'até a(s) '+FormatDateTime('HH:MM:SS', tHr_Saida) ,mtError,[mbOk],0);
+
+    if not frmPrincipal.tmrDuracao.enabled then
+    begin
+      frmPrincipal.actlogoffExecute(Sender);
+      Application.Terminate;
+    end;
+
+    Exit;
+  end else
+  if bHr_MSG then // Mensagem de antecipação, avisando o usuario sobre o tempo que irá fechar o sistema
+  begin
+
+    TmrMsg.Interval := 10000; // Tempo que a msg ficará na tela -> 5 Segs
+    TmrMsg.Enabled  := True;
+    if Agente.EquipeHrTrab.AvisaouNao then // foi configurado para avisar ao usuario ?
+      MessageBox(0, PChar(Agente.EquipeHrTrab.Msg), Pchar('Atenção'), 8224);
+
+//    MmSg :=Agente.EquipeHrTrab.Msg;
+//    TmrMsg.Enabled := True;
+    Agente.EquipeHrTrab.MsgAvisada := True; // Informando que a MSG ja foi comunicada ao usuario
+  end;
+
+  if not Agente.EquipeHrTrab.NaoFazNada then
+  begin
+    TmpEquipeHrTrab.Interval := 5000; // em 5 e 5 Segundos se olha este processo
+    // Retornando o processo do Timer
+    TmpEquipeHrTrab.Enabled := True;
+  end;
+end;
+
+procedure TmrMsgTimer(Sender: TObject);
+begin
+ keybd_event(VK_RETURN,0,0,0);
+ TmrMsg.Enabled := False;
+end;
+
+procedure FormatTime(Hora : TTime; Var Hour, Min, Sec : Word );
+begin
+  Hour := StrToInt(Copy(TimeToStr(Hora), 1,2));
+  Min  := StrToInt(Copy(TimeToStr(Hora), 4,2));
+  Sec  := StrToInt(Copy(TimeToStr(Hora), 7,2));
+end;
+
+
+
 
 end.
 

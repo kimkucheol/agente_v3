@@ -3,9 +3,9 @@ unit untdm;
 interface
 
 uses
-  System.SysUtils, System.Classes, Data.DB, ZAbstractRODataset,
+  System.SysUtils, System.Classes, Data.DB, ZAbstractRODataset, Dialogs,
   ZAbstractDataset, ZDataset, ZAbstractConnection, ZConnection, ZStoredProcedure,
-  IWBaseComponent, IWBaseHTMLComponent, IWBaseHTML40Component, IWExtCtrls;
+  IWBaseComponent, IWBaseHTMLComponent, IWBaseHTML40Component, IWExtCtrls, StrUtils;
 
 type
   Tdatam = class(TDataModule)
@@ -69,6 +69,15 @@ type
     qry_carrega_class_fila_sub: TZQuery;
     qryFaqRespConf: TZQuery;
     qryConferenciaTipoNExterno: TZQuery;
+    qryCarregaTimeEquipe: TZQuery;
+    ZConnection1: TZConnection;
+    qryCarregaTimeEquipeHr_Calc_MSG: TTimeField;
+    qryCarregaTimeEquipeHr_Saida: TTimeField;
+    qryCarregaTimeEquipeHr_MSG: TTimeField;
+    qryCarregaTimeEquipeHr_Entrada: TTimeField;
+    qryCarregaTimeEquipeAvisaouNao: TBooleanField;
+    qryCarregaTimeEquipeMsg: TMemoField;
+    QryOpen: TZQuery;
     procedure qryUserFilaBeforeOpen(DataSet: TDataSet);
     procedure qryUserFilaAfterOpen(DataSet: TDataSet);
     procedure qryCarregaXFerFilaBeforeOpen(DataSet: TDataSet);
@@ -83,7 +92,6 @@ type
     procedure qry_carrega_class_fila_subBeforeOpen(DataSet: TDataSet);
     procedure qryCarregaLojaBeforeOpen(DataSet: TDataSet);
     procedure qr_carrega_xfer_uraBeforeOpen(DataSet: TDataSet);
-    procedure qryCarregaXFerRamalBeforeOpen(DataSet: TDataSet);
     procedure qr_carrega_xfer_pesquisaBeforeOpen(DataSet: TDataSet);
     procedure qr_carrega_xfer_virtualBeforeOpen(DataSet: TDataSet);
     procedure qr_carrega_xfer_consultaBeforeOpen(DataSet: TDataSet);
@@ -107,9 +115,40 @@ type
     procedure qryChatRead02BeforeOpen(DataSet: TDataSet);
     procedure qryChatRead03BeforeOpen(DataSet: TDataSet);
     procedure qryChatRead04BeforeOpen(DataSet: TDataSet);
+
+    procedure qryChatDesconecta01BeforeOpen(DataSet: TDataSet);
+    procedure qryChatDesconecta02BeforeOpen(DataSet: TDataSet);
+    procedure qryChatDesconecta03BeforeOpen(DataSet: TDataSet);
+    procedure qryChatDesconecta04BeforeOpen(DataSet: TDataSet);
+
+    procedure qryChatXFer01BeforeOpen(DataSet: TDataSet);
+    procedure qryChatXFer02BeforeOpen(DataSet: TDataSet);
+
+    procedure qryChatSup01BeforeOpen(DataSet: TDataSet);
+
+    procedure qryChatUpdateDash01BeforeOpen(DataSet: TDataSet);
+    procedure qryChatUpdateDash02BeforeOpen(DataSet: TDataSet);
+    procedure qryChatUpdateDash03BeforeOpen(DataSet: TDataSet);
+
+    procedure qryChatWriteBeforeOpen(DataSet: TDataSet);
     procedure qrySistemaVersaoBeforeOpen(DataSet: TDataSet);
     procedure qrySistemaLogadoBeforeOpen(DataSet: TDataSet);
     procedure qryLoginBeforeOpen(DataSet: TDataSet);
+    procedure qryChatPesquisaHistMsgBeforeOpen(DataSet: TDataSet);
+    procedure qryChatBlobGet01BeforeOpen(DataSet: TDataSet);
+    procedure qryChatBlobGet02BeforeOpen(DataSet: TDataSet);
+    procedure qryAtualizaQualidadeBeforeOpen(DataSet: TDataSet);
+    procedure qryUpdateStatusBeforeOpen(DataSet: TDataSet);
+    procedure qryCarregaXFerRamalBeforeOpen(DataSet: TDataSet);
+    procedure qryCarregaTimeEquipeBeforeOpen(DataSet: TDataSet);
+    procedure qryCarregaTimeEquipeCalcFields(DataSet: TDataSet);
+
+    // QryOpen :: Generics
+    procedure OpenSQLVerFilaBeforeOpen(DataSet: TDataSet);
+    procedure OpenSQLVerClassUnivBeforeOpen(DataSet: TDataSet);
+    procedure OpenSQLVerPausaBeforeOpen(DataSet: TDataSet);
+
+
 
   private
     { Private declarations }
@@ -126,6 +165,62 @@ implementation
 {%CLASSGROUP 'System.Classes.TPersistent'}
 
 {$R *.dfm}
+
+procedure Tdatam.qryCarregaTimeEquipeBeforeOpen(DataSet: TDataSet);
+begin
+  //qryAtualizaQualidade.
+  with TZQuery(DataSet) do
+  begin
+   SQL.Clear;
+
+   SQL.Add('SELECT IF(c.horario_entrada < w.horario_entrada, c.horario_entrada, w.horario_entrada)                       AS Hr_Entrada,');
+   SQL.Add('       IF(c.horario_saida   > w.horario_saida, c.horario_saida, w.horario_saida)                             AS Hr_Saida,  ');
+   SQL.Add('       w.avisar_saida_act                                                                                    AS AvisaouNao,');
+   SQL.Add('       w.avisar_saida_tmp                                                                                    AS Hr_MSG,    ');
+   SQL.Add('       w.avisar_saida_msg                                                                                    AS Msg        ');
+   SQL.Add('FROM easy_work_colaborador_conf c                                                                                          ');
+   SQL.Add('     LEFT JOIN easy_work_equipe_worktime_conf w ON c.easy_work_equipe_conf_id = w.easy_work_equipe_conf_id                 ');
+   SQL.Add('WHERE TRUE                                                                                                                 ');
+   SQL.Add(' and w.cdata = '+IntToStr(DayOfWeek(dbDate)-1)                                                                                );
+   SQL.Add(' and c.easy_work_equipe_conf_id = ' +IntToStr(TMyInfoLogin.iEasy_work_equipe_conf_id)                                       );
+   SQL.Add(' and c.id = ' + TMyInfoLogin.sIDUsuario                                                                                     );
+
+   // Se a pasta Exitir gravar o arquivo SQL nesta pasta
+   if DirectoryExists(Agente.PathArqTxtSQL) then
+     SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+
+
+end;
+
+procedure Tdatam.qryCarregaTimeEquipeCalcFields(DataSet: TDataSet);
+begin
+
+  TZQuery(DataSet).FieldByName('Hr_Calc_MSG').AsDateTime := TZQuery(DataSet).FieldByName('Hr_Saida').AsDateTime-TZQuery(DataSet).FieldByName('Hr_MSG').AsDateTime;
+//  ShowMessage('ENTRADA: '+FormatDateTime('DD.MM.YYYY "As" HH:MM:SS', TZQuery(DataSet).FieldByName('Hr_Entrada').AsDateTime)+#13+
+//              'SAIDA: '+FormatDateTime('DD.MM.YYYY "As" HH:MM:SS', TZQuery(DataSet).FieldByName('Hr_Saida').AsDateTime)+#13+
+//              'MSG: '+FormatDateTime('DD.MM.YYYY "As" HH:MM:SS', TZQuery(DataSet).FieldByName('Hr_MSG').AsDateTime)+#13+
+//              'CALC: '+FormatDateTime('DD.MM.YYYY "As" HH:MM:SS', TZQuery(DataSet).FieldByName('Hr_Calc_MSG').AsDateTime));
+end;
+
+procedure Tdatam.qryAtualizaQualidadeBeforeOpen(DataSet: TDataSet);
+begin
+  //qryAtualizaQualidade.
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+    SQL.Add('update easy_work_colaborador_conf set ');
+    SQL.Add('qualidade_plogin_act = ' + QuotedStr('N') + ', ');
+    SQL.Add('qualidade_plogin = now() ');
+    SQL.Add('where id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    // Se a pasta Exitir gravar o arquivo SQL nesta pasta
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
 
 procedure Tdatam.qryCarregaCoachingBeforeOpen(DataSet: TDataSet);
 begin
@@ -307,31 +402,33 @@ end;
 
 procedure Tdatam.qryCarregaXFerRamalBeforeOpen(DataSet: TDataSet);
 begin
-  // qryCarregaXFerRamal.
+
   with TZQuery(DataSet) do
   begin
 
     SQL.Clear;
-    SQL.Add('select g.easy_work_colaborador_conf_id as id,                                        ');
-    SQL.Add('       u.descricao                                                                   ');
-    SQL.Add('from easy_work_colaborador_has_grupo g                                               ');
-    SQL.Add('left join easy_work_colaborador_conf u on g.easy_work_colaborador_conf_id = u.id     ');
-    SQL.Add('where g.active = ' + QuotedStr('Y')                                                   );
-    SQL.Add('and g.easy_call_grupo_conf_id in ( select g2.easy_call_grupo_conf_id                 ');
-    SQL.Add('                                     from easy_work_colaborador_has_grupo g2         ');
-    SQL.Add('                                     where true                                      ');
-    SQL.Add('                                     and g2.active = ' + QuotedStr('Y')               );
-    SQL.Add('                                     and g2.easy_work_colaborador_conf_id =          ');
-    SQL.Add(                                      QuotedStr(TMyInfoLogin.sIDUsuario)+')           ');
-    SQL.Add('and g.easy_work_colaborador_conf_id not in (' + QuotedStr(TMyInfoLogin.sIDUsuario)+')');
-    SQL.Add('group by g.easy_work_colaborador_conf_id                                             ');
-    SQL.Add('order by u.descricao asc                                                             ');
-
-    // Se a pasta Exitir gravar o arquivo SQL nesta pasta
+    SQL.Add('select '                                                                               );
+    SQL.Add('g.easy_work_colaborador_conf_id as id, '                                               );
+    SQL.Add('u.descricao '                                                                          );
+    SQL.Add('from easy_work_colaborador_has_grupo g '                                               );
+    SQL.Add('     left join easy_work_colaborador_conf u on g.easy_work_colaborador_conf_id = u.id ');
+    SQL.Add('where g.active = ' + QuotedStr('Y')                                                    );
+    SQL.Add('  and g.easy_call_grupo_conf_id in ( '                                                 );
+    SQL.Add('                                     select g2.easy_call_grupo_conf_id '               );
+    SQL.Add('                                     from easy_work_colaborador_has_grupo g2 '         );
+    SQL.Add('                                     where true '                                      );
+    SQL.Add('                                       and g2.active = ' + QuotedStr('Y')              );
+    SQL.Add('                                       and g2.easy_work_colaborador_conf_id = '+
+                                                                  QuotedStr(TMyInfoLogin.sIDUsuario));
+    SQL.Add('                                   ) '                                                 );
+    SQL.Add('and g.easy_work_colaborador_conf_id not in (' + QuotedStr(TMyInfoLogin.sIDUsuario)     );
+    SQL.Add(') group by g.easy_work_colaborador_conf_id '                                           );
+    SQL.Add('order by u.descricao asc '                                                             );
+      // Se a pasta Exitir gravar o arquivo SQL nesta pasta
     if DirectoryExists(Agente.PathArqTxtSQL) then
       SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
-
   end;
+
 end;
 
 procedure Tdatam.qryCentroCustoBeforeOpen(DataSet: TDataSet);
@@ -355,6 +452,50 @@ begin
       SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
 
   end;
+
+end;
+
+procedure Tdatam.qryChatBlobGet01BeforeOpen(DataSet: TDataSet);
+begin
+
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Clear;
+
+    SQL.Add('select id,                                                            ');
+    SQL.Add('       fname,                                                         ');
+    SQL.Add('       descricao,                                                     ');
+    SQL.Add('       date_format(now(), "%H:%i:%s %p") as data                      ');
+    SQL.Add('from easy_core_contatos_msg_arq_hist                                  ');
+    SQL.Add('where easy_core_contatos_ctrl_id = :IdSala'                            );
+    SQL.Add('  and active = '+QuotedStr('Y')                                        );
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+
+
+end;
+
+procedure Tdatam.qryChatBlobGet02BeforeOpen(DataSet: TDataSet);
+begin
+
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Clear;
+
+    SQL.Add('update easy_core_contatos_msg_arq_hist set ');
+    SQL.Add('active = ' + QuotedStr('N')                 );
+    SQL.Add('where id = :IdBlob'                         );
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+
 
 end;
 
@@ -544,7 +685,171 @@ begin
 
 end;
 
+procedure Tdatam.qryChatDesconecta01BeforeOpen(DataSet: TDataSet);
+begin
+  //qryChatDesconecta[nSalaChat]
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Clear;
+    SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
+    SQL.Add('   set tipo = :sCHAT, ');
+    SQL.Add('       :sSalaAct     = ' + QuotedStr('N') + ', ');
+    SQL.Add('       :sSala_ctr_id = ' + QuotedStr('') + ' ');
+    SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatDesconecta02BeforeOpen(DataSet: TDataSet);
+begin
+
+  //qryChatDesconecta[nSalaChat]
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Add('select c.id as class_id,                                                    ');
+    SQL.Add('       c.descricao                                                          ');
+    SQL.Add('from easy_pabx_serv_fila_universal_classificacao_conf c                     ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_has_classificacao a on         ');
+    SQL.Add('               a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_ctr f on                       ');
+    SQL.Add('               a.easy_pabx_serv_fila_universal_ctr_id = f.id                ');
+    SQL.Add('where a.active = ' + QuotedStr('Y')                                          );
+    SQL.Add('  and c.active = ' + QuotedStr('Y')                                          );
+    SQL.Add('  and a.disp_chat = ' + QuotedStr('Y')                                       );
+    SQL.Add('  and c.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa              );
+    SQL.Add('group by c.id                                                               ');
+    SQL.Add('order by c.descricao asc                                                    ');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+
+
+end;
+
+procedure Tdatam.qryChatDesconecta03BeforeOpen(DataSet: TDataSet);
+begin
+
+  //qryChatDesconecta[nSalaChat]
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Add('select s.id as subclass_id,                                                     ');
+    SQL.Add('       s.descricao,                                                             ');
+    SQL.Add('       a.easy_pabx_serv_fila_universal_classificacao_conf_id                    ');
+    SQL.Add('from easy_pabx_serv_fila_universal_classificacao_sub_conf s                     ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_classificacao_has_sub a on         ');
+    SQL.Add('               a.easy_pabx_serv_fila_universal_classificacao_sub_conf_id = s.id ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_classificacao_conf c on            ');
+    SQL.Add('               a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id     ');
+    SQL.Add('where s.active = ' + QuotedStr('Y')                                              );
+    SQL.Add('  and a.active = ' + QuotedStr('Y')                                              );
+    SQL.Add('  and s.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa                  );
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatDesconecta04BeforeOpen(DataSet: TDataSet);
+begin
+  //qryChatDesconecta[nSalaChat]
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Clear;
+    Active := False;
+    SQL.Clear;
+    SQL.Add('update easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist set ');
+    if Not vChatDesconexaoCliente then
+    begin
+      SQL.Add('desconexao = ' + QuotedStr('A') + ', ');
+      SQL.Add('desconexao_mot = :Tipo, ');
+      SQL.Add('duracao = timediff(now(), datahora), ');
+      //SQL.Add('desconexao_dt = now(), ');
+    end;
+    SQL.Add('duracao_pos = :TempoPosAtendimento,');
+    SQL.Add('observacao = :ChatClasObs, ');
+    SQL.Add('classificacao_auto_act = ' + QuotedStr('Y') + ' ');
+    SQL.Add('where id = :IdChatSala');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
 procedure Tdatam.qryChatPesquisaHistBeforeOpen(DataSet: TDataSet);
+Var  sCmpPesq        : String;
+     sTemp           : String;
+
+begin
+
+  sCmpPesq := '';
+  sTemp           := '';
+
+  //qryChatPesquisaHistMsg
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+    SQL.Add('select h.id as Protocolo,                                                                                 ');
+    SQL.Add('       date_format(h.datahora, "%d/%m/%Y") as Data,                                                       ');
+    SQL.Add('       date_format(h.datahora, "%H:%i:%s %p") as Hora,                                                    ');
+    SQL.Add('       h.cliente_nome as Nome,                                                                            ');
+    SQL.Add('       h.telefone as Telefone,                                                                            ');
+    SQL.Add('       h.cliente_mail as "E-Mail",                                                                        ');
+    SQL.Add('       c.descricao as Sala                                                                                ');
+    SQL.Add('from easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist h                                          ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_ctr f on h.easy_pabx_serv_fila_universal_ctr_id = f.id       ');
+    SQL.Add('     left join easy_pabx_serv_fila_universal_chat_conf c on c.easy_pabx_serv_fila_universal_ctr_id = f.id ');
+    SQL.Add('where true                                                                                                ');
+//    SQL.Add('where h.easy_call_empresa_conf_id = ' + QuotedStr(TMyInfoLogin.sIDEmpresa) + ' and ');
+
+    if Trim(Agente.SQL.ChatHistoricoNome) <> '' then
+      sCmpPesq := 'h.cliente_nome like ' + QuotedStr('%' + Agente.SQL.ChatHistoricoNome + '%');
+    if Trim(Agente.SQL.ChatHistoricoTelefone) <> '' then
+    begin
+      sTemp    := 'h.telefone like ' + QuotedStr('%' + Agente.SQL.ChatHistoricoTelefone + '%');
+      sCmpPesq := IfThen( sCmpPesq = '', sTemp, sCmpPesq + ' and ' + sTemp);
+    end;
+    if Trim(Agente.SQL.ChatHistoricoProtocolo) <> '' then
+    begin
+      sTemp    := 'h.id = ' + Agente.SQL.ChatHistoricoProtocolo + ' ';
+      sCmpPesq := IfThen( sCmpPesq = '', sTemp, sCmpPesq + ' and ' + sTemp);
+    end;
+    if Trim(Agente.SQL.ChatHistoricoEMail) <> '' then
+    begin
+      sTemp    := 'h.cliente_mail like ' + QuotedStr('%' + Agente.SQL.ChatHistoricoEMail + '%');
+      sCmpPesq := IfThen(sCmpPesq = '', sTemp, sCmpPesq + ' and ' + sTemp);
+    end;
+    if Trim(Agente.SQL.ChatHistoricoSala) <> '' then
+    begin
+      sTemp    := 'c.descricao like ' + QuotedStr('%' + Agente.SQL.ChatHistoricoSala + '%');
+      sCmpPesq := IfThen(sCmpPesq = '', sTemp, sCmpPesq + ' and ' + sTemp);
+    end;
+    if Agente.SQL.ChatHistoricoData <> 0 then
+    begin
+      sTemp    := 'date(h.datahora) = ' + QuotedStr(formatdatetime('yyyy-mm-dd', Agente.SQL.ChatHistoricoData));
+      sCmpPesq := IfThen(sCmpPesq = '', sTemp, sCmpPesq + ' and ' + sTemp);
+    end;
+
+    SQL.Add(sCmpPesq);
+    SQL.Add(' order by Protocolo desc');
+
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+end;
+
+procedure Tdatam.qryChatPesquisaHistMsgBeforeOpen(DataSet: TDataSet);
 begin
 
   //qryChatPesquisaHistMsg
@@ -657,6 +962,181 @@ begin
 
 end;
 
+
+procedure Tdatam.qryChatSup01BeforeOpen(DataSet: TDataSet);
+begin
+  //qryConferencia
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
+    SQL.Add('set :SalaSupACT = ' + QuotedStr('Y'));
+    SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatUpdateDash01BeforeOpen(DataSet: TDataSet);
+begin
+
+  //qryChatUpdateDash
+  with TZQuery(DataSet) do
+  begin
+    SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
+    SQL.Add('set wrapup_chat_act = ' + QuotedStr('N'));
+    SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatUpdateDash02BeforeOpen(DataSet: TDataSet);
+begin
+  //qryChatUpdateDash
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
+    SQL.Add('set tipo = ' + QuotedStr('CHAT') + ', ');
+    SQL.Add('sala_act = ' + QuotedStr('Y') + ', ');
+    SQL.Add('sala_ctr_id = :sSala_ctr_id ');
+    SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatUpdateDash03BeforeOpen(DataSet: TDataSet);
+begin
+
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
+    SQL.Add('set wrapup_chat_act = ' + QuotedStr('Y') + ', ');
+    SQL.Add('wrapup_chat_tmp = now(), ');
+    SQL.Add('sala' + IntToStr(vChatClassificandoSala+1) + '_sup_act = ' + QuotedStr('N'));
+    SQL.Add('where easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryChatWriteBeforeOpen(DataSet: TDataSet);
+begin
+
+  //qryConferencia
+  with TZQuery(DataSet) do
+  begin
+
+    SQL.Clear;
+    SQL.Add('insert into easy_core_contatos_msg_hist ');
+    SQL.Add('    (cdata,                             ');
+    SQL.Add('     tipo,                              ');
+    SQL.Add('     usou_mensagem_auto_act,            ');
+    SQL.Add('     msg,                               ');
+    SQL.Add('     easy_work_colaborador_conf_id,     ');
+    SQL.Add('     easy_core_contatos_ctrl_id,        ');
+    SQL.Add('     waittime_ag,                       ');
+    SQL.Add('     waittime_cl)                       ');
+    SQL.Add('Values                                  ');
+    SQL.Add('   (now(),                              ');
+    SQL.Add('    :Tipo,                              ');
+    SQL.Add('    :MsgAutoACT,                        ');
+    SQL.Add('    :Msg,                               ');
+    SQL.Add('    :ColaboradorConfId,                 ');
+    SQL.Add('    :ContatosCtrlId,                    ');
+    SQL.Add('    :Waittime_Ag,                       ');
+    SQL.Add('    :WaitTime_Cl)                       ');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+end;
+
+procedure Tdatam.qryChatXFer01BeforeOpen(DataSet: TDataSet);
+begin
+  //qryConferencia
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+    SQL.Add('update easy_core_contatos_msg_hist set    ');
+    SQL.Add('active = ' + QuotedStr('Y')                );
+    SQL.Add('where easy_core_contatos_ctrl_id = :IdSala');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+
+  end;
+
+end;
+
+procedure Tdatam.qryChatXFer02BeforeOpen(DataSet: TDataSet);
+begin
+
+  //qryConferencia
+  with TZQuery(DataSet) do
+  begin
+    SQL.Add('insert into easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist ');
+    SQL.Add('(                                                                     ');
+    SQL.Add('  datahora,                                                           ');
+    SQL.Add('  data,                                                               ');
+    SQL.Add('  hora,                                                               ');
+    SQL.Add('  emfila_temp,                                                        ');
+    SQL.Add('  emfila,                                                             ');
+    SQL.Add('  cliente_nome,                                                       ');
+    SQL.Add('  cliente_mail,                                                       ');
+    SQL.Add('  telefone,                                                           ');
+    SQL.Add('  web_url,                                                            ');
+    SQL.Add('  transfered_act,                                                     ');
+    SQL.Add('  transfered_id,                                                      ');
+    SQL.Add('  easy_chat_motor_conf_id,                                            ');
+    SQL.Add('  easy_pabx_serv_fila_universal_ctr_id,                               ');
+    SQL.Add('  canal,                                                              ');
+    SQL.Add('  classe,                                                             ');
+    SQL.Add('  is_queue_entry_act,                                                 ');
+    SQL.Add('  is_queue_entry_tmp,                                                 ');
+    SQL.Add('  easy_call_empresa_conf_id                                           ');
+    SQL.Add(')                                                                     ');
+    SQL.Add('values                                                                ');
+    SQL.Add('(                                                                     ');
+    SQL.Add('  now(),                                                              ');
+    SQL.Add('  curdate(),                                                          ');
+    SQL.Add('  curtime(),                                                          ');
+    SQL.Add('  now(),                                                              ');
+    SQL.Add(   QuotedStr('Y') + ',                                                 ');
+    SQL.Add('  :ClienteNome,                                                       ');
+    SQL.Add('  :ClienteEmail,                                                      ');
+    SQL.Add('  :Telefone,                                                          ');
+    SQL.Add('  :WebURL,                                                            ');
+    SQL.Add(   QuotedStr('Y') + ',                                                 ');
+    SQL.Add('  :Transfered_id,                                                     ');
+    SQL.Add('  :EasyChatMotorConfID,                                               ');
+    SQL.Add('  :Tag                                                                ');
+    SQL.Add('  2,                                                                  ');
+    SQL.Add('  1,                                                                  ');
+    SQL.Add('  1,                                                                  ');
+    SQL.Add('  now(),                                                              ');
+    SQL.Add(   TMyInfoLogin.sIDEmpresa                                              );
+    SQL.Add(')                                                                     ');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+
+end;
 
 procedure Tdatam.qryConferenciaBeforeOpen(DataSet: TDataSet);
 begin
@@ -785,7 +1265,7 @@ begin
     SQL.Clear;
     SQL.Add('select l.descricao as nome,                                                             ');
     SQL.Add('       l.login as login,                                                                ');
-    SQL.Add('       l.senha as senha,                                                                ');
+    SQL.Add('       AES_DECRYPT(l.senha,'+QuotedStr('ae76aa5b1e5fc7257703a2c8ff9ea7dd')+') AS senha, ');
     SQL.Add('       c.email as email,                                                                ');
     SQL.Add(QuotedStr('Y') + ' as dialpad,                                                           ');
     SQL.Add('       l.easy_call_operacao_conf_id as easy_callcenter_operacao_conf_id,                ');
@@ -824,7 +1304,13 @@ begin
     SQL.Add('       o.qualificar_chamada_act,                                                        ');
     SQL.Add('       fone_registro_act,                                                               ');
     SQL.Add('       time_to_sec(fone_registro_tmp) as sec_fone_registro_tmp,                         ');
-    SQL.Add('       coalesce(c.easy_work_equipe_conf_id, 0) as equipe_id                             ');
+    SQL.Add('       coalesce(c.easy_work_equipe_conf_id, 0) as equipe_id,                            ');
+    SQL.Add('       c.horario_entrada,                                                               ');
+    SQL.Add('       c.horario_Saida,                                                                 ');
+    SQL.Add('       coalesce(l.active,'+QuotedStr('N')+') as Usuario_act,                            ');
+    SQL.Add('       coalesce(c.active,'+QuotedStr('N')+') as Colaborador_act,                        ');
+    SQL.Add('       coalesce(o.active,'+QuotedStr('N')+') as Operacao_act,                           ');
+    SQL.Add('       coalesce(e.active,'+QuotedStr('N')+') as UserEmp_act                             ');
     SQL.Add('from easy_sist_usuario_login_conf l                                                     ');
     SQL.Add('     left join easy_work_colaborador_conf c on l.easy_work_colaborador_conf_id = c.id   ');
     SQL.Add('     left join easy_call_operacao_conf o on l.easy_call_operacao_conf_id = o.id         ');
@@ -832,15 +1318,14 @@ begin
     SQL.Add('     left join easy_pabx_serv_ramal_sip_conf s on s.id = l.id                           ');
     SQL.Add('     left join easy_sist_servidor_sip_conf p on c.easy_sist_servidor_sip_conf_id = p.id ');
     SQL.Add('where True                                                                              ');
-    SQL.Add('  and l.active = ' + QuotedStr('Y')                                                      );
-    SQL.Add('  and c.active = ' + QuotedStr('Y')                                                      );
-    SQL.Add('  and o.active = ' + QuotedStr('Y')                                                      );
-    SQL.Add('  and e.active = ' + QuotedStr('Y')                                                      );
+//    SQL.Add('  and l.active = ' + QuotedStr('Y')                                                      );
+//    SQL.Add('  and c.active = ' + QuotedStr('Y')                                                      );
+//    SQL.Add('  and o.active = ' + QuotedStr('Y')                                                      );
+//    SQL.Add('  and e.active = ' + QuotedStr('Y')                                                      );
     SQL.Add('  and l.login = ' + QuotedStr(TMyInfoLogin.sLoginUser)                                   );
-    SQL.Add('  and l.senha = ' + QuotedStr(TMyInfoLogin.sLoginSenha)                                  );
 
     if DirectoryExists(Agente.PathArqTxtSQL) then
-      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+       SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
   end;
 
 end;
@@ -889,6 +1374,73 @@ begin
     SQL.Add('from easy_dash_pabx_serv_fila_de_atendimento                             ');
     SQL.Add('where uniqueid = :VCallId                                                ');
     SQL.Add('and easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.qryUpdateStatusBeforeOpen(DataSet: TDataSet);
+begin
+  // qryFaqGrupoConf
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+
+    SQL.Add('insert into easy_rept_sist_semaforo_call_hist ');
+
+    if Copy(sNumAge, 1, 5) = 'AGE01' then
+    begin
+      SQL.Add('(versao, acao, easy_call_operacao_conf_id, param1, param2, param3, easy_work_colaborador_conf_id) ');
+      SQL.Add('values (');
+      SQL.Add(QuotedStr(Agente.VersaoExe) + ', ');
+
+      SQL.Add('1, ');
+      SQL.Add(TMyInfoLogin.sIDOperacao + ', ');
+      SQL.Add(QuotedStr(TMyMachineInfo.sIP_Address) + ', ');
+      SQL.Add(QuotedStr(TMyMachineInfo.sMac_Address) + ', ');
+      SQL.Add(QuotedStr(IntToStr(TMyInfoLogin.nTipo + 1)) + ', ');
+    end
+    else
+    begin
+      SQL.Add('(versao, acao, easy_call_operacao_conf_id, param1, easy_work_colaborador_conf_id) ');
+      SQL.Add('values (');
+      SQL.Add(QuotedStr(Agente.VersaoExe) + ', ');
+
+      if Copy(sNumAge, 1, 5) = 'AGE02' then
+      begin
+        SQL.Add('2, ');
+        SQL.Add('0, ');
+        SQL.Add(TMyInfoLogin.sIDUsuario + ', ');
+
+      end
+      else
+        if Copy(sNumAge, 1, 5) = 'AGE03' then
+        begin
+          SQL.Add('3, ');
+          SQL.Add(TMyInfoLogin.sIDOperacao + ', ');
+          SQL.Add(TMyPausa.sIDPausa + ', ');
+
+        end
+        else
+          if Copy(sNumAge, 1, 5) = 'AGE04' then
+          begin
+            SQL.Add('4, ');
+            SQL.Add('0, ');
+            SQL.Add(TMyPausa.sIDPausa + ', ');
+
+          end
+          else
+            if Copy(sNumAge, 1, 5) = 'AGE05' then
+            begin
+              SQL.Add('5, ');
+              SQL.Add(TMyInfoLogin.sIDOperacao + ', ');
+              SQL.Add(TMyPausa.sIDPausa + ', ');
+
+            end;
+    end;
+    SQL.Add(QuotedStr(TMyInfoLogin.sIDUsuario) + ') ');
 
     if DirectoryExists(Agente.PathArqTxtSQL) then
       SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
@@ -1095,6 +1647,86 @@ begin
 
 end;
 
+procedure Tdatam.OpenSQLVerClassUnivBeforeOpen(DataSet: TDataSet);
+begin
+
+    //qry_operacao_has_parametro
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+    SQL.Add('SELECT DISTINCT COUNT(a.easy_call_empresa_conf_id) AS EXISTE                                                                            ');
+    SQL.Add('FROM easy_pabx_serv_fila_universal_classificacao_conf                a                                                                  ');
+    SQL.Add('     INNER JOIN easy_pabx_serv_fila_universal_has_classificacao      b on b.easy_pabx_serv_fila_universal_classificacao_conf_id = a.id  ');
+    SQL.Add('     INNER JOIN easy_pabx_serv_fila_universal_ctr                    c on b.easy_pabx_serv_fila_universal_ctr_id                = c.id  ');
+    SQL.Add('     INNER JOIN easy_work_colaborador_has_pabx_serv_fila_universal   d ON d.easy_pabx_serv_fila_universal_ctr_id                = c.id  ');
+    SQL.Add('     INNER JOIN easy_work_colaborador_conf                           e ON d.easy_work_colaborador_conf_id                       = e.id  ');
+    SQL.Add('     INNER JOIN easy_pabx_serv_fila_universal_call_conf              f ON f.easy_pabx_serv_fila_universal_ctr_id                = c.id  ');
+    SQL.Add('WHERE d.easy_work_colaborador_conf_id = '+TMyInfoLogin.sIDUsuario                                                                        );
+    SQL.Add('  AND a.easy_call_empresa_conf_id = '+TMyInfoLogin.sIDEmpresa                                                                            );
+    SQL.Add('  AND b.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND d.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND c.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND d.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND e.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND f.active = '+QuotedStr('Y')                                                                                                        );
+    SQL.Add('  AND ((b.disp_telefone = '+QuotedStr('Y')+')xor(b.disp_chat = '+QuotedStr('Y')+'))'                                                     );
+    SQL.Add('  AND f.active = '+QuotedStr('Y')                                                                                                        );
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
+procedure Tdatam.OpenSQLVerFilaBeforeOpen(DataSet: TDataSet);
+begin
+    //qry_operacao_has_parametros
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+    SQL.Add('SELECT  COUNT(*) AS EXISTE                                                   ');
+    SQL.Add('FROM easy_work_colaborador_has_pabx_serv_fila_universal e                    ');
+    SQL.Add('WHERE e.easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
+    SQL.Add('  AND e.active = '+QuotedStr('Y')                                             );
+    SQL.Add('  AND (  (e.fone_atendimento_act = '+ QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.fone_transferencia_act= '+QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.chat_transferencia_act= '+QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.chat_atendimento_act= '+  QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.mail_atendimento_act= '+  QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.mail_transferencia_act= '+QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.recuperar_gravacao_act= '+QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.xcrm_atendimento_act= '+  QuotedStr('Y')+') XOR                  ');
+    SQL.Add('         (e.vcrm_atendimento_act= '+  QuotedStr('Y')+') )                    ');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+
+end;
+
+procedure Tdatam.OpenSQLVerPausaBeforeOpen(DataSet: TDataSet);
+begin
+    //qry_operacao_has_parametros
+  with TZQuery(DataSet) do
+  begin
+    SQL.Clear;
+
+    SQL.Add('SELECT COUNT(A.id) AS EXISTE                                                                      ');
+    SQL.Add('FROM easy_call_operacao_pausa_conf A                                                              ');
+    SQL.Add('     LEFT JOIN easy_call_operacao_has_pausa B ON B.easy_call_operacao_pausa_conf_id = A.id        ');
+    SQL.Add('WHERE True                                                                                        ');
+    SQL.Add('  AND B.active = '+QuotedStr('Y')+'                                                               ');
+    SQL.Add('  AND A.active = '+QuotedStr('Y')+'                                                               ');
+    SQL.Add('  AND (B.easy_call_operacao_conf_id = '+TMyInfoLogin.sIDOperacao+' and tipo = '+QuotedStr('M')+') ');
+    SQL.Add('  AND A.id IS NOT NULL                                                                            ');
+
+    if DirectoryExists(Agente.PathArqTxtSQL) then
+      SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');
+  end;
+
+end;
+
 procedure Tdatam.qr_carrega_integradorBeforeOpen(DataSet: TDataSet);
 begin
   // qr_carrega_integrador
@@ -1112,7 +1744,36 @@ begin
   // qr_carrega_pausa
   with TZQuery(DataSet) do
   begin
-    Params[0].Value := TMyInfoLogin.sIDOperacao;
+    SQL.Clear;
+
+
+    SQL.Add('SELECT                                                                                                                       ');
+    SQL.Add('  p.id,                                                                                                                      ');
+    SQL.Add('  p.descricao,                                                                                                               ');
+    SQL.Add('  p.tipo,                                                                                                                    ');
+    SQL.Add('  '+QuotedStr('N')+' as pausa_pos_rest_act,                                                                                  ');
+    SQL.Add('  '+QuotedStr('0')+' as pausa_pos_rest_tmp,                                                                                  ');
+    SQL.Add('  '+QuotedStr('0')+' as pausa_pos_rest_tmp,                                                                                  ');
+    SQL.Add('  p.permite_chamada_ativa_act,                                                                                               ');
+    SQL.Add('  o.id,                                                                                                                      ');
+    SQL.Add('  o.active,                                                                                                                  ');
+    SQL.Add('  o.transfer_act,                                                                                                            ');
+    SQL.Add('  o.restritiva_dur_act,                                                                                                      ');
+    SQL.Add('  o.restritiva_dur_valor,                                                                                                    ');
+    SQL.Add('  o.restritiva_qde_act,                                                                                                      ');
+    SQL.Add('  o.restritiva_qde_valor,                                                                                                    ');
+    SQL.Add('  o.easy_call_operacao_pausa_conf_id,                                                                                        ');
+    SQL.Add('  o.easy_call_operacao_conf_id,                                                                                              ');
+    SQL.Add('  o.duracao_min_act,                                                                                                         ');
+    SQL.Add('  o.duracao_min_valor,                                                                                                       ');
+    SQL.Add('  p.bloqueio_act                                                                                                             ');
+    SQL.Add('FROM easy_call_operacao_pausa_conf p                                                                                         ');
+    SQL.Add('     left join easy_call_operacao_has_pausa o on o.easy_call_operacao_pausa_conf_id = p.id                                   ');
+    SQL.Add('WHERE TRUE                                                                                                                   ');
+    SQL.Add('  AND o.active = '+QuotedStr('Y')+'                                                                                           ');
+    SQL.Add('  AND p.active = '+QuotedStr('Y')+'                                                                                           ');
+    SQL.Add('  AND (o.easy_call_operacao_conf_id = '+TMyInfoLogin.sIDOperacao+' and tipo = '+QuotedStr('M')+') or (tipo = '+QuotedStr('S')+')');
+    SQL.Add('  AND p.id IS NOT NULL                                                                                                        ');
 
     if DirectoryExists(Agente.PathArqTxtSQL) then
       SQL.SaveToFile(IncludeTrailingBackslash(Agente.PathArqTxtSQL)+Name+'.SQL');

@@ -21,7 +21,7 @@ object frmLogin: TfrmLogin
   PixelsPerInch = 96
   TextHeight = 13
   object sPanel1: TsPanel
-    Left = 9
+    Left = 8
     Top = 8
     Width = 368
     Height = 185

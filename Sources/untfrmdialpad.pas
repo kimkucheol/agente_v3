@@ -84,12 +84,25 @@ var
   nFor: Integer;
   sDialStrTmp: String;
 begin
+// Rogério Teixeira
+//  TMyAppStatus.bAtendido := False;
+//  TMyAppStatus.bSainte   := False;
+
+  if Agente.EquipeHrTrab.NaoFazNada then
+  begin
+    if Assigned(frmPrincipal.Vax) then frmPrincipal.Vax.UnInitialize();
+    MessageDlg('O Tempo limite do agente foi ultrapassado, portanto o sistema será concluido' ,mtError,[mbOk],0);
+    frmPrincipal.actlogoffExecute(Sender);
+    Application.Terminate;
+    Exit;
+  end;
+
   if btnLiga.Caption = APP_FRM_DIALPAD_PICKUP[ID_LANG] then
   begin
     if (TMyVaxIncomingCallParam.bAutoAnswer = False) and
        (TMyVaxIncomingCallParam.bIncomingCall = True) then
     begin
-      frmPrincipal.AtivaFlashWindow(False);
+      Agente.AtivaFlashWindow(False);
       frmPrincipal.AtendeChamada;
 
       TMyVaxIncomingCallParam.nTotalDevices := 0;

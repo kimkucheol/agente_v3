@@ -7,4 +7,4 @@ select p.deslogar_agente_painel_act, time_to_sec(p.deslogar_agente_painel_tmp),
        p.alarme_2_tmp, p.alarme_2_msg,                                                       
        p.alarme_3_tmp, p.alarme_3_msg                                                        
 from easy_call_operacao_parametros_conf p                                                    
-where p.easy_call_operacao_conf_id = 10001
+where p.easy_call_operacao_conf_id = 10003

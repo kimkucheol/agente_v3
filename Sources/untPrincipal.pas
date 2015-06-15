@@ -4,7 +4,7 @@ interface
 
 uses
   {Winapi.}Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList,
+  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.ToolWin, Vcl.ActnList,
   Vcl.ImgList, sSkinManager, sPanel, sToolBar, sScrollBox,  sButton, sSkinProvider, TypInfo, Vcl.OleCtrls,
   inifiles, sBevel, sCheckBox, sLabel, Math, sPageControl, sEdit, sFrameBar, sStatusBar, Vcl.Grids, IdBaseComponent,
   IdComponent, IdTCPConnection, IdTCPClient, IdExplicitTLSClientServerBase, IdFTP, acProgressBar, Vcl.Buttons,
@@ -13,7 +13,7 @@ uses
   sMaskEdit, sCustomComboEdit, sTooledit, sListBox, sListView, sTreeView, ad3SpellBase, ad3Spell, ad4Live, IdRawBase,
   IdRawClient, IdIcmpClient, Vcl.MPlayer, MMSystem, sTabControl, StrUtils, Registry, RichEdit, ZConnection,
   SCREEN2VIDEOLib_TLB, PdfDoc, PReport, PRAnnotation, PRJpegImage, RotinasGerais, untStartup, sScrollBar,
-  OverbyteIcsWndControl, OverbyteIcsWSocket, Vcl.OleServer, VAXSIPUSERAGENTOCXLib_TLB, untLibrary;
+  OverbyteIcsWndControl, OverbyteIcsWSocket, Vcl.OleServer, VAXSIPUSERAGENTOCXLib_TLB, untLibrary, System.DateUtils;
 
 type
   TfrmPrincipal = class(TForm)
@@ -308,9 +308,10 @@ type
     MemoOld: TMemo;
     cmdIntegrador: TsButton;
     tmrSendAGE0X: TTimer;
-    AudioDevices1: TAudioDevices;
     TMmRegProxy: TTimer;
     TmReconect: TTimer;
+    TmpEquipeHrTrab: TTimer;
+    TmrMsg: TTimer;
     procedure actloginExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure actsairExecute(Sender: TObject);
@@ -369,7 +370,7 @@ type
     procedure Integrador(nTipo: Integer; nSalaChat: Integer);
     procedure LogPing(sTipo: String; sMsg: String);
     procedure despausapos;
-    procedure AtivaFlashWindow(bAtiva: Boolean);
+//    procedure Agente.AtivaFlashWindow(bAtiva: Boolean);
     procedure tmrPausaTimer(Sender: TObject);
     procedure actscriptExecute(Sender: TObject);
     procedure actchatExecute(Sender: TObject);
@@ -590,6 +591,10 @@ type
     procedure TMmRegProxyTimer(Sender: TObject);
     function RunTMmRegProxy(Sender: TObject) : Boolean;
     procedure TmReconectTimer(Sender: TObject);
+    procedure vaxSuccessToUnRegister(Sender: TObject);
+    procedure TmpEquipeHrTrabTimer(Sender: TObject);
+//    procedure OnMsg(Msg : String);
+    procedure TmrMsgTimer(Sender: TObject);
   private
     { Private declarations }
     procedure PlayAudioRing(nDevice: Integer);
@@ -609,8 +614,7 @@ type
     procedure tmrChatTempoTotalTimer(Sender: TObject);
     procedure DesconectaChat(nSalaChat: Integer; nTipo: Integer);
     procedure LimpaChatPosClassificacao(nSalaChat: Integer);
-    procedure EnviaMSGChat(nSalaChat: Integer; sMensagem: String; sMsgTo: String);
-    procedure RecebeBlobChat(nSalaChat: Integer);
+//    procedure RecebeBlobChat(nSalaChat: Integer);
     //procedure EnviaBlobChat(nSalaChat: Integer);
     function LimpaDirBlobChatGeral(const sDiretorio: String): Boolean;
     function LimpaDirBlobChatExt(const sDiretorio: String): Boolean;
@@ -626,6 +630,7 @@ type
     procedure CriaTelaEMail;
     procedure NotificaTrayIcon(Msg: String; Timeout: Integer; Flag: Integer);
 //    procedure PrcVaxSucess;
+    Var MmSg : string;
   public
 
     { Public declarations }
@@ -719,12 +724,9 @@ var
 
 
   //CHAT
-  matrizchatsala: array of array of string;
   nChatDinamicosCriados: Integer;
   vChatClassificando: Integer;
-  vChatClassificandoSala: Integer;
   vChatClassificandoTipo: Integer;
-  vChatDesconexaoCliente: Boolean;
   vChatXFer: Boolean;
   vChatXFerDst: String;
   vchatverificaclientefechou: array [0..MAX_CHAT_ROOM] of Integer;
@@ -762,16 +764,12 @@ var
   memChatHistory: array[0..MAX_CHAT_ROOM] of TsRichEdit;
 
   qryChatWrite: array[0..MAX_CHAT_ROOM] of TZQuery;
-  qryChatXFer: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatDesconecta: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatSup: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatBlobGet: array[0..MAX_CHAT_ROOM] of TZQuery;
   qryChatBlobPut: array[0..MAX_CHAT_ROOM] of TZQuery;
 
-  dtvChatTempoInativoAgenteIni: array[0..MAX_CHAT_ROOM] of TDateTime;
-  dtvChatTempoInativoClienteIni: array[0..MAX_CHAT_ROOM] of TDateTime;
   dtvChatTempoTotalIni: array[0..MAX_CHAT_ROOM] of TDateTime;
-  dtvChatTempoPosAtendimento: array[0..MAX_CHAT_ROOM] of TDateTime;
 
   mitChatXFerAssunto: array[0..99] of TMenuItem;
   mitChatCopyInfo: array[0..99] of TMenuItem;
@@ -833,7 +831,7 @@ implementation
 uses untfilho, untlogin, untdm, untfrmconfiguracoes, untfrmclassifica, untfrmxfer,
      unttranslate, untfrmdialpad, untfrmpausa, untfrmRingPopup, untfrmcoaching,
      untfrmDesbloquear, uAutoSendFilesThread, untProgressBar, uExecIntegradorThread,
-     untfrmSobre, untFuncoes;
+     untfrmSobre, untFuncoes, dialogs;
 
 {$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
 
@@ -1352,7 +1350,7 @@ procedure TfrmPrincipal.actsmsExecute(Sender: TObject);
 begin
   if tabsms.TabVisible = false then
   begin
-    browsersms.Navigate(navegador('Sms'));
+    browsersms.Navigate(navegador('SMS'));
     tabsms.TabVisible := true;
   end
   else
@@ -1472,8 +1470,6 @@ begin
   for ind := 0 to 9 do
     matrizdialednums[ind] := '';
 
-   Agente.SQL.CarregaOperLog;
-
   Agente.InfLogConfPC;
 
   //LogCallStep
@@ -1585,12 +1581,13 @@ begin
     btnFAQ.Enabled := True;
 
     //easy_faq_grupo_conf
-    Agente.SQL.CarregaChatRespGrupo;
+    Agente.SQL.CarregaFacGrupoConf;
 
     //easy_faq_resposta_conf
     Agente.SQL.CarregaFaqRespConf;
 
-  end; //if TMyFaqClass.bFaqAct then
+  end else
+    btnFAQ.Enabled := False; //if TMyFaqClass.bFaqAct then
 
   cboFAQFilter.Items.Clear;
   cboFAQFilter.Items.Add('Grupo');
@@ -1725,12 +1722,11 @@ var
   ind: integer;
 begin
 
-LogCallStep('log_hangup_act', 'desliga-StepBegin');//Remover
+  LogCallStep('log_hangup_act', 'desliga-StepBegin');//Remover
 
   try
     ForceForegroundNoActivate;
-  except
-  end;
+  except end;
 
   if TMyVaxIncomingCallParam.bRecord then
     TerminaGravacaoAudio(0);
@@ -1860,8 +1856,10 @@ LogCallStep('log_hangup_act', 'desliga-StepBegin');//Remover
     end;
   end; //if discoupausa = False then
 
+// Rogério Teixeira
   TMyAppStatus.bAtendido := False;
   TMyAppStatus.bSainte := False;
+
   DesmontaXFerAssistida(1);
 
   if framebar.Items[2].State = stOpened then
@@ -1926,6 +1924,34 @@ begin
 end;
 
 procedure TfrmPrincipal.discar(numero: string; bUpdateStatus: Boolean);
+var
+  ToURI: String;
+begin
+  If numero = '' Then
+  Begin
+    mensagem(APP_MB_WAR_SELECT_NUMBER[ID_LANG]);
+    Exit;
+  End;
+
+  if bUpdateStatus then
+  begin
+    sNumAge := numero;
+    Agente.SQL.UpdateStatus;
+    Exit;
+  end;
+
+  TMyAppStatus.sSipDialStatus := '0';
+  TMyAppStatus.sSipDialID := FormatFloat('00000', Random(99999));
+  TMyAppStatus.sTipoDesconexao := 'C';
+
+  ToURI := 'sip:' + TMyAppStatus.sSipDialID + '0' + numero + '@' + TMyInfoLogin.sIPPABX;
+  If Vax.Connect(0, ToURI, GetSelectedAudioIn(), GetSelectedAudioOut()) = False Then
+  begin
+    ErrorMessages();
+  end;
+end;
+
+{procedure TfrmPrincipal.discar(numero: string; bUpdateStatus: Boolean);
 var
   ToURI: String;
 begin
@@ -2012,7 +2038,8 @@ begin
   begin
     ErrorMessages();
   end;
-end;
+end;}
+
 
 procedure TfrmPrincipal.VerificaLoginAtivo;
 begin
@@ -2023,7 +2050,7 @@ begin
 
   if TMyAppStatus.bLogado = false then
     Exit;
-  
+
   if (matrizparametros[0] = 'True') and (StrToInt(matrizparametros[1]) > 10) then
   begin
     tmrVerificaLoginAtivo.Interval := StrToInt(matrizparametros[1])*1000;
@@ -2360,6 +2387,9 @@ end;
 procedure TfrmPrincipal.framebarItems0CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+
+  if Agente.EquipeHrTrab.NaoFazNada Then Exit;
+//  Exit;
   if TMyClassificacao.bClassificando then//if tmrPausaPos.Enabled or tmrLastClassAuto.Enabled then
   begin
     framebar.closeitem(0, true);
@@ -2399,6 +2429,7 @@ end;
 procedure TfrmPrincipal.framebarItems1CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+//  Exit;
   if TMyClassificacao.bClassificando then//if tmrPausaPos.Enabled or tmrLastClassAuto.Enabled then
   begin
     framebar.closeitem(2, true);
@@ -2422,6 +2453,7 @@ end;
 procedure TfrmPrincipal.framebarItems2CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+//  Exit;
   if TMyClassificacao.bClassificando then//if tmrPausaPos.Enabled or tmrLastClassAuto.Enabled then
   begin
     framebar.closeitem(3, true);
@@ -2453,6 +2485,7 @@ end;
 procedure TfrmPrincipal.framebarItems3CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+//  Exit;
   if TMyPausa.bTrocandoPausa then
   begin
     framebar.closeitem(4, true);
@@ -2474,6 +2507,7 @@ end;
 procedure TfrmPrincipal.framebarItems4CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+//  Exit;
   if TMyClassificacao.bClassificando then//if tmrPausaPos.Enabled or tmrLastClassAuto.Enabled then
   begin
     framebar.closeitem(1, true);
@@ -2501,6 +2535,7 @@ end;
 procedure TfrmPrincipal.frameBarItems5CreateFrame(Sender: TObject;
   var Frame: TCustomFrame);
 begin
+//  Exit;
   if TMyClassificacao.bClassificando then//if tmrPausaPos.Enabled or tmrLastClassAuto.Enabled then
   begin
     framebar.closeitem(2, true);
@@ -3240,7 +3275,7 @@ end;
 
 procedure TfrmPrincipal.memChatSendClick(Sender: TObject);
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.memChatSendExit(Sender: TObject);
@@ -3321,7 +3356,7 @@ begin
     end;
   end;
 
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.mitChatXFerAssuntoClick(Sender: TObject);
@@ -3338,53 +3373,8 @@ begin
           vChatXFer := True;
           vChatXFerDst := IntToStr(TMenuItem(Sender).Tag);
 
-          qryChatXFer[nFor].Active := False;
-          qryChatXFer[nFor].SQL.Clear;
-          qryChatXFer[nFor].SQL.Add('update easy_core_contatos_msg_hist set ');
-          qryChatXFer[nFor].SQL.Add('active = ' + QuotedStr('Y'));
-          qryChatXFer[nFor].SQL.Add('where easy_core_contatos_ctrl_id = ' + matrizchatsala[nFor, 1]);
-          qryChatXFer[nFor].ExecSQL;
-
-          qryChatXFer[nFor].Active := False;
-          qryChatXFer[nFor].SQL.Clear;
-          qryChatXFer[nFor].SQL.Add('insert into easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist ');
-          qryChatXFer[nFor].SQL.Add('(datahora, ');
-          qryChatXFer[nFor].SQL.Add('data, ');
-          qryChatXFer[nFor].SQL.Add('hora, ');
-          qryChatXFer[nFor].SQL.Add('emfila_temp, ');
-          qryChatXFer[nFor].SQL.Add('emfila, ');
-          qryChatXFer[nFor].SQL.Add('cliente_nome, ');
-          qryChatXFer[nFor].SQL.Add('cliente_mail, ');
-          qryChatXFer[nFor].SQL.Add('telefone, ');
-          qryChatXFer[nFor].SQL.Add('web_url, ');
-          qryChatXFer[nFor].SQL.Add('transfered_act, ');
-          qryChatXFer[nFor].SQL.Add('transfered_id, ');
-          qryChatXFer[nFor].SQL.Add('easy_chat_motor_conf_id, ');
-          qryChatXFer[nFor].SQL.Add('easy_pabx_serv_fila_universal_ctr_id, ');
-          qryChatXFer[nFor].SQL.Add('canal, ');
-          qryChatXFer[nFor].SQL.Add('classe, ');
-          qryChatXFer[nFor].SQL.Add('is_queue_entry_act, ');
-          qryChatXFer[nFor].SQL.Add('is_queue_entry_tmp, ');
-          qryChatXFer[nFor].SQL.Add('easy_call_empresa_conf_id');
-          qryChatXFer[nFor].SQL.Add(') values (');
-          qryChatXFer[nFor].SQL.Add('now(), curdate(), curtime(), now(), ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr('Y') + ', ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr(matrizchatsala[nFor, 2]) + ', ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr(matrizchatsala[nFor, 3]) + ', ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr(matrizchatsala[nFor, 4]) + ', ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr(matrizchatsala[nFor, 5]) + ', ');
-          qryChatXFer[nFor].SQL.Add(QuotedStr('Y') + ', ');
-          qryChatXFer[nFor].SQL.Add(matrizchatsala[nFor, 1] + ', ');
-          qryChatXFer[nFor].SQL.Add(matrizchatsala[nFor, 8] + ', ');
-          qryChatXFer[nFor].SQL.Add(IntToStr(TMenuItem(Sender).Tag) + ', ');
-          qryChatXFer[nFor].SQL.Add('2, ');
-          qryChatXFer[nFor].SQL.Add('1, ');
-          qryChatXFer[nFor].SQL.Add('1, ');
-          qryChatXFer[nFor].SQL.Add('now(), ');
-          qryChatXFer[nFor].SQL.Add(TMyInfoLogin.sIDEmpresa);
-          qryChatXFer[nFor].SQL.Add(')');
-          qryChatXFer[nFor].ExecSQL;
-          qryChatXFer[nFor].Active := False;
+          Agente.SQL.ChatXFer01(nFor);
+          Agente.SQL.ChatXFer02(nFor, IntToStr(TMenuItem(Sender).Tag));
 
           DesconectaChat(nFor, 0);
         end;
@@ -3392,7 +3382,7 @@ begin
     end;
   end;
 
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.mitChatBlobClick(Sender: TObject);
@@ -3413,7 +3403,7 @@ begin
     end;
   end;
 
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.mitChatCopyInfoClick(Sender: TObject);
@@ -3437,7 +3427,7 @@ begin
     end;
   end;
 
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.mitChatFAQFindAnswerClick(Sender: TObject);
@@ -3499,14 +3489,7 @@ begin
           if (matrizchatsala[nFor, 0] <> IntToStr(CHAT_STATUS_FREE)) and (matrizchatsala[nFor, 0] <> IntToStr(CHAT_STATUS_ENDING)) then
           begin
             //Update Dash Board
-            qryChatSup[nFor].Active := False;
-            qryChatSup[nFor].SQL.Clear;
-            qryChatSup[nFor].SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
-            qryChatSup[nFor].SQL.Add('set sala' + IntToStr(nFor+1) + '_sup_act = ' + QuotedStr('Y'));
-            qryChatSup[nFor].SQL.Add('where ');
-            qryChatSup[nFor].SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-            qryChatSup[nFor].ExecSQL;
-            qryChatSup[nFor].Active := False;
+            Agente.SQL.ChatSup01(nFor);
 
             matrizchatsala[nFor, 20] := 'True';
             radChatSendTo.Enabled := True;
@@ -3515,7 +3498,7 @@ begin
     end;
   end;
 
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 function TfrmPrincipal.navegador(tipo: string): string;
@@ -3644,7 +3627,7 @@ begin
   if matrizpausa[15,vpausaid] = 'True' then
   begin
     TMyPausa.nPausaDurMinAct := 1;
-    TMyPausa.tPausaDurMinVal := StrToTime(matrizpausa[16,vpausaid]);
+    TMyPausa.tPausaDurMinVal := StrToTime(IfThen(Length(Trim(matrizpausa[16,vpausaid]))<=0, '0', matrizpausa[16,vpausaid]));
   end
   else//Executa de qualquer forma a duração minima de pausa, evitando uma concorrencia de comandos para o Asterisk.
   begin
@@ -3813,9 +3796,9 @@ begin
 
   arquivo := dir+'\'+inttostr(dia)+inttostr(mes)+inttostr(ano)+inttostr(hora)+inttostr(minuto)+inttostr(segundo)+'.log';
 
-  AssignFile ( arq, arquivo);
-  Rewrite ( arq );
-  Write ( arq, 'C',comp+': '+E.Classname+' >> '+E.message);
+  AssignFile( arq, arquivo);
+  Rewrite( arq );
+  Write( arq, 'C',comp+': '+E.Classname+' >> '+E.message);
 
   CloseFile ( arq );
 
@@ -4008,7 +3991,7 @@ begin
 
   if (TMyVaxIncomingCallParam.bAutoAnswer = False) and
      (TMyVaxIncomingCallParam.bIncomingCall = True) then
-    AtivaFlashWindow(False);
+    Agente.AtivaFlashWindow(False);
 
   try
     frmRingPopup.Hide;
@@ -4196,13 +4179,25 @@ var
   sMsgPausaLogin: String;
   TimerId: UINT_PTR;
 begin
+
   tmrPausaLogin.Enabled := False;
+
+  if Assigned(Agente.EquipeHrTrab) then
+    if Agente.EquipeHrTrab.NaoFazNada then
+      Exit;
+
+  tmrLastClassAuto.Enabled := False;
+  tmrLastClassAuto.Interval := 1000;
 
   if TMyAppStatus.bLogado then
     if matrizparametros[7] = 'True' then
     begin
       if matrizparametros[9] = 'True' then
       begin
+
+        tmrLastClassAuto.Interval := 1000 + (StrToInt(matrizparametros[10]) * 1000);
+        tmrLastClassAuto.Enabled := True;
+
         if Trim(matrizparametros[11]) = '' then
           sMsgPausaLogin := PChar(APP_MB_WAR_PAUSE_LOGIN_MSG_1[ID_LANG]) + matrizparametros[10] + PChar(APP_MB_WAR_PAUSE_LOGIN_MSG_2[ID_LANG])
         else
@@ -4214,11 +4209,41 @@ begin
         KillTimer(0, TimerId);
       end;
 
-      framebar.OpenItem(2,true);
-      Sleep(500);
-      Tfrmpausa(framebar.items[2].frame).btnPausaClick(self);
-    end;
+//      framebar.OpenItem(2,true);
+//      Sleep(500);
+//      Tfrmpausa(framebar.items[2].frame).btnPausaClick(self);
+    end else
+      tmrLastClassAuto.Enabled := True;
 end;
+
+//procedure TfrmPrincipal.tmrPausaLoginTimer(Sender: TObject);
+//var
+//  sMsgPausaLogin: String;
+//  TimerId: UINT_PTR;
+//begin
+//  tmrPausaLogin.Enabled := False;
+//
+//  if TMyAppStatus.bLogado then
+//    if matrizparametros[7] = 'True' then
+//    begin
+//      if matrizparametros[9] = 'True' then
+//      begin
+//        if Trim(matrizparametros[11]) = '' then
+//          sMsgPausaLogin := PChar(APP_MB_WAR_PAUSE_LOGIN_MSG_1[ID_LANG]) + matrizparametros[10] + PChar(APP_MB_WAR_PAUSE_LOGIN_MSG_2[ID_LANG])
+//        else
+//          sMsgPausaLogin := StringReplace(matrizparametros[11],'${SEG}', matrizparametros[10], [rfReplaceAll, rfIgnoreCase]);
+//
+//        TimerId := SetTimer(0, 0, StrToInt(matrizparametros[10]) * 1000, @CloseMessageBox);
+//        Application.MessageBox(pchar(sMsgPausaLogin), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+//        // prevent timer callback if user already closed the message box
+//        KillTimer(0, TimerId);
+//      end;
+//
+//      framebar.OpenItem(2,true);
+//      Sleep(500);
+//      Tfrmpausa(framebar.items[2].frame).btnPausaClick(self);
+//    end;
+//end;
 
 procedure TfrmPrincipal.tmrPausaPosTimer(Sender: TObject);
 var
@@ -4227,6 +4252,10 @@ var
 begin
   //Grava Classificação Automática...
   tmrPausaPos.Enabled := False;
+
+  if Assigned(Agente.EquipeHrTrab) then
+    if Agente.EquipeHrTrab.NaoFazNada then
+      Exit;
 
   tmrLastClassAuto.Enabled := False;
   tmrLastClassAuto.Interval := 1000;
@@ -4471,6 +4500,12 @@ begin
   end;
 end;
 
+procedure TfrmPrincipal.TmrMsgTimer(Sender: TObject);
+begin
+// keybd_event(VK_RETURN,0,0,0);
+// TmrMsg.Enabled := False;
+end;
+
 procedure TfrmPrincipal.tmrVaxRequestFailureTimer(Sender: TObject);
 begin
   tmrVaxRequestFailure.Enabled := False;
@@ -4685,6 +4720,7 @@ end;
 
 procedure TfrmPrincipal.vaxDisconnectCall(ASender: TObject; LineNo: Integer);
 begin
+
   if TMyConsultaCallClass.bInConsCall = True then
   begin
     DesmontaConsulta(1);
@@ -4724,6 +4760,7 @@ end;
 procedure TfrmPrincipal.vaxDTMFDigit(ASender: TObject; LineNo: Integer;
   const Digit: WideString);
 begin
+
   if LineNo = 0 then
   begin
     memConfDigitsL0.Lines.Add('Linha ' + IntToStr(LineNo) + ' - Digito recebido: ' + Digit);
@@ -4736,6 +4773,7 @@ end;
 
 procedure TfrmPrincipal.vaxFailToRegister(Sender: TObject);
 begin
+
   LogCallStep('log_registro_act', 'FailToRegister');
 
   stbStatusBar.Panels[1].text := APP_FRM_MAIN_STATUS_BAR_EXTEN[ID_LANG] + TMyInfoLogin.sRamal + APP_FRM_MAIN_STATUS_BAR_UNREGISTERED[ID_LANG];
@@ -4752,6 +4790,7 @@ end;
 
 procedure TfrmPrincipal.vaxFailToReRegister(Sender: TObject);
 begin
+
   LogCallStep('log_registro_act', 'FailToReRegister');
 
   stbStatusBar.Panels[1].text := APP_FRM_MAIN_STATUS_BAR_EXTEN[ID_LANG] + TMyInfoLogin.sRamal + APP_FRM_MAIN_STATUS_BAR_UNREGISTERED[ID_LANG];
@@ -4769,6 +4808,7 @@ end;
 procedure TfrmPrincipal.vaxGeneralFailureResponse(ASender: TObject; LineNo,
   StatusCode: Integer; const ReasonPhrase: WideString);
 begin
+
   if (TMyConfCallClass.bInConfCall = True) and (LineNo = 1) then
   begin
     DesmontaConferencia(LineNo);
@@ -4791,6 +4831,7 @@ end;
 procedure TfrmPrincipal.vaxIncomingCall(ASender: TObject; const CallId,
   DisplayName, UserName, FromURI, ToURI: WideString);
 begin
+
   if TMyAppStatus.bLogado = False then
     Exit;
 
@@ -4826,14 +4867,18 @@ begin
     if TMyVaxIncomingCallParam.bAutoAnswer = True then
       AtendeChamada
     else
-      AtivaFlashWindow(True);
+      Agente.AtivaFlashWindow(True);
   end;
 end;
 
 procedure TfrmPrincipal.vaxIncomingCallRingingStart(ASender: TObject;
   const CallId: WideString);
 begin
+
   if TMyAppStatus.bLogado = False then
+    Exit;
+
+  if Agente.EquipeHrTrab.NaoFazNada Then
     Exit;
 
   if TMyVaxIncomingCallParam.bAutoAnswer = False then
@@ -4864,6 +4909,7 @@ end;
 procedure TfrmPrincipal.vaxIncomingCallRingingStop(ASender: TObject;
   const CallId: WideString);
 begin
+
   if TMyAppStatus.bLogado = False then
     Exit;
 
@@ -4899,6 +4945,7 @@ end;
 procedure TfrmPrincipal.vaxRequestFailureResponse(ASender: TObject; LineNo,
   StatusCode: Integer; const ReasonPhrase: WideString);
 begin
+
   if (TMyConfCallClass.bInConfCall = True) and (LineNo = 1) then
   begin
     DesmontaConferencia(LineNo);
@@ -4991,6 +5038,7 @@ end;
 procedure TfrmPrincipal.vaxSuccessToConnect(ASender: TObject; LineNo: Integer;
   const ToRTPIP: WideString; ToRTPPort: Integer);
 begin
+
   if TMyAppStatus.bLogado = false then
   begin
     Exit;
@@ -5082,6 +5130,7 @@ end;
 procedure TfrmPrincipal.vaxSuccessToRegister(Sender: TObject);
 begin
 
+
   LogCallStep('log_registro_act', 'SuccessToRegister');
 
   stbStatusBar.Panels[1].text := APP_FRM_MAIN_STATUS_BAR_EXTEN[ID_LANG] + TMyInfoLogin.sRamal + APP_FRM_MAIN_STATUS_BAR_REGISTERED[ID_LANG];
@@ -5113,6 +5162,10 @@ begin
       tmrPausaLogin.Interval := StrToInt(matrizparametros[8])*1000;
       tmrPausaLogin.Enabled := True;
     end;
+end;
+
+procedure TfrmPrincipal.vaxSuccessToUnRegister(Sender: TObject);
+begin
 end;
 
 //procedure TfrmPrincipal.PrcVaxSucess;
@@ -5541,7 +5594,7 @@ procedure TfrmPrincipal.panChatDinamicoClick(Sender: TObject);
 var
   nFor: Integer;
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   if TMyChat.nChatAtivo <> -1 then
     sChatTextToSend[TMyChat.nChatAtivo] := memChatSend.Lines.GetText;
@@ -5780,7 +5833,7 @@ procedure TfrmPrincipal.imgChatDiscarClick(Sender: TObject);
 var
   nFor: Integer;
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   for nFor := 0 to nChatDinamicosCriados do
   begin
@@ -5802,7 +5855,7 @@ procedure TfrmPrincipal.imgChatEncerrarClick(Sender: TObject);
 var
   nFor: Integer;
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   for nFor := 0 to nChatDinamicosCriados do
   begin
@@ -5921,7 +5974,7 @@ begin
   begin
     if TRichEdit(Sender).Tag = nFor then
     begin
-      AtivaFlashWindow(False);
+      Agente.AtivaFlashWindow(False);
 
       Break;
     end;
@@ -5976,14 +6029,7 @@ begin
         tmrChatQueue.Interval := CHAT_NEW_DEFAULT_INTERVAL;
 
         //Update Dash Board - Retornando da pausa configurada...
-        datam.qryChatUpdateDash.Active := False;
-        datam.qryChatUpdateDash.SQL.Clear;
-        datam.qryChatUpdateDash.SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
-        datam.qryChatUpdateDash.SQL.Add('set wrapup_chat_act = ' + QuotedStr('N'));
-        datam.qryChatUpdateDash.SQL.Add('where ');
-        datam.qryChatUpdateDash.SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-        datam.qryChatUpdateDash.ExecSQL;
-        datam.qryChatUpdateDash.Active := False;
+        Agente.SQL.ChatUpdateDash01;
 
         tmrChatQueue.Enabled := True;
         Exit;
@@ -6051,7 +6097,7 @@ begin
             lblChatNomeDesc[nFor].Caption := matrizchatsala[nFor, 2];
 
             imgChatCabecalho[nFor].Visible := True;
-            AtivaFlashWindow(True);
+            Agente.AtivaFlashWindow(True);
 
             lblChatNome[nFor].Visible                    := True;
             lblChatNomeDesc[nFor].Visible                := True;
@@ -6134,16 +6180,8 @@ begin
             end;
 
             //Update Dash Board
-            datam.qryChatUpdateDash.Active := False;
-            datam.qryChatUpdateDash.SQL.Clear;
-            datam.qryChatUpdateDash.SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
-            datam.qryChatUpdateDash.SQL.Add('set tipo = ' + QuotedStr('CHAT') + ', ');
-            datam.qryChatUpdateDash.SQL.Add('sala' + IntToStr(nFor+1) + '_act = ' + QuotedStr('Y') + ', ');
-            datam.qryChatUpdateDash.SQL.Add('sala' + IntToStr(nFor+1) + '_ctr_id = ' + matrizchatsala[nFor, 1] + ' ');
-            datam.qryChatUpdateDash.SQL.Add('where ');
-            datam.qryChatUpdateDash.SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-            datam.qryChatUpdateDash.ExecSQL;
-            datam.qryChatUpdateDash.Active := False;
+            Agente.SQL.ChatUpdateDash02(nFor);
+
           end; //if nCountSP > 0 then
 
           datam.qryChatQueue.Active := False;
@@ -6161,16 +6199,7 @@ begin
       tmrChatQueue.Interval := StrToInt(vchat[3]) * 1000;//Rodando com tempo determinado pelo adm
 
       //Update Dash Board - Aguardando pausa configurada...
-      datam.qryChatUpdateDash.Active := False;
-      datam.qryChatUpdateDash.SQL.Clear;
-      datam.qryChatUpdateDash.SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
-      datam.qryChatUpdateDash.SQL.Add('set wrapup_chat_act = ' + QuotedStr('Y') + ', ');
-      datam.qryChatUpdateDash.SQL.Add('wrapup_chat_tmp = now(), ');
-      datam.qryChatUpdateDash.SQL.Add('sala' + IntToStr(vChatClassificandoSala+1) + '_sup_act = ' + QuotedStr('N'));
-      datam.qryChatUpdateDash.SQL.Add('where ');
-      datam.qryChatUpdateDash.SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-      datam.qryChatUpdateDash.ExecSQL;
-      datam.qryChatUpdateDash.Active := False;
+      Agente.SQL.ChatUpdateDash03;
     end
     else
     begin
@@ -6259,7 +6288,7 @@ begin
 
               if sTipoMensagem = 'C' then
               begin
-                AtivaFlashWindow(True);
+                Agente.AtivaFlashWindow(True);
                 if TMyChat.nChatAtivo <> nFor then
                   imgChatCabecalho[nFor].Visible := True;
 
@@ -6291,7 +6320,7 @@ begin
                     end
                     else
                     begin
-                      AtivaFlashWindow(True);
+                      Agente.AtivaFlashWindow(True);
                       if TMyChat.nChatAtivo <> nFor then
                         imgChatCabecalho[nFor].Visible := True;
 
@@ -6310,7 +6339,7 @@ begin
                     else
                       if sTipoMensagem = 'APR' then
                       begin
-                        AtivaFlashWindow(True);
+                        Agente.AtivaFlashWindow(True);
                         if TMyChat.nChatAtivo <> nFor then
                           imgChatCabecalho[nFor].Visible := True;
 
@@ -6358,7 +6387,7 @@ begin
           end;
         end;// if qryChatRead[nFor].RecordCount > 0 then
 
-        RecebeBlobChat(nFor);
+        Agente.RecebeBlobChat(nFor);
 
         tmrChatRead[nFor].Enabled := True;
         Break;
@@ -6456,7 +6485,7 @@ begin
 
             if sTipoMensagem = 'C' then
             begin
-              AtivaFlashWindow(True);
+              Agente.AtivaFlashWindow(True);
               if TMyChat.nChatAtivo <> nFor then
                 imgChatCabecalho[nFor].Visible := True;
 
@@ -6488,7 +6517,7 @@ begin
                   end
                   else
                   begin
-                    AtivaFlashWindow(True);
+                    Agente.AtivaFlashWindow(True);
                     if TMyChat.nChatAtivo <> nFor then
                       imgChatCabecalho[nFor].Visible := True;
 
@@ -6507,7 +6536,7 @@ begin
                   else
                     if sTipoMensagem = 'APR' then
                     begin
-                      AtivaFlashWindow(True);
+                      Agente.AtivaFlashWindow(True);
                       if TMyChat.nChatAtivo <> nFor then
                         imgChatCabecalho[nFor].Visible := True;
 
@@ -6621,7 +6650,7 @@ end;
 
 procedure TfrmPrincipal.cboChatDefaultMsgClick(Sender: TObject);
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.cboChatGroupChange(Sender: TObject);
@@ -6650,7 +6679,7 @@ end;
 
 procedure TfrmPrincipal.cboChatGroupClick(Sender: TObject);
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.cboConfCallFilterChange(Sender: TObject);
@@ -6736,12 +6765,12 @@ end;
 
 procedure TfrmPrincipal.chkChatRolagemClick(Sender: TObject);
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 end;
 
 procedure TfrmPrincipal.cmdChatClearClick(Sender: TObject);
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   memChatSend.Lines.Clear;
   sChatTextToSend[TMyChat.nChatAtivo] := '';
@@ -6785,12 +6814,12 @@ var
   sCamposPesquisa: String;
   sTemp: String;
 begin
-  if (Trim(txtChatHistoricoNome.Text) = '') and
-     (Trim(txtChatHistoricoTelefone.Text) = '') and
+  if (Trim(txtChatHistoricoNome.Text)      = '') and
+     (Trim(txtChatHistoricoTelefone.Text)  = '') and
      (Trim(txtChatHistoricoProtocolo.Text) = '') and
-     (Trim(txtChatHistoricoEMail.Text) = '') and
-     (Trim(txtChatHistoricoSala.Text) = '') and
-     (txtChatHistoricoData.Date = 0) then
+     (Trim(txtChatHistoricoEMail.Text)     = '') and
+     (Trim(txtChatHistoricoSala.Text)      = '') and
+     (txtChatHistoricoData.Date            = 0) then
      Exit;
 
   Agente.SQL.ChatHistoricoNome      := TxtChatHistoricoNome.Text;
@@ -6800,60 +6829,11 @@ begin
   Agente.SQL.ChatHistoricoSala      := TxtChatHistoricoSala.Text;
   Agente.SQL.ChatHistoricoData      := TxtChatHistoricoData.Date;
 
-  datam.qryChatPesquisaHist.Active := False;
-  datam.qryChatPesquisaHist.SQL.Clear;
-  datam.qryChatPesquisaHist.SQL.Add('select ');
-  datam.qryChatPesquisaHist.SQL.Add('h.id as Protocolo, ');
-  datam.qryChatPesquisaHist.SQL.Add('date_format(h.datahora, "%d/%m/%Y") as Data, ');
-  datam.qryChatPesquisaHist.SQL.Add('date_format(h.datahora, "%H:%i:%s %p") as Hora, ');
-  datam.qryChatPesquisaHist.SQL.Add('h.cliente_nome as Nome, ');
-  datam.qryChatPesquisaHist.SQL.Add('h.telefone as Telefone, ');
-  datam.qryChatPesquisaHist.SQL.Add('h.cliente_mail as "E-Mail", ');
-  datam.qryChatPesquisaHist.SQL.Add('c.descricao as Sala ');
-  datam.qryChatPesquisaHist.SQL.Add('from ');
-  datam.qryChatPesquisaHist.SQL.Add('easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist h ');
-  datam.qryChatPesquisaHist.SQL.Add('left join easy_pabx_serv_fila_universal_ctr f on h.easy_pabx_serv_fila_universal_ctr_id = f.id ');
-  datam.qryChatPesquisaHist.SQL.Add('left join easy_pabx_serv_fila_universal_chat_conf c on c.easy_pabx_serv_fila_universal_ctr_id = f.id ');
-  datam.qryChatPesquisaHist.SQL.Add('where ');
-  datam.qryChatPesquisaHist.SQL.Add('h.easy_call_empresa_conf_id = ' + QuotedStr(TMyInfoLogin.sIDEmpresa) + ' and ');
+  Agente.SQL.ChatPesquisaHist;
 
-  sCamposPesquisa := '';
-  sTemp := '';
-
-  if Trim(txtChatHistoricoNome.Text) <> '' then
-    sCamposPesquisa := 'h.cliente_nome like ' + QuotedStr('%' + txtChatHistoricoNome.Text + '%');
-  if Trim(txtChatHistoricoTelefone.Text) <> '' then
-  begin
-    sTemp := 'h.telefone like ' + QuotedStr('%' + txtChatHistoricoTelefone.Text + '%');
-    sCamposPesquisa := IfThen( sCamposPesquisa = '', sCamposPesquisa := sTemp, sCamposPesquisa + ' and ' + sTemp);
-  end;
-  if Trim(txtChatHistoricoProtocolo.Text) <> '' then
-  begin
-    sTemp := 'h.id = ' + txtChatHistoricoProtocolo.Text + ' ';
-    sCamposPesquisa := IfThen( sCamposPesquisa = '', sCamposPesquisa := sTemp, sCamposPesquisa + ' and ' + sTemp);
-  end;
-  if Trim(txtChatHistoricoEMail.Text) <> '' then
-  begin
-    sTemp := 'h.cliente_mail like ' + QuotedStr('%' + txtChatHistoricoEMail.Text + '%');
-    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
-  end;
-  if Trim(txtChatHistoricoSala.Text) <> '' then
-  begin
-    sTemp := 'c.descricao like ' + QuotedStr('%' + txtChatHistoricoSala.Text + '%');
-    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
-  end;
-  if txtChatHistoricoData.Date <> 0 then
-  begin
-    sTemp := 'date(h.datahora) = ' + QuotedStr(formatdatetime('yyyy-mm-dd', txtChatHistoricoData.date));
-    sCamposPesquisa := IfThen(sCamposPesquisa = '', sTemp, sCamposPesquisa + ' and ' + sTemp);
-  end;
-
-  datam.qryChatPesquisaHist.SQL.Add(sCamposPesquisa);
-  datam.qryChatPesquisaHist.SQL.Add(' order by Protocolo desc');
-
-  datam.qryChatPesquisaHist.Active := True;
-
-  grdChatPesquisaHist.Height := grpChatPesquisaHist.Height - (cmdChatPesquisarHist.Top + cmdChatPesquisarHist.Height) - 8;
+  grdChatPesquisaHist.Height           := grpChatPesquisaHist.Height -
+                                          (cmdChatPesquisarHist.Top  +
+                                           cmdChatPesquisarHist.Height) - 8;
   grdChatPesquisaHist.Columns[0].Width := 50;
   grdChatPesquisaHist.Columns[1].Width := 65;
   grdChatPesquisaHist.Columns[2].Width := 70;
@@ -6869,7 +6849,7 @@ var
   sMensagem: String;
   sSendTo: String;
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   if Trim(memChatSend.Text) = '' then
     Exit;
@@ -6894,7 +6874,7 @@ begin
   else
     sSendTo := 'A';
 
-  EnviaMSGChat(TMyChat.nChatAtivo, sMensagem, sSendTo);
+  Agente.SQL.EnviaMSGChat(TMyChat.nChatAtivo, sMensagem, sSendTo);
 end;
 
 procedure TfrmPrincipal.cmdCreateConfClick(Sender: TObject);
@@ -7049,16 +7029,17 @@ begin
   vChatClassificandoSala := nSalaChat;
   vChatClassificandoTipo := nTipo;
 
-  tmrChatAlerta[nSalaChat].Enabled := False;
-  tmrChatRead[nSalaChat].Enabled := False;
-  tmrChatTimeoutCliente[nSalaChat].Enabled := False;
-  tmrChatTempoInativoAgente[nSalaChat].Enabled := False;
+  tmrChatAlerta[nSalaChat].Enabled              := False;
+  tmrChatRead[nSalaChat].Enabled                := False;
+  tmrChatTimeoutCliente[nSalaChat].Enabled      := False;
+  tmrChatTempoInativoAgente[nSalaChat].Enabled  := False;
   tmrChatTempoInativoCliente[nSalaChat].Enabled := False;
-  tmrChatTempoTotal[nSalaChat].Enabled := False;
+  tmrChatTempoTotal[nSalaChat].Enabled          := False;
 
   if nTipo = 1 then
     if vchat[0] = 'True' then
-      EnviaMSGChat(nSalaChat, PChar(vchat[2]), 'A');
+      Agente.SQL.EnviaMSGChat(nSalaChat, PChar(vchat[2]), 'A');
+
 
   matrizchatsala[nSalaChat, 0] := IntToStr(CHAT_STATUS_ENDING);//Chat em classificacao
 
@@ -7112,89 +7093,14 @@ begin
   grpChatClassificacao.Visible := True;
   grpChatClassificacao.Caption := APP_FRM_MAIN_CHAT_TITLE_CLASSIFYING[ID_LANG] + IntToStr(nSalaChat) + ' ]';
 
-  //Update Dash Board
-  qryChatDesconecta[nSalaChat].Active := False;
-  qryChatDesconecta[nSalaChat].SQL.Clear;
-  qryChatDesconecta[nSalaChat].SQL.Add('update easy_dash_pabx_serv_fila_de_atendimento ');
-  qryChatDesconecta[nSalaChat].SQL.Add('set tipo = ' + QuotedStr('CHAT') + ', ');
-  qryChatDesconecta[nSalaChat].SQL.Add('sala' + IntToStr(nSalaChat+1) + '_act = ' + QuotedStr('N') + ', ');
-  qryChatDesconecta[nSalaChat].SQL.Add('sala' + IntToStr(nSalaChat+1) + '_ctr_id = ' + QuotedStr('') + ' ');
-  qryChatDesconecta[nSalaChat].SQL.Add('where ');
-  qryChatDesconecta[nSalaChat].SQL.Add('easy_work_colaborador_conf_id = ' + QuotedStr(TMyInfoLogin.sIDUsuario));
-  qryChatDesconecta[nSalaChat].ExecSQL;
-  qryChatDesconecta[nSalaChat].Active := False;
+  Agente.SQL.ChatDesconecta01(nSalaChat);
 
   //Chat Classifica
-  qryChatDesconecta[nSalaChat].Active := False;
-  qryChatDesconecta[nSalaChat].SQL.Clear;
-  qryChatDesconecta[nSalaChat].SQL.Add('select ');
-  qryChatDesconecta[nSalaChat].SQL.Add('c.id as class_id, ');
-  qryChatDesconecta[nSalaChat].SQL.Add('c.descricao ');
-  qryChatDesconecta[nSalaChat].SQL.Add('from ');
-  qryChatDesconecta[nSalaChat].SQL.Add('easy_pabx_serv_fila_universal_classificacao_conf c ');
-  qryChatDesconecta[nSalaChat].SQL.Add('left join easy_pabx_serv_fila_universal_has_classificacao a on a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id ');
-  qryChatDesconecta[nSalaChat].SQL.Add('left join easy_pabx_serv_fila_universal_ctr f on a.easy_pabx_serv_fila_universal_ctr_id = f.id ');
-  qryChatDesconecta[nSalaChat].SQL.Add('where ');
-  qryChatDesconecta[nSalaChat].SQL.Add('a.active = ' + QuotedStr('Y'));
-  qryChatDesconecta[nSalaChat].SQL.Add('and c.active = ' + QuotedStr('Y'));
-  qryChatDesconecta[nSalaChat].SQL.Add('and a.disp_chat = ' + QuotedStr('Y'));
-  qryChatDesconecta[nSalaChat].SQL.Add('and c.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa);
-  qryChatDesconecta[nSalaChat].SQL.Add('group by c.id');
-  qryChatDesconecta[nSalaChat].SQL.Add('order by c.descricao asc ');
-  qryChatDesconecta[nSalaChat].Active := True;
+  Agente.SQL.ChatDesconecta02(nSalaChat);
 
-  cboChatClassifica.Items.Clear;
-  cboChatClassifica.ItemIndex := -1;
-  cboChatClassifica.Text := APP_FRM_MAIN_CHAT_SELECT_CLASS[ID_LANG];
+  //Chat Classifica Sub
+  Agente.SQL.ChatDesconecta03(nSalaChat);
 
-  Agente.SQL.vnumchatclassifica := qryChatDesconecta[nSalaChat].RecordCount;
-  SetLength(matrizchatclassifica, 2, Agente.SQL.vnumchatclassifica);
-  ind := 0;
-  while not qryChatDesconecta[nSalaChat].Eof do
-  begin
-    matrizchatclassifica[0, ind] := qryChatDesconecta[nSalaChat].Fields[0].AsString;
-    matrizchatclassifica[1, ind] := qryChatDesconecta[nSalaChat].Fields[1].AsString;
-
-    cboChatClassifica.Items.Add(matrizchatclassifica[1, ind]);
-    Inc(ind);
-    qryChatDesconecta[nSalaChat].Next;
-  end; //while not qryChatDesconecta[nSalaChat].Eof do
-
-  qryChatDesconecta[nSalaChat].Active := False;
-  qryChatDesconecta[nSalaChat].SQL.Clear;
-  qryChatDesconecta[nSalaChat].SQL.Add('select ');
-  qryChatDesconecta[nSalaChat].SQL.Add('s.id as subclass_id, ');
-  qryChatDesconecta[nSalaChat].SQL.Add('s.descricao, ');
-  qryChatDesconecta[nSalaChat].SQL.Add('a.easy_pabx_serv_fila_universal_classificacao_conf_id ');
-  qryChatDesconecta[nSalaChat].SQL.Add('from ');
-  qryChatDesconecta[nSalaChat].SQL.Add('easy_pabx_serv_fila_universal_classificacao_sub_conf s ');
-  qryChatDesconecta[nSalaChat].SQL.Add('left join easy_pabx_serv_fila_universal_classificacao_has_sub a on a.easy_pabx_serv_fila_universal_classificacao_sub_conf_id = s.id ');
-  qryChatDesconecta[nSalaChat].SQL.Add('left join easy_pabx_serv_fila_universal_classificacao_conf c on a.easy_pabx_serv_fila_universal_classificacao_conf_id = c.id ');
-  qryChatDesconecta[nSalaChat].SQL.Add('where ');
-  qryChatDesconecta[nSalaChat].SQL.Add('s.active = ' + QuotedStr('Y'));
-  qryChatDesconecta[nSalaChat].SQL.Add('and a.active = ' + QuotedStr('Y'));
-  qryChatDesconecta[nSalaChat].SQL.Add('and s.easy_call_empresa_conf_id = ' + TMyInfoLogin.sIDEmpresa);
-  qryChatDesconecta[nSalaChat].Active := True;
-
-  cboChatClassificaSub.Items.Clear;
-  cboChatClassificaSub.ItemIndex := -1;
-  cboChatClassificaSub.Text := APP_FRM_MAIN_CHAT_SELECT_SUB_CLASS[ID_LANG];
-
-  Agente.SQL.vnumchatclassificasub := qryChatDesconecta[nSalaChat].RecordCount;
-  SetLength(matrizchatclassificasub, 3, Agente.SQL.vnumchatclassificasub);
-  ind := 0;
-  while not qryChatDesconecta[nSalaChat].Eof do
-  begin
-    matrizchatclassificasub[0, ind] := qryChatDesconecta[nSalaChat].Fields[0].AsString;
-    matrizchatclassificasub[1, ind] := qryChatDesconecta[nSalaChat].Fields[1].AsString;
-    matrizchatclassificasub[2, ind] := qryChatDesconecta[nSalaChat].Fields[2].AsString;
-
-    Inc(ind);
-    qryChatDesconecta[nSalaChat].Next;
-  end;
-
-  qryChatDesconecta[nSalaChat].Active := False;
-  //Chat Classifica
 end;
 
 procedure TfrmPrincipal.LimpaChatPosClassificacao(nSalaChat: Integer);
@@ -7268,77 +7174,33 @@ begin
   vChatXFerDst := '';
 end;
 
-procedure TfrmPrincipal.EnviaMSGChat(nSalaChat: Integer; sMensagem: String; sMsgTo: String);
-begin
-  if nSalaChat <> -1 then
-  begin
-    if (matrizchatsala[nSalaChat, 0] <> IntToStr(CHAT_STATUS_FREE)) and (matrizchatsala[nSalaChat, 0] <> IntToStr(CHAT_STATUS_ENDING)) then
-    begin
-      qryChatWrite[nSalaChat].Active := False;
-      qryChatWrite[nSalaChat].SQL.Clear;
-      qryChatWrite[nSalaChat].SQL.Add('insert into easy_core_contatos_msg_hist ');
-      qryChatWrite[nSalaChat].SQL.Add('(cdata,');
-      qryChatWrite[nSalaChat].SQL.Add('tipo,');
-      qryChatWrite[nSalaChat].SQL.Add('usou_mensagem_auto_act,');
-      qryChatWrite[nSalaChat].SQL.Add('msg,');
-      qryChatWrite[nSalaChat].SQL.Add('easy_work_colaborador_conf_id,');
-      qryChatWrite[nSalaChat].SQL.Add('easy_core_contatos_ctrl_id,');
-      qryChatWrite[nSalaChat].SQL.Add('waittime_ag,');
-      qryChatWrite[nSalaChat].SQL.Add('waittime_cl) ');
-      qryChatWrite[nSalaChat].SQL.Add('values ');
-      qryChatWrite[nSalaChat].SQL.Add('(now(),');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr(sMsgTo) + ',');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr('N') + ',');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr(sMensagem) + ',');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr(TMyInfoLogin.sIDUsuario) + ',');
-      qryChatWrite[nSalaChat].SQL.Add((matrizchatsala[nSalaChat, 1]) + ',');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr(TimeToStr(Now - dtvChatTempoInativoAgenteIni[nSalaChat])) + ',');
-      qryChatWrite[nSalaChat].SQL.Add(QuotedStr(TimeToStr(Now - dtvChatTempoInativoClienteIni[nSalaChat])) + ')');
-      qryChatWrite[nSalaChat].ExecSQL;
-      qryChatWrite[nSalaChat].Active := False;
-    end;
-  end;
-end;
-
-procedure TfrmPrincipal.RecebeBlobChat(nSalaChat: Integer);
+{procedure TfrmPrincipal.RecebeBlobChat(nSalaChat: Integer);
 var
   sDirBlob: String;
   nIdBlob: Integer;
   sHoraBlob: String;
   sMensagem: String;
 begin
-  qryChatBlobGet[nSalaChat].Active := False;
-  qryChatBlobGet[nSalaChat].SQL.Clear;
-  qryChatBlobGet[nSalaChat].SQL.Add('select id, fname, descricao, date_format(now(), "%H:%i:%s %p") as data');
-  qryChatBlobGet[nSalaChat].SQL.Add('from easy_core_contatos_msg_arq_hist ');
-  qryChatBlobGet[nSalaChat].SQL.Add('where easy_core_contatos_ctrl_id = ' + (matrizchatsala[nSalaChat, 1]));
-  qryChatBlobGet[nSalaChat].SQL.Add('and active = ' + QuotedStr('Y'));
-  qryChatBlobGet[nSalaChat].Active := True;
+  Agente.SQL.ChatBlobGet01(nSalaChat);
 
   if qryChatBlobGet[nSalaChat].RecordCount > 0 then
   begin
     try
-      sDirBlob := TMyChat.sDirBlobReceived + matrizchatsala[nSalaChat, 1] + '\';
+      sDirBlob  := TMyChat.sDirBlobReceived + matrizchatsala[nSalaChat, 1] + '\';
       CreateDir(sDirBlob);
-      sDirBlob := sDirBlob + qryChatBlobGet[nSalaChat].FieldByName('arquivo_nome').AsString;
-      nIdBlob := qryChatBlobGet[nSalaChat].FieldByName('id').AsInteger;
+      sDirBlob  := sDirBlob + qryChatBlobGet[nSalaChat].FieldByName('arquivo_nome').AsString;
+      nIdBlob   := qryChatBlobGet[nSalaChat].FieldByName('id').AsInteger;
       sHoraBlob := qryChatBlobGet[nSalaChat].FieldByName('data').AsString;
       TBlobField(qryChatBlobGet[nSalaChat].FieldByName('arquivo')).SaveToFile(sDirBlob);
 
-      qryChatBlobGet[nSalaChat].Active := False;
-      qryChatBlobGet[nSalaChat].SQL.Clear;
-      qryChatBlobGet[nSalaChat].SQL.Add('update easy_core_contatos_msg_arq_hist set ');
-      qryChatBlobGet[nSalaChat].SQL.Add('active = ' + QuotedStr('N'));
-      qryChatBlobGet[nSalaChat].SQL.Add('where id = ' + IntToStr(nIdBlob));
-      qryChatBlobGet[nSalaChat].ExecSQL;
-      qryChatBlobGet[nSalaChat].Active := False;
+      Agente.SQL.ChatBlobGet02(nSalaChat);
 
       sMensagem := APP_FRM_MAIN_CHAT_BLOB_RECEIVED_DIR[ID_LANG] + '"' + sDirBlob + '"';
 
       memChatHistory[nSalaChat].SelStart := memChatHistory[nSalaChat].GetTextLen;
       memChatHistory[nSalaChat].SelAttributes.Style := [fsBold];
 
-      AtivaFlashWindow(True);
+      Agente.AtivaFlashWindow(True);
       if TMyChat.nChatAtivo <> nSalaChat then
         imgChatCabecalho[nSalaChat].Visible := True;
 
@@ -7359,7 +7221,8 @@ begin
     except
     end;
   end;
-end;
+  qryChatBlobGet[nSalaChat].Close;
+end;}
 
 {
 procedure TfrmPrincipal.EnviaBlobChat(nSalaChat: Integer);
@@ -7629,39 +7492,6 @@ begin
       TfrmXFer(framebar.items[1].frame).cboXFer.ItemIndex := -1;
     end;
   except
-  end;
-end;
-
-procedure TfrmPrincipal.AtivaFlashWindow(bAtiva: Boolean);
-begin
-  if bAtiva = True then
-  begin
-    try
-      FlashWindow(Application.Handle, True);
-    Except
-    end;
-    vFlashWindowActive := 2;
-  end
-  else
-  begin
-    if vFlashWindowActive > 0 then
-    begin
-      try
-        if IsIconic(Application.Handle) then
-          Application.Restore;
-      except
-      end;
-
-      Try
-        SetForegroundWindow(Application.Handle);
-      Except
-        Try
-          BringWindowToTop(Application.Handle);
-        Except
-        End;
-      End;
-    end;
-    Dec(vFlashWindowActive);
   end;
 end;
 
@@ -8056,6 +7886,100 @@ end;
 procedure TfrmPrincipal.TMmRegProxyTimer(Sender: TObject);
 begin
   RunTMmRegProxy(Sender);
+end;
+
+procedure TfrmPrincipal.TmpEquipeHrTrabTimer(Sender: TObject);
+//  Var bProcessando : Boolean;
+//       tHrAtual    : TDateTime;
+//       tHr_Entrada : TDateTime;
+//       tHr_Saida   : TDateTime;
+//       tHr_Msg     : TDateTime;
+//       bHr_inicio  : Boolean;
+//       bHr_Termino : Boolean;
+//       bHr_MSG     : Boolean;
+//       bContinue   : Boolean;
+//       mHr         : Word;
+//       mMm         : Word;
+//       mSeg        : Word;
+//
+//
+//  {Sub}procedure prcAlimentaVariaveis;
+//  begin
+//    with frmPrincipal do
+//    begin
+//        tHrAtual := Now;
+//
+//      tHr_Entrada := 0;
+//      tHr_Saida   := 0;
+//
+//      mHr         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Entrada), 1,2));
+//      mMm         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Entrada), 4,2));
+//      mSeg        := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Entrada), 7,2));
+//      tHr_Entrada := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+//
+//      mHr         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Saida), 1,2));
+//      mMm         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Saida), 4,2));
+//      mSeg        := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Saida), 7,2));
+//      tHr_Saida   := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+//
+//      mHr         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Extende), 1,2));
+//      mMm         := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Extende), 4,2));
+//      mSeg        := StrToInt(Copy(TimeToStr(Agente.EquipeHrTrab.Hr_Extende), 7,2));
+//      tHr_Msg     := EncodeDateTime(YearOf(Now), MonthOf(Now), DayOf(Now), mHr, mMm, mSeg, 00);
+//
+//      // "0" False/"1" True
+//      bHr_inicio  := Boolean(IfThen(tHrAtual >= tHr_Entrada, 1, 0)); // Sera Verdadeiro se Hr Atual >= Hr de Entrada
+//      bHr_Termino := Boolean(IfThen(tHrAtual <= tHr_Saida  , 1, 0));   // Sera Verdadeiro se Hr Atual <= Hr de Saida
+//      bHr_MSG     := False;
+//
+//      if Length(Trim(Agente.EquipeHrTrab.Msg)) > 0 then  // Realmente existe alguma MSG
+//        if tHrAtual >= tHr_Msg then // Temos que avisar ao usuario ? Se a Hora Atual >= Hr da Mensagem
+//          if Agente.EquipeHrTrab.AvisaouNao then // foi configurado para avisar ao usuario ?
+//            if Not Agente.EquipeHrTrab.MsgAvisada then // Se ja foi avisada não avisar mais
+//              bHr_MSG := True;
+//    end;
+//  end;
+begin
+//  TmpEquipeHrTrab.Enabled := False;
+//
+//  // Verificar novamente se as informações não foram mudadas
+//    // Se as Hrs De/Ate não estão no prazo ou
+//    // Se as Hr da mensagem esta no prazo e se ainda não foi apresentada
+//  if ( ((bHr_inicio=false)xor(bHr_Termino=false))or
+//        (tHrAtual >= tHr_Msg)and
+//        (bContinue = False) )then
+//  begin
+//    Agente.EquipeHrTrab.prcTempoTrabalho(False);
+//    bContinue := True;
+//  end;
+//
+//  prcAlimentaVariaveis;
+//  // Se estiver fora dos intervalos de Entrada e Saida, fechar a aplicação
+//  if (bHr_inicio=false)xor(bHr_Termino=false) then
+//  begin
+//
+//    if Agente.EquipeHrTrab.AvisaouNao then // foi configurado para avisar ao usuario ?
+//      MessageDlg('Somente é permitido no(s) horário(s) da(s) '+FormatDateTime('HH:MM:SS', tHr_Entrada)+' '+
+//                 'até a(s) '+FormatDateTime('HH:MM:SS', tHr_Saida) ,mtError,[mbOk],0);
+//    if Assigned(Vax) then Vax.UnInitialize();
+//    Application.Terminate;
+//  end else
+//  if bHr_MSG then // Mensagem de antecipação, avisando o usuario sobre o tempo que irá fechar o sistema
+//  begin
+//
+//    TmrMsg.Interval := 10000; // Tempo que a msg ficará na tela -> 5 Segs
+//    TmrMsg.Enabled := True;
+//    MessageBox(Handle, PChar(Agente.EquipeHrTrab.Msg), Pchar('Atenção'), 8224);
+//
+////    MmSg :=Agente.EquipeHrTrab.Msg;
+////    TmrMsg.Enabled := True;
+//    Agente.EquipeHrTrab.MsgAvisada := True; // Informando que a MSG ja foi comunicada ao usuario
+//  end;
+//
+//  TmpEquipeHrTrab.Interval := 5000; // em 5 e 5 Segundos se olha este processo
+//
+//  // Retornando o processo do Timer
+//  TmpEquipeHrTrab.Enabled := True;
 end;
 
 procedure TfrmPrincipal.CopiaArqGravacaoTela(sSrcFileReceived: String; nSplitStepReceived: Integer);
@@ -8812,23 +8736,8 @@ begin
 
   if matrizchatsala[nSalaChat, 0] = IntToStr(CHAT_STATUS_ENDING) then
   begin
-    qryChatDesconecta[nSalaChat].Active := False;
-    qryChatDesconecta[nSalaChat].SQL.Clear;
-    qryChatDesconecta[nSalaChat].SQL.Add('update easy_rept_pabx_serv_fila_universal_chamada_receptiva_hist set ');
-    if vChatDesconexaoCliente = False then
-    begin
-      qryChatDesconecta[nSalaChat].SQL.Add('desconexao = ' + QuotedStr('A') + ', ');
-      qryChatDesconecta[nSalaChat].SQL.Add('desconexao_mot = ' + IntToStr(nTipo) + ', ');
-      qryChatDesconecta[nSalaChat].SQL.Add('duracao = timediff(now(), datahora), ');
-      //qryChatDesconecta[nSalaChat].SQL.Add('desconexao_dt = now(), ');
-    end;
-    qryChatDesconecta[nSalaChat].SQL.Add('duracao_pos = ' + QuotedStr(TimeToStr(Now - dtvChatTempoPosAtendimento[nSalaChat])) + ',');
-    qryChatDesconecta[nSalaChat].SQL.Add('observacao = ' + QuotedStr(memChatClassificaObs.Text) + ', ');
-    qryChatDesconecta[nSalaChat].SQL.Add('classificacao_auto_act = ' + QuotedStr('Y') + ' ');
-    qryChatDesconecta[nSalaChat].SQL.Add('where ');
-    qryChatDesconecta[nSalaChat].SQL.Add('id = ' + (matrizchatsala[nSalaChat, 1]));
-    qryChatDesconecta[nSalaChat].ExecSQL;
-    qryChatDesconecta[nSalaChat].Active := False;
+
+    Agente.SQL.ChatDesconecta04(nSalaChat);
 
     ClassificaChat(
                   nSalaChat,
@@ -9337,7 +9246,7 @@ procedure TfrmPrincipal.panEMailDinamicoClick(Sender: TObject);
 var
   nFor: Integer;
 begin
-  AtivaFlashWindow(False);
+  Agente.AtivaFlashWindow(False);
 
   for nFor := 0 to Agente.SQL.vnumemails -1 do
   begin
@@ -9563,5 +9472,113 @@ begin
 
   Result := False;
 end;
+
+//procedure MSGAguarde(strTexto: String = ''; boolAguarde: Boolean = true);
+//var
+//  formAguarde  : TForm;
+//  bevelAguarde : TBevel;
+//  lblTexto     : TLabel;
+//  mmMemo       : TMemo;
+//  formMSG      : TForm;
+//begin
+//  if boolAguarde then begin
+//    formAguarde := TForm.Create(nil);
+//    formMSG     := formAguarde;
+//    with formMSG do begin
+//      Width       := 220;
+//      Height      := 50;
+//      BorderStyle := bsNone;
+//      Color       := clGradientInactiveCaption;
+//      Position    := poDesktopCenter;
+//      bevelAguarde := TBevel.Create(nil);
+//      with bevelAguarde do begin
+//        Parent := formAguarde;
+//        Align  := alClient;
+//        Shape  := bsFrame;
+//      end;
+//      if strTexto = '' then begin
+//        lblTexto := TLabel.Create(nil);
+//        with lblTexto do begin
+//          Caption    := 'Aguarde';
+//          Font.Size  := 16;
+//          Top        := 8;
+//          Left       := 70;
+//          Font.Style := [fsBold];
+//          Font.Name  := 'Segoe UI';
+//          Font.Color := clMaroon;
+//          Parent     := formAguarde;
+//        end;
+//      end else begin
+//        mmMemo := TMemo.Create(nil);
+//        with mmMemo do begin
+//          Text        := strTexto;
+//          Align       := alClient;
+//          Alignment   := taCenter;
+//          BorderStyle := bsNone;
+//          Color       := clGradientInactiveCaption;
+//          Font.Size   := 8;
+//          Font.Name   := 'Verdana';
+//          Parent      := formAguarde;
+//        end;
+//      end;
+//      Show;
+//      Repaint;
+//    end;
+//  end else begin
+//    try
+//      formMSG.Close;
+//      FreeAndNil(formMSG);
+//    except
+//    end;
+//  end;
+//end;
+
+//procedure TfrmPrincipal.OnMsg(Msg : String);
+//  Var Tmr   : TTimer;
+//      ILoop : Integer;
+//      M     : TMethod;
+//
+//  procedure TmrTimer(Self; Sender: TObject);
+//  begin
+//    Tmr.Enabled := False;
+//
+//    if not Assigned(TmrMsg) then TmrMsg := Tmr.Create(Nil);
+//    TmrMsg.Interval := 1000;
+//    TmrMsg.OnTimer  := TmrMsgTimer;
+//
+//
+//    with frmPrincipal do
+//    begin
+//      if ILoop = 1 then
+//        TmrMsg.Enabled := True;
+//    end;
+//
+//    Tmr.Interval := 5000;
+//    if ILoop < 2 then Tmr.Enabled  := True else FreeAndNil(TmrMsg);
+//
+//    Inc(ILoop);
+//  end;
+//
+//begin
+//  ILoop := 1;
+//
+//  Tmr := TTimer.Create(Nil);
+//  Tmr.Interval := 1000;
+//  MmSg := Msg;
+//
+//  M.Data      := nil;
+//  M.Code      := @TmrTimer;
+//  Tmr.OnTimer := TNotifyEvent(M);
+//
+//  if Length(Trim(Msg)) > 0 then
+//  Begin
+//    MmSg := Msg;
+//    TmrMsg.OnTimer  := TmrMsgTimer;
+//    TmrMsg.Interval := 1000;
+//    TmrMsg.Enabled := True;
+//  End;
+//end;
+
+
 
 end.

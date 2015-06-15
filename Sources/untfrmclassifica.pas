@@ -256,14 +256,24 @@ begin
     end;
   end;
 
+// Rogério Teixeira
+//  if TMyInfoLogin.bQualidadeChamada then
+//    if TMyAppStatus.bAtendido then
+//      if TMyAppStatus.nCallQuality = 0 then
+
   if TMyInfoLogin.bQualidadeChamada then
-    if TMyAppStatus.bAtendido then
-      if TMyAppStatus.nCallQuality = 0 then
-      begin
-        frmprincipal.mensagem(APP_MB_WAR_PLEASE_FILL_QUALITY[ID_LANG]);
-        frmprincipal.actclientesExecute(self);
-        Exit;
-      end;
+    if TMyAppStatus.nCallQuality = 0 then
+    begin
+      frmprincipal.mensagem(APP_MB_WAR_PLEASE_FILL_QUALITY[ID_LANG]);
+      frmprincipal.actclientesExecute(self);
+      TMyClassificacao.bClassificou := False;
+      Exit;
+    end;
+
+// Rogério Teixeira
+//  TMyAppStatus.bAtendido := False;
+//  TMyAppStatus.bSainte := False;
+
 
   tmpAgendamento_tipo := '';
   tmpAgendamento_data := '';
@@ -570,6 +580,15 @@ begin
   TMyAppStatus.dtvInicioChamada := Now;
   TMyAppStatus.dtvFimChamada := Now;
   TMyAppStatus.sSipDialID := '0';
+
+  if Agente.EquipeHrTrab.NaoFazNada then
+  begin
+    if Assigned(frmPrincipal.Vax) then frmPrincipal.Vax.UnInitialize();
+    MessageDlg('O Tempo limite do agente foi ultrapassado, portanto o sistema será concluido' ,mtError,[mbOk],0);
+    frmPrincipal.actlogoffExecute(Sender);
+    Application.Terminate;
+    Exit;
+  end;
 end;
 
 procedure Tfrmclassifica.CarregaClassificacao;

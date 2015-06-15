@@ -2299,7 +2299,7 @@ begin
       datam.qryChatCarrega.SQL.Clear;
       datam.qryChatCarrega.SQL.Add('select ');
       datam.qryChatCarrega.SQL.Add('c1.id, ');
-      datam.qryChatCarrega.SQL.Add('concat(c1.descricao," - ", c2.descricao) as descricao ');
+		  datam.qryChatCarrega.SQL.Add('concat(c1.descricao," - ", c2.descricao) as descricao ');
       datam.qryChatCarrega.SQL.Add('from ');
       datam.qryChatCarrega.SQL.Add('easy_sist_usuario_perfil_has_pabx_serv_fila_universal a ');
       datam.qryChatCarrega.SQL.Add('left join easy_pabx_serv_fila_universal_ctr c1 on a.easy_pabx_serv_fila_universal_ctr_id = c1.id ');

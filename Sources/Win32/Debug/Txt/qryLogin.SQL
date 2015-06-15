@@ -1,6 +1,6 @@
 select l.descricao as nome,                                                             
        l.login as login,                                                                
-       l.senha as senha,                                                                
+       AES_DECRYPT(l.senha,'ae76aa5b1e5fc7257703a2c8ff9ea7dd') AS senha, 
        c.email as email,                                                                
 'Y' as dialpad,                                                           
        l.easy_call_operacao_conf_id as easy_callcenter_operacao_conf_id,                
@@ -39,7 +39,13 @@ select l.descricao as nome,
        o.qualificar_chamada_act,                                                        
        fone_registro_act,                                                               
        time_to_sec(fone_registro_tmp) as sec_fone_registro_tmp,                         
-       coalesce(c.easy_work_equipe_conf_id, 0) as equipe_id                             
+       coalesce(c.easy_work_equipe_conf_id, 0) as equipe_id,                            
+       c.horario_entrada,                                                               
+       c.horario_Saida,                                                                 
+       coalesce(l.active,'N') as Usuario_act,                            
+       coalesce(c.active,'N') as Colaborador_act,                        
+       coalesce(o.active,'N') as Operacao_act,                           
+       coalesce(e.active,'N') as UserEmp_act                             
 from easy_sist_usuario_login_conf l                                                     
      left join easy_work_colaborador_conf c on l.easy_work_colaborador_conf_id = c.id   
      left join easy_call_operacao_conf o on l.easy_call_operacao_conf_id = o.id         
@@ -47,9 +53,4 @@ from easy_sist_usuario_login_conf l
      left join easy_pabx_serv_ramal_sip_conf s on s.id = l.id                           
      left join easy_sist_servidor_sip_conf p on c.easy_sist_servidor_sip_conf_id = p.id 
 where True                                                                              
-  and l.active = 'Y'
-  and c.active = 'Y'
-  and o.active = 'Y'
-  and e.active = 'Y'
   and l.login = 'rogerio'
-  and l.senha = '123456'

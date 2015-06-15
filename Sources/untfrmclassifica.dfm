@@ -5,7 +5,7 @@ object frmclassifica: Tfrmclassifica
   Height = 330
   TabOrder = 0
   object cmdSalvar: TsButton
-    Left = 145
+    Left = 141
     Top = 261
     Width = 66
     Height = 66

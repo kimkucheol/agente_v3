@@ -592,6 +592,7 @@ object frmPrincipal: TfrmPrincipal
     Visible = False
     OnDTMFDigit = vaxDTMFDigit
     OnTryingToUnRegister = vaxTryingToUnRegister
+    OnSuccessToUnRegister = vaxSuccessToUnRegister
     OnTryingToRegister = vaxTryingToRegister
     OnFailToRegister = vaxFailToRegister
     OnSuccessToRegister = vaxSuccessToRegister
@@ -726,7 +727,7 @@ object frmPrincipal: TfrmPrincipal
       Top = 96
       Width = 817
       Height = 593
-      ActivePage = tabChat
+      ActivePage = tabCliente
       Align = alClient
       TabOrder = 2
       SkinData.SkinManager = sSkinManager1
@@ -735,10 +736,6 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Cliente'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object browsercliente: TWebBrowser
           Left = 0
           Top = 0
@@ -746,7 +743,6 @@ object frmPrincipal: TfrmPrincipal
           Height = 475
           Align = alClient
           TabOrder = 0
-          ExplicitLeft = -1
           ExplicitTop = -1
           ControlData = {
             4C0000009D530000183100000000000000000000000000000000000000000000
@@ -1597,10 +1593,6 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'CHAT Hist'#243'rico'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object memChatPesquisaHistorico: TsRichEdit
           Left = 0
           Top = 55
@@ -1814,10 +1806,6 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'FAQ'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object sPanel7: TsPanel
           Left = 0
           Top = 0
@@ -2531,10 +2519,6 @@ object frmPrincipal: TfrmPrincipal
         Caption = 'Confer'#234'ncia'
         SkinData.CustomColor = False
         SkinData.CustomFont = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object sPanel20: TsPanel
           Left = 0
           Top = 0
@@ -2887,14 +2871,14 @@ object frmPrincipal: TfrmPrincipal
     end
   end
   object Screen2Video: TScreen2Video
-    Left = 8
+    Left = 0
     Top = 569
     Width = 257
     Height = 105
     TabOrder = 6
     ControlData = {
-      00000100901A0000DA0A00000000000000000000000000010000000000005605
-      9F020004393937360101000000000000000000F0BF020044AC00008000}
+      00000100901A0000DA0A00000000000000000000000000010000000000004605
+      8F020004393937360101000000000000000000F0BF020044AC00008000}
   end
   object ActionList1: TActionList
     Images = ImageList1
@@ -2927,7 +2911,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 56
     Bitmap = {
-      494C01010700E0002C0510001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010700E000700510001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000FEFEFE00FAFAFA00EAEAEA00E3E3E300E9E9E900F9F9F9000000
@@ -3265,7 +3249,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 104
     Bitmap = {
-      494C010103009800C40418001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103009800080518001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       000000000000000000000000000000000000FEFEFE00FEFEFE00FEFEFE00FEFE
       FE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFEFE00FEFE
@@ -3582,7 +3566,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 152
     Bitmap = {
-      494C01010B0048004C0530003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010B004800900530003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000C000000090000000010020000000000000B0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -7173,38 +7157,38 @@ object frmPrincipal: TfrmPrincipal
       OnExecute = actscriptExecute
     end
     object actchat: TAction
-      Caption = 'CHAT'
+      Caption = 'CHAT2'
       ImageIndex = 3
       OnExecute = actchatExecute
     end
     object actemail: TAction
       Caption = 'E-Mail'
-      ImageIndex = 5
+      ImageIndex = 4
       OnExecute = actemailExecute
     end
     object actfax: TAction
       Caption = 'FAX'
-      ImageIndex = 6
+      ImageIndex = 5
       OnExecute = actfaxExecute
     end
     object actsms: TAction
       Caption = 'SMS'
-      ImageIndex = 7
+      ImageIndex = 6
       OnExecute = actsmsExecute
     end
     object actpesquisa: TAction
       Caption = 'Pesquisa'
-      ImageIndex = 8
+      ImageIndex = 7
       OnExecute = actpesquisaExecute
     end
     object actajuda: TAction
       Caption = 'Ajuda'
-      ImageIndex = 9
+      ImageIndex = 8
       OnExecute = actajudaExecute
     end
     object actConferencia: TAction
       Caption = 'Confer'#234'ncia'
-      ImageIndex = 8
+      ImageIndex = 9
       OnExecute = actConferenciaExecute
     end
   end
@@ -7276,7 +7260,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 208
     Bitmap = {
-      494C0101010048009C0430003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010101004800E00430003000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000C00000003000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -8611,7 +8595,7 @@ object frmPrincipal: TfrmPrincipal
     Enabled = False
     OnTimer = tmrAudioRingTimer
     Left = 160
-    Top = 616
+    Top = 624
   end
   object mnuCopyInfoCall: TPopupMenu
     Tag = -1
@@ -9727,7 +9711,7 @@ object frmPrincipal: TfrmPrincipal
     Left = 1040
     Top = 648
     Bitmap = {
-      494C010102000C00F80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000C003C0110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       000000000000000000000000000000000000000000000000000000000000003B
       58000072BE00001F3B000000000000000000000000000000000000060B000037
@@ -9905,12 +9889,6 @@ object frmPrincipal: TfrmPrincipal
     Left = 248
     Top = 568
   end
-  object AudioDevices1: TAudioDevices
-    AutoConnect = False
-    ConnectKind = ckRunningOrNew
-    Left = 152
-    Top = 184
-  end
   object TMmRegProxy: TTimer
     Enabled = False
     Interval = 7000
@@ -9922,6 +9900,19 @@ object frmPrincipal: TfrmPrincipal
     Enabled = False
     OnTimer = TmReconectTimer
     Left = 720
-    Top = 208
+    Top = 209
+  end
+  object TmpEquipeHrTrab: TTimer
+    Enabled = False
+    Interval = 20000
+    OnTimer = TmpEquipeHrTrabTimer
+    Left = 248
+    Top = 624
+  end
+  object TmrMsg: TTimer
+    Enabled = False
+    OnTimer = TmrMsgTimer
+    Left = 360
+    Top = 440
   end
 end

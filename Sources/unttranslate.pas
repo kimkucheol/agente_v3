@@ -451,9 +451,30 @@ const
                                                                                  '198 - Error to create CANCEL request. Please check the provided SIP URI is valid.',
                                                                                  '198 - Error al crear la solicitud de cancelación.');
 
+  APP_MB_ERR_NO_QUEUES_RELATION     : array[0..(MAX_LANGUAGES - 1)] of String = ('011 - Este Agente não esta relacionado em nenhuma fila.' + #13 + 'Entre em contato com seu supervisor.',
+                                                                                 '011 - This agent is not related in any row.' + #13 + 'Please contact your supervisor.',
+                                                                                 '011 - Este agente no está relacionado de ninguna fila.' + #13 + 'Póngase en contacto con su supervisor.');
+
   APP_MB_VAX_ERR_GENERIC            : array[0..(MAX_LANGUAGES - 1)] of String = ('199 - Erro genérico de conexão SIP.',
                                                                                  '199 - ...',
                                                                                  '199 - ...');
+   // Usuario
+  APP_MB_ERR_INVALID_USER           : array[0..(MAX_LANGUAGES - 1)] of String = ('200 - Usuário não localizado.' + #13 + 'Tente Novamente.',
+                                                                                 '200 - User not found.' + #13 + 'Try Again.',
+                                                                                 '200 - Usuario no encontrado.' + #13 + 'Intente nuevamente.');
+   // Colaborador
+  APP_MB_ERR_INVALID_DEVELOPER      : array[0..(MAX_LANGUAGES - 1)] of String = ('201 - Usuário não localizado.' + #13 + 'Tente Novamente.',
+                                                                                 '201 - User not found.' + #13 + 'Try Again.',
+                                                                                 '201 - Usuario no encontrado.' + #13 + 'Intente nuevamente.');
+   // Operação
+  APP_MB_ERR_INVALID_OPERATION      : array[0..(MAX_LANGUAGES - 1)] of String = ('202 - Usuário esta associado a uma operação desativada.' + #13 + 'Tente Novamente.',
+                                                                                 '202 - User is associated with a disabled operation.' + #13 + 'Try Again.',
+                                                                                 '202 - El usuario está asociado con una operación de discapacitados.' + #13 + 'Intente nuevamente.');
+   // Empresa
+  APP_MB_ERR_INVALID_COMPANY        : array[0..(MAX_LANGUAGES - 1)] of String = ('203 - Usuário esta associado a uma empresa desativada.' + #13 + 'Tente Novamente.',
+                                                                                 '203 - User is associated with a disabled company.' + #13 + 'Try Again.',
+                                                                                 '203 - El usuario está asociada con una empresa discapacitados.' + #13 + 'Intente nuevamente.');
+
 
 //frmClassifica
   APP_FRM_CLASSIFICATION_QUEUE         : array[0..(MAX_LANGUAGES - 1)] of String = ('Selecione a Fila',

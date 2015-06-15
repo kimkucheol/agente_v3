@@ -1,0 +1,596 @@
+unit untlogin;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, sPanel, sSkinManager,
+  Vcl.StdCtrls, sEdit, sLabel, sButton, inifiles, Vcl.CustomizeDlg, MMSystem,
+  Vcl.Imaging.jpeg, WinSock, NB30, RotinasGerais, System.Zip, StrUtils,
+  Vcl.OleCtrls, Rtti, ShellApi, IdBaseComponent, IdComponent, IdRawBase,
+  IdRawClient, IdIcmpClient, untFuncoes;
+
+type
+
+  TfrmLogin = class(TForm)
+    sPanel1: TsPanel;
+    btnLogin: TsButton;
+    btnCancelar: TsButton;
+    lblLogin: TsLabel;
+    lblSenha: TsLabel;
+    txtLogin: TsEdit;
+    txtSenha: TsEdit;
+    sSkinManager1: TsSkinManager;
+    Image1: TImage;
+    tmrAutoLogin: TTimer;
+    lblChangePassword: TsLabel;
+    procedure btnLoginClick(Sender: TObject);
+    function FncFilaEquipe():boolean;
+
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnCancelarClick(Sender: TObject);
+    procedure txtSenhaKeyPress(Sender: TObject; var Key: Char);
+    procedure FormActivate(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure conecta;
+    procedure tmrAutoLoginTimer(Sender: TObject);
+    procedure lblChangePasswordClick(Sender: TObject);
+    procedure lblChangePasswordMouseEnter(Sender: TObject);
+    procedure lblChangePasswordMouseLeave(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    vping: boolean;
+    vpingtempo: integer;
+    vpinghost : string;
+
+    { Public declarations }
+  end;
+
+var
+  frmLogin: TfrmLogin;
+  vtentalogin: integer;
+  vArqIni: TiniFile;
+
+implementation
+
+uses untdm, untprincipal, unttranslate, untChangePass, untLibrary;
+
+{$R *.dfm}
+
+{$I C:\DSD_Development\Apps\HosannaTecnologia\Agente2.0\Sources\Win32\Debug\Lang\defines.inc}
+
+function LocalIP: ansistring;
+type
+  TaPInAddr = array [0..10] of PInAddr;
+  PaPInAddr = ^TaPInAddr;
+var
+  phe: PHostEnt;
+  pptr: PaPInAddr;
+  Buffer: array [0..63] of Ansichar;
+  i: Integer;
+  GInitData: TWSADATA;
+begin
+  WSAStartup($101, GInitData);
+  Result := '';
+  GetHostName(Buffer, SizeOf(Buffer));
+  phe :=GetHostByName(buffer);
+  if phe = nil then Exit;
+  pptr := PaPInAddr(Phe^.h_addr_list);
+  i := 0;
+  while pptr^[i] <> nil do
+  begin
+    result:=StrPas(inet_ntoa(pptr^[i]^));
+    Inc(i);
+  end;
+  WSACleanup;
+end;
+
+function GetAdapterInfo(Lana: AnsiChar): String;
+var
+  Adapter: TAdapterStatus;
+  NCB: TNCB;
+begin
+  FillChar(NCB, SizeOf(NCB), 0);
+  NCB.ncb_command := Char(NCBRESET);
+  NCB.ncb_lana_num := Lana;
+  if Netbios(@NCB) <> Char(NRC_GOODRET) then
+  begin
+    Result := 'mac not found';
+    Exit;
+  end;
+  FillChar(NCB, SizeOf(NCB), 0);
+  NCB.ncb_command := Char(NCBASTAT);
+  NCB.ncb_lana_num := Lana;
+  NCB.ncb_callname := '*';
+  FillChar(Adapter, SizeOf(Adapter), 0);
+  NCB.ncb_buffer := @Adapter;
+  NCB.ncb_length := SizeOf(Adapter);
+  if Netbios(@NCB) <> Char(NRC_GOODRET) then
+  begin
+    Result := 'mac not found';
+    Exit;
+  end;
+  Result :=
+  IntToHex(Byte(Adapter.adapter_address[0]), 2) + '-' +
+  IntToHex(Byte(Adapter.adapter_address[1]), 2) + '-' +
+  IntToHex(Byte(Adapter.adapter_address[2]), 2) + '-' +
+  IntToHex(Byte(Adapter.adapter_address[3]), 2) + '-' +
+  IntToHex(Byte(Adapter.adapter_address[4]), 2) + '-' +
+  IntToHex(Byte(Adapter.adapter_address[5]), 2);
+end;
+
+procedure TfrmLogin.txtSenhaKeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    btnLoginclick(self);
+  end;
+end;
+
+procedure TfrmLogin.FormActivate(Sender: TObject);
+begin
+  txtLogin.SetFocus;
+end;
+
+procedure TfrmLogin.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  // Destruindo as Classes "Library´s"
+  PrcDestructorLibClass;
+
+  datam.con_connect.connected := false;
+  datam.conChatQueue.Connected := False;
+end;
+
+procedure TfrmLogin.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if TMyAppStatus.bLogado = true then
+  begin
+    application.MessageBox(PChar(APP_MB_WAR_CANNOT_CLOSE[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+    canclose := false;
+  end;
+
+end;
+
+procedure TfrmLogin.FormCreate(Sender: TObject);
+var
+  size: dword;
+
+begin
+  // Construindo as Classes "Library´s"
+  PrcGenerateLibClass;
+
+  try
+    size := 256;
+    GetComputerName(TMyMachineInfo.sComputer_Name, size);
+    if TMyMachineInfo.sComputer_Name = 'DSD-W7-MAC' then
+    begin
+      txtLogin.Text := 'rogerio';//'luciano';//'call05';//'mobly'
+      txtSenha.Text := '123456';//'123';//'admin'
+    end;
+  except
+  end;
+
+  ExecComandoMSDOS;
+
+  try
+    TMyMachineInfo.sIP_Address := String(LocalIP);
+  except end;
+
+  try
+    TMyMachineInfo.sMac_Address := IfThen(Length(Trim(Agente.WinMAC_ADDRES01)) > 0,
+                                          Agente.WinMAC_ADDRES01,
+                                          Agente.WinMAC_ADDRES02);
+  except end;
+
+  conecta;
+
+  frmlogin.Caption := PChar(GetStringResource(rcCaptionPrincipal));
+
+  sskinmanager1.SkinDirectory := ExtractFilePath(Application.ExeName)+'skin';
+
+  vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'Config.ini');
+  sskinmanager1.SkinName:= varqini.readstring('skin','skin','Cold');
+  varqini.free;
+
+  sskinmanager1.active := true;
+
+  setPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
+  vtentalogin := 0;
+
+  tmrAutoLogin.Enabled := True;
+end;
+
+procedure TfrmLogin.lblChangePasswordClick(Sender: TObject);
+begin
+  frmChangePass.Show;
+end;
+
+procedure TfrmLogin.lblChangePasswordMouseEnter(Sender: TObject);
+begin
+  lblChangePassword.Font.Color := clBlue;
+  lblChangePassword.Font.Style := [fsUnderline];
+end;
+
+procedure TfrmLogin.lblChangePasswordMouseLeave(Sender: TObject);
+begin
+  lblChangePassword.Font.Color := clBlack;
+  lblChangePassword.Font.Style := [];
+end;
+
+procedure TfrmLogin.tmrAutoLoginTimer(Sender: TObject);
+begin
+  tmrAutoLogin.Enabled := False;
+
+  if (txtLogin.Text = 'luciano') and (txtSenha.Text = '123456') then
+  //if (txtLogin.Text = 'call05') and (txtSenha.Text = '123') then
+  //if (txtLogin.Text = 'admin') and (txtSenha.Text = 'admin') then
+    btnLogin.Click;
+end;
+
+procedure TfrmLogin.btnLoginClick(Sender: TObject);
+var
+  sCaptureMode: String;
+  IntVerificaLogin : Integer;
+//  Lst : TStringList;
+//  IntI : Integer;
+begin
+
+  Agente.SQL.CarregaOperLog;
+
+  // Verificar se o dispositivo de audio existe
+  if Agente.TotalAudio <= 0then
+  begin
+    LogCallStep('log_login_act', 'sem dispositivo de audio');
+    MessageDlg('Atenção..'+#13+'Nenhum dispositivo de áudio foi encontrado.', mtError, [mbOk],0);
+    Exit;
+  end;
+
+  if Agente.TotalMicrofone <= 0then
+  begin
+    LogCallStep('log_login_act', 'sem dispositivo de microfone');
+    MessageDlg('Atenção..'+#13+'Nenhum dispositivo do microfone foi encontrado.', mtError, [mbOk],0);
+    Exit;
+  end;
+
+  if (txtLogin.text = '') or (txtSenha.text = '') then
+  begin
+    application.MessageBox(PChar(APP_MB_ERR_FILL_FIELDS[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_ICONEXCLAMATION);
+  end
+  else
+  begin
+    if Agente.VerificaVersao = False then
+    begin
+      frmlogin.Hide;
+      frmprincipal.Hide;
+      application.Terminate;
+      Exit;
+    end;
+
+    Screen.Cursor := crSQLWait;
+    TMyInfoLogin.sLoginUser     := txtLogin.text;
+    TMyInfoLogin.sLoginSenha    := txtSenha.Text;
+
+    IntVerificaLogin := Agente.SQL.FncVerificaLogin;
+    if IntVerificaLogin = 0 then
+    begin
+
+
+      TMyInfoLogin.sNome       := datam.qryLogin.fields[0].AsString;
+      TMyInfoLogin.sPerfil     := datam.qryLogin.FieldByName('easy_sistema_usuario_perfil_conf_id').AsString;
+      TMyInfoLogin.sUsuario    := datam.qryLogin.fields[1].AsString;
+      TMyInfoLogin.sEMail      := datam.qryLogin.fieldbyname('email').AsString;
+      TMyInfoLogin.sRamal      := datam.qryLogin.fieldbyname('ramal').AsString;
+      TMyInfoLogin.sIDUsuario  := datam.qryLogin.fieldbyname('id').AsString;
+      TMyInfoLogin.sSenha      := datam.qryLogin.fieldbyname('senha_ramal').AsString;
+      TMyInfoLogin.sIPPABX     := datam.qryLogin.fieldbyname('proxy_ramal').AsString;
+      TMyInfoLogin.sIDOperacao := datam.qryLogin.fields[5].asstring;
+      TMyInfoLogin.bFone_registro_act := datam.qryLogin.FieldByName('fone_registro_act').AsBoolean;
+      TMyInfoLogin.sSec_fone_registro_tmp := datam.qryLogin.FieldByName('sec_fone_registro_tmp').AsString;
+      TMyInfoLogin.iEasy_work_equipe_conf_id := datam.qryLogin.FieldByName('equipe_id').AsInteger;
+      TMyInfoLogin.tHr_Entrada := datam.qryLogin.fieldbyname('horario_entrada').AsDateTime;
+      TMyInfoLogin.tHr_Saida   := datam.qryLogin.fieldbyname('horario_saida').AsDateTime;
+
+      ID_LANG := (datam.qryLogin.Fields[11].AsInteger) - 1;
+      TMyInfoLogin.sIDEmpresa := datam.qryLogin.Fields[12].AsString;
+
+      //frmprincipal.ersaovoperacao := datam.qryLogin.fields[7].asstring;
+      //frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
+
+{      if not FncFilaEquipe then
+        Exit;}
+
+      if not Agente.SQL.FncVerificaFila then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_QUEUES_RELATION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      if not Agente.SQL.FncVerificaClassUniv then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_CLASSIF_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      if not Agente.SQL.FncVerificaPausa then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_PAUSES_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      datam.QryOpen.Close;
+
+
+      if not Agente.EquipeHrTrab.fncTempoTrabalho then
+        Exit;
+
+      TMyVaxIncomingCallParam.bAutoAnswer := datam.qryLogin.fieldbyname('atendimento_auto_act').AsBoolean;
+
+      TMyVaxIncomingCallParam.bSetAudioFromDB := datam.qryLogin.fieldbyname('controle_audio_act').AsBoolean;
+      TMyVaxIncomingCallParam.SetSpkVolume := datam.qryLogin.fieldbyname('controle_audio_fone').AsInteger;
+      TMyVaxIncomingCallParam.SetMicVolume := datam.qryLogin.fieldbyname('controle_audio_mic').AsInteger;
+
+      TMyInfoLogin.bConferencia := datam.qryLogin.fieldbyname('conferencia_Act').AsBoolean;
+      TMyClassificacao.bAuto := datam.qryLogin.fieldbyname('classificacao_auto_act').AsBoolean;
+      TMyInfoLogin.sIDSupervisor := datam.qryLogin.fieldbyname('easy_sistema_usuario_conf_super_id').AsString;
+      TMyInfoLogin.nTipo := (datam.qryLogin.fieldbyname('tipo').AsInteger) - 1;
+
+      TMyInfoLogin.nChatSalasQtd := datam.qryLogin.fieldbyname('chat_nsalas_qde').AsInteger;
+
+      if datam.qryLogin.FieldByName('qualidade_plogin_act').AsBoolean then
+      begin
+        Agente.SQL.AtualizaQualidade;
+        TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin2').AsString;
+      end
+      else
+        TMyInfoLogin.sQualidadePLogin := datam.qryLogin.FieldByName('qualidade_plogin').AsString;
+
+      //Rota inteligente
+      TMyInfoLogin.bRotaInteligente   := datam.qryLogin.FieldByName('usar_rota_inteligente_fixa_act').AsBoolean;
+      TMyInfoLogin.nIdRotaInteligente := datam.qryLogin.FieldByName('easy_pabx_serv_rota_inteligente_conf_id').AsInteger;
+
+      //Classificao de chat automatica
+      TMyChat.bAutoClassificacao := datam.qryLogin.FieldByName('chat_classificacao_auto_act').AsBoolean;
+
+      //FAQ
+      TMyFaqClass.bFaqAct := datam.qryLogin.FieldByName('webfaq_act').AsBoolean;
+      TMyFaqClass.nFaqIdConf := datam.qryLogin.FieldByName('easy_wfaq_conf_id').AsInteger;
+
+      //Captura Tela
+      TMyCaptureScreen.nThreadsRunning := 0;
+      TMyCaptureScreen.bCapture := datam.qryLogin.FieldByName('gravador_tela_act').AsBoolean;
+      if TMyCaptureScreen.bCapture then
+      begin
+        sCaptureMode := datam.qryLogin.FieldByName('gravador_tela_modo_cfg').AsString;
+        if UpperCase(sCaptureMode) = UpperCase('TEL') then
+          TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_PHONE
+        else
+          {if UpperCase(sCaptureMode) = UpperCase('CHAT') then
+            TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_CHAT
+          else
+            if UpperCase(sCaptureMode) = UpperCase('INT') then
+              TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_INTERACTIVE
+            else}
+              if UpperCase(sCaptureMode) = UpperCase('COM') then
+                TMyCaptureScreen.nCaptureMode := CAPTURE_MODE_ALL;
+
+        TMyCaptureScreen.bCaptureCursor := datam.qryLogin.FieldByName('gravador_tela_cursor_act').AsBoolean;
+
+        TMyCaptureScreen.nSplitInterval := (datam.qryLogin.FieldByName('gravador_tela_modo_tmp2').AsInteger) * 1000;
+        TMyCaptureScreen.nSplitStep := 0;
+        TMyCaptureScreen.sCaptureFileFormat := '.avi';
+        TMyCaptureScreen.sCaptureStorageSrc := ExtractFilePath(Application.ExeName) + 'rec_screen\';
+        TMyCaptureScreen.sCaptureStorageDst := IncludeTrailingPathDelimiter(datam.qryLogin.FieldByName('gravador_tela_storage_dst').AsString);
+      end;
+
+      //Codigo para integrador CRM
+      TMyInfoLogin.sCodigoExterno := datam.qryLogin.FieldByName('codigo_externo').AsString;
+
+      //Recupera dialpad
+      TMyInfoLogin.bDialPad := datam.qryLogin.FieldByName('fone_dialpad_act').AsBoolean;
+
+      //Recupera Data/Hora atual do BD
+      TMyInfoLogin.sDataLogin := datam.qryLogin.FieldByName('dataatual').AsString;
+      TMyInfoLogin.sHoraLogin := datam.qryLogin.FieldByName('horaatual').AsString;
+
+      //Recupera obrigatoriedade de informar qualidade da chamada
+      TMyInfoLogin.bQualidadeChamada := datam.qryLogin.FieldByName('qualificar_chamada_act').AsBoolean;
+
+      datam.qryLogin.active := False;
+
+      if Agente.VerificaLogado = False then
+      begin
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      //qr_has_queue
+      datam.qry_has_fila.active := false;
+      datam.qry_has_fila.Params[0].Value := TMyInfoLogin.sIDUsuario;
+      datam.qry_has_fila.active := true;
+      if (datam.qry_has_fila.RecordCount <= 0) or (datam.qry_has_fila.Fields[0].AsInteger = 0) then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_QUEUES_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      //qry_has_pause
+      datam.qry_has_pause.active := false;
+      datam.qry_has_pause.Params[0].Value := TMyInfoLogin.sIDOperacao;
+      datam.qry_has_pause.active := true;
+      if (datam.qry_has_pause.RecordCount <= 0) or (datam.qry_has_pause.Fields[0].AsInteger = 0) then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_PAUSES_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      //qry_has_classif_fila
+      datam.qry_has_classif_fila.active := false;
+      datam.qry_has_classif_fila.Params[0].Value := TMyInfoLogin.sIDEmpresa;
+      datam.qry_has_classif_fila.active := true;
+      if ((datam.qry_has_classif_fila.RecordCount <= 0) or (datam.qry_has_classif_fila.Fields[0].AsInteger = 0)) then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_NO_CLASSIF_FOUND[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      //qry_has_pausarestritiva
+      datam.qry_has_pausarestritiva.active := false;
+      datam.qry_has_pausarestritiva.Params[0].Value := TMyInfoLogin.sIDUsuario;
+      datam.qry_has_pausarestritiva.active := true;
+      if (datam.qry_has_pausarestritiva.RecordCount <= 0) or (datam.qry_has_pausarestritiva.Fields[0].AsBoolean = True) then
+      begin
+        Screen.Cursor := crDefault;
+        application.MessageBox(PChar(APP_MB_ERR_HAS_PAUSE_RESTRICT[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), MB_OK+MB_ICONEXCLAMATION);
+        frmlogin.Hide;
+        frmprincipal.Hide;
+        application.Terminate;
+        Exit;
+      end;
+
+      frmprincipal.CarregaTelasLinguagem;
+      frmprincipal.carregaoperacao(TMyInfoLogin.sIDOperacao);
+
+      LogCallStep('log_login_act', 'btnLoginClick :: Step 4');
+
+      try
+        frmprincipal.ativaramal(Sender);
+      except
+      end;
+
+      Screen.Cursor := crDefault;
+      frmlogin.Hide;
+      frmprincipal.show;
+    end
+    else
+    begin
+      Screen.Cursor := crDefault;
+
+      if vtentalogin < 3 then
+      begin
+        inc(vtentalogin);
+
+        // 1 : Usuario não encontrado
+        if IntVerificaLogin = 1 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_USER[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        // 2 : Colaborador não encontrado
+        if IntVerificaLogin = 2 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_LOGIN[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //3 : Operação não encontrado
+        if IntVerificaLogin = 3 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_DEVELOPER[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //4 : Usuario não Associado Empresa
+        if IntVerificaLogin = 4 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_OPERATION[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+        //5 : Login invalido
+        if IntVerificaLogin = 5 then
+          application.MessageBox(PChar(APP_MB_ERR_INVALID_COMPANY[ID_LANG]), PChar(GetStringResource(rcCaptionPrincipal)), 0);
+
+      end
+      else
+      begin
+        application.Terminate;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmLogin.conecta;
+var
+  ip_value: string;
+begin
+  vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
+
+  TMyConfigInfo.sDatabaseIP   := varqini.ReadString('BD','PROXY','');
+  TMyConfigInfo.sDatabaseName := varqini.ReadString('BD','DNAME','');
+  TMyConfigInfo.sDatabaseUser := varqini.ReadString('BD','DUSER','root');
+  TMyConfigInfo.sDatabasePass := varqini.ReadString('BD','DPASS','sqladmin');
+  TMyConfigInfo.nDatabasePort := varqini.ReadInteger('BD','DPORT',3306);
+
+  vping := varqini.readbool('CMD_Ping','habilita',false);
+  if vping = true then
+  begin
+    vpinghost := varqini.readstring('CMD_Ping','ip','');
+    vpingtempo := varqini.readinteger('CMD_Ping','tempo',0)*1000;
+  end;
+
+  varqini.free;
+  try
+    datam.con_connect.disconnect;
+    datam.con_connect.Hostname := TMyConfigInfo.sDatabaseIP;
+    datam.con_connect.Database := TMyConfigInfo.sDatabaseName;
+    datam.con_connect.User := TMyConfigInfo.sDatabaseUser;
+    datam.con_connect.Password := TMyConfigInfo.sDatabasePass;
+    datam.con_connect.Port := TMyConfigInfo.nDatabasePort;
+    datam.con_connect.Connect;
+  except
+    if application.MessageBox(PChar(APP_MB_ERR_INVALID_DB_MSG_1[ID_LANG] + TMyConfigInfo.sDatabaseIP + APP_MB_ERR_INVALID_DB_MSG_2[ID_LANG]),
+       PChar(GetStringResource(rcCaptionPrincipal)), mb_yesno+mb_iconquestion) = idyes then
+    begin
+      repeat
+        if not InputQuery(Application.Title, APP_MB_APP_TYPE_SRV_IP[ID_LANG], ip_value) then
+        begin
+          Screen.Cursor := crDefault;
+          frmlogin.Hide;
+          application.Terminate;
+          Exit;
+        end;
+      until Trim(ip_value) <> '';
+
+      vArqIni := tIniFile.Create(ExtractFilePath(Application.ExeName)+'config.ini');
+      varqini.WriteString('BD','PROXY', ip_value);
+      varqini.free;
+      conecta;
+    end
+    else
+    begin
+      Screen.Cursor := crDefault;
+      frmlogin.Hide;
+      application.Terminate;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TfrmLogin.btnCancelarClick(Sender: TObject);
+begin
+  close;
+end;
+
+function TfrmLogin.FncFilaEquipe():boolean;
+begin
+  if datam.qryUserFila.Active then datam.qryUserFila.Close;
+  datam.qryUserFila.Open;
+
+  Result := Boolean(High(UserFile) > 0);
+end;
+
+end.
